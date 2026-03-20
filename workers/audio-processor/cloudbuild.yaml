@@ -4,7 +4,7 @@ steps:
       [
         "build",
         "-t",
-        "asia-northeast3-docker.pkg.dev/$PROJECT_ID/soundril/audio-processor",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/soundril/audio-processor",
         "-f",
         "workers/audio-processor/Dockerfile",
         "workers/audio-processor",
@@ -13,10 +13,10 @@ steps:
     args:
       [
         "push",
-        "asia-northeast3-docker.pkg.dev/$PROJECT_ID/soundril/audio-processor",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/soundril/audio-processor",
       ]
 images:
-  - "asia-northeast3-docker.pkg.dev/$PROJECT_ID/soundril/audio-processor"
+  - "us-central1-docker.pkg.dev/$PROJECT_ID/soundril/audio-processor"
 timeout: "1200s"
 options:
   machineType: "E2_HIGHCPU_8"

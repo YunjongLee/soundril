@@ -36,7 +36,6 @@ class ProcessRequest(BaseModel):
     userId: str
     type: str  # 'mr' | 'lrc' | 'lrc_mr'
     inputStoragePath: str
-    language: str = "ko"
     lyrics: str | None = None
 
 
@@ -77,7 +76,6 @@ async def process(request: Request):
             user_id=req.userId,
             job_type=req.type,
             input_storage_path=req.inputStoragePath,
-            language=req.language,
             lyrics=req.lyrics,
         )
 

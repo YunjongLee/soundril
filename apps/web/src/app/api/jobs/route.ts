@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
     const type = formData.get("type") as "mr" | "lrc" | "lrc_mr";
     const durationSeconds = Number(formData.get("durationSeconds"));
     const lyrics = formData.get("lyrics") as string | null;
-    const language = (formData.get("language") as string) || "ko";
 
     if (!file || !type || !durationSeconds) {
       return NextResponse.json(
@@ -81,7 +80,6 @@ export async function POST(request: NextRequest) {
       inputStoragePath,
       inputFileName: file.name,
       inputDurationSeconds: durationSeconds,
-      language,
       lyrics: lyrics || null,
       creditsCharged,
       mrStoragePath: null,
@@ -100,7 +98,6 @@ export async function POST(request: NextRequest) {
       userId,
       type,
       inputStoragePath,
-      language,
       lyrics: lyrics || undefined,
     });
 

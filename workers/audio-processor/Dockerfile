@@ -1,17 +1,13 @@
-# ── Stage 1: Base with CUDA ──
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04 AS base
+# ── Stage 1: Base ──
+FROM python:3.11-slim-bookworm AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 python3.11-venv python3-pip \
     ffmpeg \
     git \
     && rm -rf /var/lib/apt/lists/*
-
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
 
 # ── Stage 2: Install dependencies ──
 FROM base AS deps

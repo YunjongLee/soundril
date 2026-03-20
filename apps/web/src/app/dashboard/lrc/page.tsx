@@ -25,7 +25,6 @@ export default function LRCPage() {
   const [file, setFile] = useState<File | null>(null);
   const [duration, setDuration] = useState<number | null>(null);
   const [lyrics, setLyrics] = useState("");
-  const [language, setLanguage] = useState("ko");
   const [includeMR, setIncludeMR] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -72,7 +71,6 @@ export default function LRCPage() {
       formData.append("type", includeMR ? "lrc_mr" : "lrc");
       formData.append("durationSeconds", String(duration));
       formData.append("lyrics", lyrics);
-      formData.append("language", language);
 
       const res = await fetch("/api/jobs", {
         method: "POST",
@@ -188,37 +186,21 @@ export default function LRCPage() {
       </div>
 
       {/* Options */}
-      <div className="mt-6 flex items-center gap-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">Language</label>
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="rounded-lg border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-          >
-            <option value="ko">Korean</option>
-            <option value="en">English</option>
-            <option value="ja">Japanese</option>
-            <option value="zh">Chinese</option>
-          </select>
-        </div>
-
-        <div className="flex-1">
-          <label className="flex items-center gap-3 cursor-pointer mt-5">
-            <input
-              type="checkbox"
-              checked={includeMR}
-              onChange={(e) => setIncludeMR(e.target.checked)}
-              className="rounded border-border"
-            />
-            <div>
-              <span className="text-sm font-medium">Include MR track</span>
-              <span className="text-xs text-muted-foreground ml-2">
-                (2x credits)
-              </span>
-            </div>
-          </label>
-        </div>
+      <div className="mt-6">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={includeMR}
+            onChange={(e) => setIncludeMR(e.target.checked)}
+            className="rounded border-border"
+          />
+          <div>
+            <span className="text-sm font-medium">Include MR track</span>
+            <span className="text-xs text-muted-foreground ml-2">
+              (2x credits)
+            </span>
+          </div>
+        </label>
       </div>
 
       {/* Cost summary */}

@@ -75,19 +75,22 @@ def encode_mp3(wav_path: str, mp3_path: str, bitrate: str = "320k"):
 # 2. WhisperX (Whisper + wav2vec2 forced alignment)
 # ──────────────────────────────────────────────
 
-def transcribe(audio_path: str, language: str) -> list[dict]:
-    """WhisperX: Whisper transcription + wav2vec2 forced alignment."""
+def transcribe(audio_path: str) -> list[dict]:
+    """WhisperX: Whisper transcription + wav2vec2 forced alignment. Language auto-detected."""
     import whisperx
 
     device = detect_device()
     compute_device = device
 
-    logger.info(f"WhisperX: transcribing on {compute_device}...")
+    logger.info(f"WhisperX: transcribing on {compute_device} (auto-detect language)...")
     model = whisperx.load_model("large-v3", compute_device, compute_type="float16" if device == "cuda" else "float32")
-    result = model.transcribe(audio_path, language=language)
+    result = model.transcribe(audio_path)
+
+    detected_lang = result.get("language", "en")
+    logger.info(f"WhisperX: detected language: {detected_lang}")
 
     logger.info(f"WhisperX: aligning {len(result.get('segments', []))} segments...")
-    align_model, metadata = whisperx.load_align_model(language_code=language, device=compute_device)
+    align_model, metadata = whisperx.load_align_model(language_code=detected_lang, device=compute_device)
     result = whisperx.align(result["segments"], align_model, metadata, audio_path, compute_device)
 
     words = []
@@ -192,7 +195,6 @@ async def process_job(
     user_id: str,
     job_type: str,
     input_storage_path: str,
-    language: str = "ko",
     lyrics: str | None = None,
 ) -> dict:
     """
@@ -227,7 +229,7 @@ async def process_job(
         # Step 2: WhisperX transcription + alignment (progress 35→60)
         if job_type in ("lrc", "lrc_mr"):
             await update_job_progress(job_id, 40, "Transcribing audio (WhisperX)...")
-            words = transcribe(vocals_path, language)
+            words = transcribe(vocals_path)
             await update_job_progress(job_id, 60, f"Transcription complete ({len(words)} words)")
 
             # Step 3: Lyrics alignment (progress 60→80)

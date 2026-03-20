@@ -10,7 +10,6 @@ export async function createProcessingTask(payload: {
   userId: string;
   type: "mr" | "lrc" | "lrc_mr";
   inputStoragePath: string;
-  language?: string;
   lyrics?: string;
 }) {
   const projectId = process.env.GCP_PROJECT_ID;
