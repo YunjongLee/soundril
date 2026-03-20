@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 유저: 본인 문서만 읽기 (쓰기는 서버만)
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // 작업: 본인 작업만 읽기 (생성/수정은 서버만)
+    match /jobs/{jobId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // 크레딧 내역: 본인만 읽기
+    match /creditTransactions/{txId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+  }
+}
