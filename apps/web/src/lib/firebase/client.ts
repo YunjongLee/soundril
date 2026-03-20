@@ -21,38 +21,24 @@ let _auth: Auth | undefined;
 let _db: Firestore | undefined;
 let _storage: FirebaseStorage | undefined;
 
-function lazyAuth(): Auth {
+export function getClientAuth(): Auth {
   if (!_auth) _auth = getAuth(getApp());
   return _auth;
 }
 
-function lazyDb(): Firestore {
+export function getClientDb(): Firestore {
   if (!_db) _db = getFirestore(getApp());
   return _db;
 }
 
-function lazyStorage(): FirebaseStorage {
+export function getClientStorage(): FirebaseStorage {
   if (!_storage) _storage = getStorage(getApp());
   return _storage;
 }
 
-// Proxy-based lazy singletons — safe during SSR/build
-export const auth: Auth = new Proxy({} as Auth, {
-  get(_, prop) {
-    return (lazyAuth() as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
-
-export const db: Firestore = new Proxy({} as Firestore, {
-  get(_, prop) {
-    return (lazyDb() as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
-
-export const storage: FirebaseStorage = new Proxy({} as FirebaseStorage, {
-  get(_, prop) {
-    return (lazyStorage() as unknown as Record<string | symbol, unknown>)[prop];
-  },
-});
+// Runtime aliases — only use in client components (not at build/SSR time)
+export const auth = typeof window !== "undefined" ? getClientAuth() : ({} as Auth);
+export const db = typeof window !== "undefined" ? getClientDb() : ({} as Firestore);
+export const storage = typeof window !== "undefined" ? getClientStorage() : ({} as FirebaseStorage);
 
 export const googleProvider = new GoogleAuthProvider();

@@ -28,7 +28,7 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -52,7 +52,7 @@ export function Sidebar() {
           <Coins className="h-3.5 w-3.5" />
           Credits
         </div>
-        <div className="text-lg font-semibold text-primary mt-0.5">--</div>
+        <div className="text-lg font-semibold text-primary mt-0.5">{profile?.credits ?? "--"}</div>
       </div>
 
       {/* Navigation */}

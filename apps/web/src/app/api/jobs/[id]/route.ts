@@ -38,11 +38,13 @@ export async function GET(
         return NextResponse.json({ error: "Invalid path" }, { status: 400 });
       }
 
-      const bucket = adminStorage.bucket();
+      const bucket = adminStorage.bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
       const file = bucket.file(downloadPath);
+      const customName = request.nextUrl.searchParams.get("filename") || downloadPath.split("/").pop() || "download";
       const [url] = await file.getSignedUrl({
         action: "read",
-        expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+        expires: Date.now() + 15 * 60 * 1000,
+        responseDisposition: `attachment; filename="${customName}"`,
       });
 
       return NextResponse.json({ url });

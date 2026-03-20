@@ -26,8 +26,14 @@ export function Waveform({
   const sizeHeights = heights[size];
   const animClass = size === "lg" ? "animate-wave-lg" : "animate-wave";
 
+  const containerHeight: Record<string, string> = {
+    sm: "h-6",
+    md: "h-10",
+    lg: "h-14",
+  };
+
   return (
-    <div className={cn("flex items-center gap-[3px]", className)}>
+    <div className={cn("flex items-center justify-center gap-[3px]", containerHeight[size], className)}>
       {Array.from({ length: bars }).map((_, i) => (
         <div
           key={i}

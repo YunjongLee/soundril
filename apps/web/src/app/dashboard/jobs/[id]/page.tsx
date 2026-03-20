@@ -124,7 +124,7 @@ export default function JobDetailPage() {
     // Download via signed URL from API
     const idToken = await user?.getIdToken();
     const res = await fetch(
-      `/api/jobs/${jobId}?download=${encodeURIComponent(path)}`,
+      `/api/jobs/${jobId}?download=${encodeURIComponent(path)}&filename=${encodeURIComponent(filename)}`,
       { headers: { Authorization: `Bearer ${idToken}` } }
     );
     if (!res.ok) return;

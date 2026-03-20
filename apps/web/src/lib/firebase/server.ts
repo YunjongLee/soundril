@@ -17,34 +17,62 @@ function getServiceAccount(): ServiceAccount {
   return JSON.parse(Buffer.from(encoded, "base64").toString("utf-8"));
 }
 
+let _app: App | null = null;
+
 function getApp(): App {
-  if (getApps().length > 0) return getApps()[0];
-  return initializeApp({ credential: cert(getServiceAccount()) });
+  if (_app) return _app;
+  if (getApps().length > 0) {
+    _app = getApps()[0];
+    return _app;
+  }
+  _app = initializeApp({
+    credential: cert(getServiceAccount()),
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  });
+  return _app;
 }
 
-// Lazy singletons — avoid initialization at build time
 let _auth: Auth | null = null;
 let _db: Firestore | null = null;
 let _storage: Storage | null = null;
 
-export const adminAuth: Auth = new Proxy({} as Auth, {
+export function getAdminAuth(): Auth {
+  if (!_auth) _auth = getAuth(getApp());
+  return _auth;
+}
+
+export function getAdminDb(): Firestore {
+  if (!_db) _db = getFirestore(getApp());
+  return _db;
+}
+
+export function getAdminStorage(): Storage {
+  if (!_storage) _storage = getStorage(getApp());
+  return _storage;
+}
+
+// Convenience aliases for backward compat (lazy-evaluated via getter)
+export const adminAuth = new Proxy({} as Auth, {
   get(_, prop) {
-    if (!_auth) _auth = getAuth(getApp());
-    return (_auth as unknown as Record<string | symbol, unknown>)[prop];
+    const instance = getAdminAuth();
+    const value = (instance as unknown as Record<string | symbol, unknown>)[prop];
+    return typeof value === "function" ? (value as Function).bind(instance) : value;
   },
 });
 
-export const adminDb: Firestore = new Proxy({} as Firestore, {
+export const adminDb = new Proxy({} as Firestore, {
   get(_, prop) {
-    if (!_db) _db = getFirestore(getApp());
-    return (_db as unknown as Record<string | symbol, unknown>)[prop];
+    const instance = getAdminDb();
+    const value = (instance as unknown as Record<string | symbol, unknown>)[prop];
+    return typeof value === "function" ? (value as Function).bind(instance) : value;
   },
 });
 
-export const adminStorage: Storage = new Proxy({} as Storage, {
+export const adminStorage = new Proxy({} as Storage, {
   get(_, prop) {
-    if (!_storage) _storage = getStorage(getApp());
-    return (_storage as unknown as Record<string | symbol, unknown>)[prop];
+    const instance = getAdminStorage();
+    const value = (instance as unknown as Record<string | symbol, unknown>)[prop];
+    return typeof value === "function" ? (value as Function).bind(instance) : value;
   },
 });
 

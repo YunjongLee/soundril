@@ -6,7 +6,7 @@ import { Waveform } from "@/components/waveform";
 import { Music, FileText, ArrowRight, Clock, Coins } from "lucide-react";
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   return (
     <div className="max-w-4xl">
@@ -26,7 +26,7 @@ export default function DashboardPage() {
             <Coins className="h-4 w-4" />
             Credits Remaining
           </div>
-          <p className="text-2xl font-bold mt-2">--</p>
+          <p className="text-2xl font-bold mt-2">{profile?.credits ?? "--"}</p>
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -40,7 +40,7 @@ export default function DashboardPage() {
             <Coins className="h-4 w-4" />
             Credits Used
           </div>
-          <p className="text-2xl font-bold mt-2">--</p>
+          <p className="text-2xl font-bold mt-2">{profile?.totalCreditsUsed ?? "--"}</p>
         </div>
       </div>
 

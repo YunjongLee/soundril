@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     );
 
     // 6. Upload file to Storage
-    const bucket = adminStorage.bucket();
+    const bucket = adminStorage.bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     const storageFile = bucket.file(inputStoragePath);
     await storageFile.save(fileBuffer, {
