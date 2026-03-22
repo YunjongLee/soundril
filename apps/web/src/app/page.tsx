@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { Nav } from "@/components/nav";
+import { useAuth } from "@/components/auth-provider";
 import { Waveform } from "@/components/waveform";
-import { Music, FileText, Zap, Check } from "lucide-react";
+import { Music, FileText, Zap, Check, AudioLines } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -32,63 +34,47 @@ const features = [
     icon: Zap,
     title: "Fast & Accurate",
     description:
-      "Powered by Demucs and WhisperX with GPU acceleration. Commercial-grade accuracy in minutes.",
+      "Commercial-grade accuracy powered by state-of-the-art AI. Process any song in minutes.",
   },
 ];
 
 const plans = [
   {
-    name: "Free",
-    price: "$0",
-    period: "",
-    credits: "10 credits",
-    description: "Try it out",
-    features: ["10 credits on signup", "MR extraction", "LRC generation"],
+    id: "free",
+    name: "Starter",
+    monthly: { price: "$0", sub: "Always free" },
+    yearly: { price: "$0", sub: "Always free" },
+    features: [
+      "10 Minutes",
+      "Free Result Previews",
+      "50MB Upload File Limit",
+    ],
     cta: "Get Started",
     highlighted: false,
   },
   {
+    id: "basic",
     name: "Basic",
-    price: "$9",
-    period: "/mo",
-    credits: "60 credits",
-    description: "For casual users",
+    monthly: { price: "$9.99", sub: "billed monthly" },
+    yearly: { price: "$7.49", sub: "$90 billed annually" },
     features: [
-      "60 credits/month",
-      "MR extraction",
-      "LRC generation",
-      "Priority processing",
-    ],
-    cta: "Subscribe",
-    highlighted: false,
-  },
-  {
-    name: "Standard",
-    price: "$19",
-    period: "/mo",
-    credits: "200 credits",
-    description: "Most popular",
-    features: [
-      "200 credits/month",
-      "MR extraction",
-      "LRC generation",
-      "Priority processing",
+      "100 Minutes/mo",
+      "Result Downloads",
+      "200MB Upload File Limit",
     ],
     cta: "Subscribe",
     highlighted: true,
   },
   {
-    name: "Premium",
-    price: "$39",
-    period: "/mo",
-    credits: "500 credits",
-    description: "For power users",
+    id: "pro",
+    name: "Pro",
+    monthly: { price: "$19.99", sub: "billed monthly" },
+    yearly: { price: "$14.99", sub: "$180 billed annually" },
     features: [
-      "500 credits/month",
-      "MR extraction",
-      "LRC generation",
-      "Priority processing",
-      "Bulk processing",
+      "300 Minutes/mo",
+      "Result Downloads",
+      "200MB Upload File Limit",
+      "Priority Processing",
     ],
     cta: "Subscribe",
     highlighted: false,
@@ -96,6 +82,10 @@ const plans = [
 ];
 
 export default function LandingPage() {
+  const { profile } = useAuth();
+  const userPlan = profile?.plan ?? null;
+  const [yearly, setYearly] = useState(false);
+
   return (
     <div className="min-h-screen">
       <Nav />
@@ -169,7 +159,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.5 }}
             className="text-sm text-muted-foreground mt-4"
           >
-            10 free credits on signup. No credit card required.
+            10 free minutes on signup. No credit card required.
           </motion.p>
         </div>
       </section>
@@ -188,7 +178,7 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-4xl font-bold">
               Powerful Audio Tools
             </h2>
-            <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+            <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">
               From vocal removal to lyrics synchronization, everything you need
               in one place.
             </p>
@@ -292,44 +282,69 @@ export default function LandingPage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold">Simple Pricing</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">Choose Your Plan</h2>
             <p className="text-muted-foreground mt-3">
-              1 credit = 1 minute of audio processing.
+              Try it free. Upgrade for higher limits and advanced features.
             </p>
           </motion.div>
+
+          {/* Monthly / Annually toggle */}
+          <div className="flex justify-center mt-8 mb-8">
+            <div className="inline-flex items-center rounded-full border border-border/60 bg-card p-1 text-sm">
+              <button
+                onClick={() => setYearly(false)}
+                className={`px-4 py-1.5 rounded-full transition-colors ${
+                  !yearly ? "bg-muted text-foreground font-medium" : "text-muted-foreground"
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setYearly(true)}
+                className={`px-4 py-1.5 rounded-full transition-colors flex items-center gap-1.5 ${
+                  yearly ? "bg-muted text-foreground font-medium" : "text-muted-foreground"
+                }`}
+              >
+                Annually
+                <span className="text-[10px] font-semibold text-primary">Save 3 Months</span>
+              </button>
+            </div>
+          </div>
 
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={stagger}
-            className="grid md:grid-cols-4 gap-6 max-w-5xl mx-auto"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto"
           >
             {plans.map((plan) => (
               <motion.div
                 key={plan.name}
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
-                className={`rounded-xl border p-6 flex flex-col hover:-translate-y-1 transition-transform duration-300 ${
+                className={`relative rounded-xl border p-6 flex flex-col hover:-translate-y-1 transition-transform duration-300 ${
                   plan.highlighted
                     ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                     : "border-border/60 bg-card"
                 }`}
               >
                 {plan.highlighted && (
-                  <div className="text-xs font-medium text-primary mb-3">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold px-3 py-1 rounded-full bg-primary text-primary-foreground whitespace-nowrap">
                     MOST POPULAR
                   </div>
                 )}
                 <h3 className="font-semibold text-lg">{plan.name}</h3>
                 <div className="mt-3">
-                  <span className="text-3xl font-bold">{plan.price}</span>
-                  <span className="text-muted-foreground text-sm">
-                    {plan.period}
+                  <span className="text-3xl font-bold">
+                    {yearly ? plan.yearly.price : plan.monthly.price}
                   </span>
+                  {plan.id !== "free" && (
+                    <span className="text-muted-foreground text-sm">/mo</span>
+                  )}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {plan.credits}
+                <p className="text-xs text-muted-foreground mt-1">
+                  {yearly ? plan.yearly.sub : plan.monthly.sub}
                 </p>
 
                 <ul className="mt-6 space-y-2.5 flex-1">
@@ -341,16 +356,22 @@ export default function LandingPage() {
                   ))}
                 </ul>
 
-                <Link
-                  href="/login"
-                  className={`mt-6 inline-flex items-center justify-center rounded-lg text-sm font-medium h-10 transition-colors ${
-                    plan.highlighted
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "border border-border hover:bg-muted"
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
+                {userPlan === plan.id ? (
+                  <div className="mt-6 inline-flex items-center justify-center rounded-lg text-sm font-medium h-10 border border-border text-muted-foreground cursor-default">
+                    Current Plan
+                  </div>
+                ) : (
+                  <Link
+                    href={userPlan ? "/dashboard/pricing" : "/login"}
+                    className={`mt-6 inline-flex items-center justify-center rounded-lg text-sm font-medium h-10 transition-colors ${
+                      plan.highlighted
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "border border-border hover:bg-muted"
+                    }`}
+                  >
+                    {plan.cta}
+                  </Link>
+                )}
               </motion.div>
             ))}
           </motion.div>
@@ -358,13 +379,26 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/40 py-8">
-        <div className="container flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Waveform bars={3} size="sm" className="gap-[2px] opacity-50" />
-            Soundril
+      <footer className="border-t border-border/40 py-10">
+        <div className="container">
+          <div className="flex flex-col-reverse items-center md:flex-row md:justify-between gap-4">
+            <p className="text-xs text-muted-foreground">
+              &copy; {new Date().getFullYear()} Soundril. All rights reserved.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-sm text-muted-foreground">
+              <div className="flex gap-6">
+                <Link href="/privacy" className="hover:text-foreground transition-colors">
+                  Privacy Policy
+                </Link>
+                <Link href="/terms" className="hover:text-foreground transition-colors">
+                  Terms of Use
+                </Link>
+              </div>
+              <Link href="/help" className="hover:text-foreground transition-colors">
+                help@soundril.com
+              </Link>
+            </div>
           </div>
-          <p>&copy; {new Date().getFullYear()} Soundril. All rights reserved.</p>
         </div>
       </footer>
     </div>

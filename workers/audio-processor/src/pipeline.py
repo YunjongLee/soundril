@@ -338,12 +338,12 @@ async def process_job(
         local_input = str(Path(work_dir) / input_filename)
         logger.info(f"Downloading {input_storage_path}...")
         await download_file(input_storage_path, local_input)
-        await update_job_progress(job_id, 5, "Downloaded input file")
+        await update_job_progress(job_id, 5, "Preparing audio...")
 
-        # Step 1: Demucs vocal separation
-        await update_job_progress(job_id, 10, "Separating vocals...")
+        # Step 1: Vocal separation
+        await update_job_progress(job_id, 10, "Separating vocals and instrumentals...")
         vocals_path, mr_path = separate_vocals(local_input, work_dir)
-        await update_job_progress(job_id, 30, "Vocal separation complete")
+        await update_job_progress(job_id, 30, "Separation complete")
 
         # Upload MR if needed
         if job_type in ("mr", "lrc_mr"):
@@ -352,20 +352,29 @@ async def process_job(
             mr_storage_path = f"results/{user_id}/{job_id}/mr.mp3"
             await upload_file(mr_mp3_path, mr_storage_path)
             result["mrStoragePath"] = mr_storage_path
-            await update_job_progress(job_id, 35, "MR track uploaded")
+            await update_job_progress(job_id, 33, "Encoding tracks...")
 
-        # Step 2: WhisperX transcription + alignment
+        # Upload vocals (MR 포함 타입만)
+        if job_type in ("mr", "lrc_mr"):
+            vocals_mp3_path = str(Path(work_dir) / "vocals.mp3")
+            encode_mp3(vocals_path, vocals_mp3_path)
+            vocals_storage_path = f"results/{user_id}/{job_id}/vocals.mp3"
+            await upload_file(vocals_mp3_path, vocals_storage_path)
+            result["vocalsStoragePath"] = vocals_storage_path
+            await update_job_progress(job_id, 35, "Tracks ready")
+
+        # Step 2: Transcription + alignment
         if job_type in ("lrc", "lrc_mr"):
-            await update_job_progress(job_id, 40, "Transcribing audio...")
+            await update_job_progress(job_id, 40, "Recognizing speech...")
             words = transcribe(vocals_path)
-            await update_job_progress(job_id, 60, f"Transcription complete ({len(words)} words)")
+            await update_job_progress(job_id, 60, "Speech recognized")
 
             # Step 3: Lyrics alignment
             if lyrics:
                 lyrics_lines = [l.strip() for l in lyrics.strip().splitlines() if l.strip()]
-                await update_job_progress(job_id, 65, "Aligning lyrics...")
+                await update_job_progress(job_id, 65, "Syncing lyrics to audio...")
                 aligned = align_lyrics(words, lyrics_lines)
-                await update_job_progress(job_id, 80, "Lyrics aligned")
+                await update_job_progress(job_id, 80, "Lyrics synced")
 
                 # Generate and upload LRC
                 lrc_content = generate_lrc(aligned)
@@ -376,7 +385,7 @@ async def process_job(
                 lrc_storage_path = f"results/{user_id}/{job_id}/output.lrc"
                 await upload_file(lrc_path, lrc_storage_path)
                 result["lrcStoragePath"] = lrc_storage_path
-                await update_job_progress(job_id, 90, "LRC file uploaded")
+                await update_job_progress(job_id, 90, "Almost done...")
 
         # Upload processing log
         log_storage_path = f"logs/{user_id}/{job_id}/process.log"

@@ -134,7 +134,7 @@ export default function HistoryPage() {
                       : job.type === "lrc"
                         ? "LRC"
                         : "LRC + MR"}{" "}
-                    · {job.creditsCharged} credits
+                    · {job.creditsCharged} min
                     {job.createdAt &&
                       ` · ${new Date(job.createdAt.seconds * 1000).toLocaleDateString()}`}
                   </p>

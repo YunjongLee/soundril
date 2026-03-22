@@ -1,66 +1,57 @@
 "use client";
 
+import { useState } from "react";
 import { Check, CreditCard } from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
 import { toast } from "sonner";
 
 const plans = [
   {
-    name: "Free",
-    price: "$0",
-    period: "",
-    credits: "10 credits",
-    description: "Try it out",
-    features: ["10 credits on signup", "MR extraction", "LRC generation"],
-    highlighted: false,
-  },
-  {
-    name: "Basic",
-    price: "$9",
-    period: "/mo",
-    credits: "60 credits/month",
-    description: "For casual users",
+    id: "free",
+    name: "Starter",
+    monthly: { price: "$0", sub: "Always free" },
+    yearly: { price: "$0", sub: "Always free" },
     features: [
-      "60 credits/month",
-      "MR extraction",
-      "LRC generation",
-      "Priority processing",
+      "10 Minutes",
+      "Free Result Previews",
+      "50MB Upload File Limit",
     ],
     highlighted: false,
   },
   {
-    name: "Standard",
-    price: "$19",
-    period: "/mo",
-    credits: "200 credits/month",
-    description: "Most popular",
+    id: "basic",
+    name: "Basic",
+    monthly: { price: "$9.99", sub: "billed monthly" },
+    yearly: { price: "$7.49", sub: "$90 billed annually" },
     features: [
-      "200 credits/month",
-      "MR extraction",
-      "LRC generation",
-      "Priority processing",
+      "100 Minutes/mo",
+      "Result Downloads",
+      "200MB Upload File Limit",
     ],
     highlighted: true,
   },
   {
-    name: "Premium",
-    price: "$39",
-    period: "/mo",
-    credits: "500 credits/month",
-    description: "For power users",
+    id: "pro",
+    name: "Pro",
+    monthly: { price: "$19.99", sub: "billed monthly" },
+    yearly: { price: "$14.99", sub: "$180 billed annually" },
     features: [
-      "500 credits/month",
-      "MR extraction",
-      "LRC generation",
-      "Priority processing",
-      "Bulk processing",
+      "300 Minutes/mo",
+      "Result Downloads",
+      "200MB Upload File Limit",
+      "Priority Processing",
     ],
     highlighted: false,
   },
 ];
 
 export default function PricingPage() {
+  const { profile } = useAuth();
+  const userPlan = profile?.plan ?? "free";
+  const [yearly, setYearly] = useState(false);
+
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-3xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold flex items-center gap-3">
           <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -69,34 +60,59 @@ export default function PricingPage() {
           Pricing
         </h1>
         <p className="text-muted-foreground mt-2">
-          1 credit = 1 minute of audio processing.
+          1 minute of audio = 1 minute from your plan.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-4 gap-4">
+      {/* Monthly / Annually toggle */}
+      <div className="flex justify-center mb-6">
+        <div className="inline-flex items-center rounded-full border border-border/60 bg-card p-1 text-sm">
+          <button
+            onClick={() => setYearly(false)}
+            className={`px-4 py-1.5 rounded-full transition-colors ${
+              !yearly ? "bg-muted text-foreground font-medium" : "text-muted-foreground"
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setYearly(true)}
+            className={`px-4 py-1.5 rounded-full transition-colors flex items-center gap-1.5 ${
+              yearly ? "bg-muted text-foreground font-medium" : "text-muted-foreground"
+            }`}
+          >
+            Annually
+            <span className="text-[10px] font-semibold text-primary">Save 3 Months</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {plans.map((plan) => (
           <div
             key={plan.name}
-            className={`rounded-xl border p-5 flex flex-col ${
+            className={`relative rounded-xl border p-5 flex flex-col ${
               plan.highlighted
                 ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                 : "border-border/60 bg-card"
             }`}
           >
             {plan.highlighted && (
-              <div className="text-xs font-medium text-primary mb-2">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold px-3 py-1 rounded-full bg-primary text-primary-foreground whitespace-nowrap">
                 MOST POPULAR
               </div>
             )}
             <h3 className="font-semibold">{plan.name}</h3>
             <div className="mt-2">
-              <span className="text-2xl font-bold">{plan.price}</span>
-              <span className="text-muted-foreground text-sm">
-                {plan.period}
+              <span className="text-2xl font-bold">
+                {yearly ? plan.yearly.price : plan.monthly.price}
               </span>
+              {plan.id !== "free" && (
+                <span className="text-muted-foreground text-sm">/mo</span>
+              )}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {plan.credits}
+              {yearly ? plan.yearly.sub : plan.monthly.sub}
             </p>
 
             <ul className="mt-5 space-y-2 flex-1">
@@ -108,43 +124,34 @@ export default function PricingPage() {
               ))}
             </ul>
 
-            <button
-              onClick={() => toast.info("Payment integration coming soon.")}
-              className={`mt-5 inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 transition-colors ${
-                plan.highlighted
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "border border-border hover:bg-muted"
-              }`}
-            >
-              {plan.price === "$0" ? "Current Plan" : "Subscribe"}
-            </button>
+            {userPlan === plan.id ? (
+              <div className="mt-5 inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 border border-border text-muted-foreground cursor-default">
+                Current Plan
+              </div>
+            ) : (
+              <button
+                onClick={() => toast.info("Payment integration coming soon.")}
+                className={`mt-5 inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 transition-colors ${
+                  plan.highlighted
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "border border-border hover:bg-muted"
+                }`}
+              >
+                Subscribe
+              </button>
+            )}
           </div>
         ))}
       </div>
 
-      {/* Credit usage info */}
+      {/* How it works */}
       <div className="mt-8 rounded-xl border border-border/60 bg-card p-6">
-        <h3 className="font-medium mb-3">How credits work</h3>
-        <div className="grid md:grid-cols-3 gap-4 text-sm">
-          <div>
-            <p className="font-medium">MR Extraction</p>
-            <p className="text-muted-foreground mt-1">
-              1 credit per minute of audio. A 4-minute song = 4 credits.
-            </p>
-          </div>
-          <div>
-            <p className="font-medium">LRC Generation</p>
-            <p className="text-muted-foreground mt-1">
-              1 credit per minute. A 4-minute song = 4 credits.
-            </p>
-          </div>
-          <div>
-            <p className="font-medium">LRC + MR Bundle</p>
-            <p className="text-muted-foreground mt-1">
-              2 credits per minute. A 4-minute song = 8 credits.
-            </p>
-          </div>
-        </div>
+        <h3 className="font-medium mb-3">How minutes work</h3>
+        <p className="text-sm text-muted-foreground">
+          1 minute of audio = 1 minute from your plan.
+          <br />
+          A 4-minute song uses 4 minutes. Use your minutes for any tool — MR, LRC, or both.
+        </p>
       </div>
     </div>
   );

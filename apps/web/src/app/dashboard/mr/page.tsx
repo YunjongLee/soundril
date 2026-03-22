@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { auth } from "@/lib/firebase/client";
 import { Waveform } from "@/components/waveform";
-import { Upload, Music, X } from "lucide-react";
+import { Upload, Music, X, AlertCircle, Coins } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 const ACCEPTED_TYPES = [
   "audio/mpeg",
@@ -16,33 +17,52 @@ const ACCEPTED_TYPES = [
   "audio/mp4",
   "audio/x-m4a",
 ];
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_DURATION = 600; // 10분
+
+function getMaxFileSize(plan: string) {
+  return plan === "basic" || plan === "pro" ? 200 * 1024 * 1024 : 50 * 1024 * 1024;
+}
 
 export default function MRPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const maxFileSize = getMaxFileSize(profile?.plan ?? "free");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [duration, setDuration] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
+  const credits = duration ? Math.ceil(duration / 60) : 0;
+  const userCredits = profile?.credits ?? 0;
+  const insufficientCredits = credits > 0 && userCredits < credits;
+
   const handleFile = (f: File) => {
     if (!ACCEPTED_TYPES.includes(f.type) && !f.name.match(/\.(mp3|wav|flac|ogg|m4a)$/i)) {
-      toast.error("Unsupported file format. Use MP3, WAV, FLAC, OGG, or M4A.");
+      toast.error("Unsupported format. Use MP3, WAV, FLAC, OGG, or M4A.");
       return;
     }
-    if (f.size > MAX_FILE_SIZE) {
-      toast.error("File too large. Maximum 50MB.");
+    if (f.size > maxFileSize) {
+      toast.error(`File too large. Maximum ${maxFileSize / 1024 / 1024}MB.`);
       return;
     }
 
     setFile(f);
-
-    // Get audio duration
     const audio = new Audio();
     audio.addEventListener("loadedmetadata", () => {
-      setDuration(Math.ceil(audio.duration));
+      const dur = Math.ceil(audio.duration);
+      if (dur > MAX_DURATION) {
+        toast.error(`Audio too long. Maximum ${MAX_DURATION / 60} minutes.`);
+        setFile(null);
+        setDuration(null);
+      } else {
+        setDuration(dur);
+      }
+      URL.revokeObjectURL(audio.src);
+    });
+    audio.addEventListener("error", () => {
+      toast.error("Could not read audio file. The file may be corrupted.");
+      setFile(null);
       URL.revokeObjectURL(audio.src);
     });
     audio.src = URL.createObjectURL(f);
@@ -57,11 +77,15 @@ export default function MRPage() {
 
   const handleSubmit = async () => {
     if (!file || !user || !duration) return;
+    if (insufficientCredits) {
+      toast.error("Not enough minutes.");
+      return;
+    }
     setSubmitting(true);
 
     try {
       const idToken = await auth.currentUser?.getIdToken();
-      if (!idToken) throw new Error("Not authenticated");
+      if (!idToken) throw new Error("Please sign in again.");
 
       const formData = new FormData();
       formData.append("file", file);
@@ -75,19 +99,20 @@ export default function MRPage() {
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Failed to create job");
+        const data = await res.json();
+        if (res.status === 402) {
+          throw new Error("Not enough minutes. Please upgrade your plan.");
+        }
+        throw new Error(data.error || "Failed to create job.");
       }
 
       const { jobId } = await res.json();
       router.push(`/dashboard/jobs/${jobId}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(error instanceof Error ? error.message : "Something went wrong. Please try again.");
       setSubmitting(false);
     }
   };
-
-  const credits = duration ? Math.ceil(duration / 60) : 0;
 
   return (
     <div className="max-w-2xl">
@@ -159,7 +184,7 @@ export default function MRPage() {
             <Upload className="h-8 w-8 text-muted-foreground mx-auto" />
             <p className="mt-3 font-medium">Drop your audio file here</p>
             <p className="text-sm text-muted-foreground mt-1">
-              or click to browse. MP3, WAV, FLAC, OGG, M4A (max 50MB)
+              or click to browse. MP3, WAV, FLAC, OGG, M4A (max {maxFileSize / 1024 / 1024}MB, 10min)
             </p>
           </>
         )}
@@ -167,20 +192,45 @@ export default function MRPage() {
 
       {/* Cost summary */}
       {file && duration && (
-        <div className="mt-4 rounded-lg border border-border/60 bg-card p-4">
+        <div className={`mt-4 rounded-lg border p-4 ${
+          insufficientCredits
+            ? "border-red-500/30 bg-red-500/5"
+            : "border-border/60 bg-card"
+        }`}>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Credits required</span>
+            <span className="text-muted-foreground">Minutes required</span>
             <span className="font-medium">
-              {credits} credit{credits !== 1 && "s"}
+              {credits} min
             </span>
           </div>
+          <div className="flex items-center justify-between text-sm mt-1.5">
+            <span className="text-muted-foreground">Your balance</span>
+            <span className={`font-medium flex items-center gap-1 ${
+              insufficientCredits ? "text-red-400" : "text-primary"
+            }`}>
+              <Coins className="h-3.5 w-3.5" />
+              {userCredits} min
+            </span>
+          </div>
+          {insufficientCredits && (
+            <div className="mt-3 flex items-start gap-2 text-sm text-red-400">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <div>
+                Not enough minutes.{" "}
+                <Link href="/dashboard/pricing" className="underline hover:text-red-300">
+                  Upgrade your plan
+                </Link>{" "}
+                to get more.
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Submit */}
       <button
         onClick={handleSubmit}
-        disabled={!file || !duration || submitting}
+        disabled={!file || !duration || submitting || insufficientCredits}
         className="mt-6 w-full inline-flex items-center justify-center rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed h-11 transition-colors"
       >
         {submitting ? (

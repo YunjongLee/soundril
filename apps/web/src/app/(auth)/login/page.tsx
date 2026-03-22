@@ -96,7 +96,7 @@ function LoginContent() {
         </button>
 
         <p className="text-xs text-muted-foreground text-center mt-6">
-          Get 10 free credits when you sign up.
+          Get 10 free minutes when you sign up.
         </p>
       </div>
     </div>

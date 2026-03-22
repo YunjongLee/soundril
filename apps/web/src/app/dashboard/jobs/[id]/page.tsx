@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
+import { toast } from "sonner";
+import { db, auth } from "@/lib/firebase/client";
 import { useAuth } from "@/components/auth-provider";
 import { Waveform } from "@/components/waveform";
 import {
   Music,
+  Mic,
   FileText,
   Download,
+  Lock,
   CheckCircle2,
   XCircle,
   Clock,
@@ -28,6 +31,7 @@ interface Job {
   inputDurationSeconds: number;
   creditsCharged: number;
   mrStoragePath?: string;
+  vocalsStoragePath?: string;
   lrcStoragePath?: string;
   errorMessage?: string;
   processingTimeMs?: number;
@@ -116,6 +120,8 @@ export default function JobDetailPage() {
     );
   }
 
+  const { profile } = useAuth();
+  const isPaid = profile?.plan === "basic" || profile?.plan === "pro";
   const status = statusConfig[job.status] || statusConfig.failed;
   const StatusIcon = status.icon;
   const isActive = job.status === "queued" || job.status === "processing";
@@ -134,6 +140,18 @@ export default function JobDetailPage() {
     a.download = filename;
     a.click();
   };
+
+  // 미리보기: 오디오 URL 가져오기
+  const getPreviewUrl = useCallback(async (path: string) => {
+    const idToken = await auth.currentUser?.getIdToken();
+    const res = await fetch(
+      `/api/jobs/${jobId}?download=${encodeURIComponent(path)}`,
+      { headers: { Authorization: `Bearer ${idToken}` } }
+    );
+    if (!res.ok) return null;
+    const { url } = await res.json();
+    return url as string;
+  }, [jobId]);
 
   return (
     <div className="max-w-2xl">
@@ -155,7 +173,7 @@ export default function JobDetailPage() {
               : job.type === "lrc"
                 ? "LRC Generation"
                 : "LRC + MR"}{" "}
-            · {job.creditsCharged} credits
+            · {job.creditsCharged} min
           </p>
         </div>
         <div
@@ -200,48 +218,80 @@ export default function JobDetailPage() {
       {job.status === "completed" && (
         <div className="rounded-xl border border-border/60 bg-card p-6 mb-6">
           <h3 className="font-medium mb-4">Results</h3>
+
+          {/* 무료 유저: 미리보기 안내 */}
+          {!isPaid && (
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 mb-4">
+              <div className="flex items-start gap-2 text-sm text-amber-400">
+                <Lock className="h-4 w-4 shrink-0 mt-0.5" />
+                <div>
+                  Preview only.{" "}
+                  <Link href="/dashboard/pricing" className="underline hover:text-amber-300">
+                    Subscribe
+                  </Link>{" "}
+                  to download full results.
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-3">
             {job.mrStoragePath && (
-              <button
-                onClick={() =>
-                  handleDownload(
-                    job.mrStoragePath!,
-                    `${job.inputFileName.replace(/\.[^.]+$/, "")}_mr.mp3`
-                  )
-                }
-                className="w-full flex items-center gap-3 rounded-lg border border-border/60 p-3 hover:bg-muted/50 transition-colors text-left"
-              >
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <Music className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">MR Track</p>
-                  <p className="text-xs text-muted-foreground">MP3 320kbps</p>
-                </div>
-                <Download className="h-4 w-4 text-muted-foreground" />
-              </button>
+              isPaid ? (
+                <button
+                  onClick={() => handleDownload(job.mrStoragePath!, `${job.inputFileName.replace(/\.[^.]+$/, "")}_mr.mp3`)}
+                  className="w-full flex items-center gap-3 rounded-lg border border-border/60 p-3 hover:bg-muted/50 transition-colors text-left"
+                >
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Music className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">MR Track</p>
+                    <p className="text-xs text-muted-foreground">MP3 320kbps</p>
+                  </div>
+                  <Download className="h-4 w-4 text-muted-foreground" />
+                </button>
+              ) : (
+                <AudioPreview label="MR Track" icon={<Music className="h-5 w-5 text-primary" />} storagePath={job.mrStoragePath} getUrl={getPreviewUrl} />
+              )
+            )}
+            {job.vocalsStoragePath && (
+              isPaid ? (
+                <button
+                  onClick={() => handleDownload(job.vocalsStoragePath!, `${job.inputFileName.replace(/\.[^.]+$/, "")}_vocals.mp3`)}
+                  className="w-full flex items-center gap-3 rounded-lg border border-border/60 p-3 hover:bg-muted/50 transition-colors text-left"
+                >
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Mic className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Vocals Only</p>
+                    <p className="text-xs text-muted-foreground">MP3 320kbps</p>
+                  </div>
+                  <Download className="h-4 w-4 text-muted-foreground" />
+                </button>
+              ) : (
+                <AudioPreview label="Vocals Only" icon={<Mic className="h-5 w-5 text-primary" />} storagePath={job.vocalsStoragePath} getUrl={getPreviewUrl} />
+              )
             )}
             {job.lrcStoragePath && (
-              <button
-                onClick={() =>
-                  handleDownload(
-                    job.lrcStoragePath!,
-                    `${job.inputFileName.replace(/\.[^.]+$/, "")}.lrc`
-                  )
-                }
-                className="w-full flex items-center gap-3 rounded-lg border border-border/60 p-3 hover:bg-muted/50 transition-colors text-left"
-              >
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">LRC File</p>
-                  <p className="text-xs text-muted-foreground">
-                    Synchronized lyrics
-                  </p>
-                </div>
-                <Download className="h-4 w-4 text-muted-foreground" />
-              </button>
+              isPaid ? (
+                <button
+                  onClick={() => handleDownload(job.lrcStoragePath!, `${job.inputFileName.replace(/\.[^.]+$/, "")}.lrc`)}
+                  className="w-full flex items-center gap-3 rounded-lg border border-border/60 p-3 hover:bg-muted/50 transition-colors text-left"
+                >
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">LRC File</p>
+                    <p className="text-xs text-muted-foreground">Synchronized lyrics</p>
+                  </div>
+                  <Download className="h-4 w-4 text-muted-foreground" />
+                </button>
+              ) : (
+                <LrcPreview storagePath={job.lrcStoragePath} getUrl={getPreviewUrl} />
+              )
             )}
           </div>
 
@@ -281,6 +331,147 @@ export default function JobDetailPage() {
           </div>
         </dl>
       </div>
+    </div>
+  );
+}
+
+
+// ── 30초 오디오 미리보기 ──
+function AudioPreview({
+  label,
+  icon,
+  storagePath,
+  getUrl,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  storagePath: string;
+  getUrl: (path: string) => Promise<string | null>;
+}) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [url, setUrl] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const PREVIEW_LIMIT = 30;
+
+  const handlePlay = async () => {
+    if (!url) {
+      const fetchedUrl = await getUrl(storagePath);
+      if (fetchedUrl) setUrl(fetchedUrl);
+    }
+    setPlaying(true);
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const onTimeUpdate = () => {
+      if (audio.currentTime >= PREVIEW_LIMIT) {
+        audio.pause();
+        audio.currentTime = 0;
+        setPlaying(false);
+        toast.info("Preview limited to 30 seconds. Subscribe to hear the full track.");
+      }
+    };
+    const onEnded = () => setPlaying(false);
+    const onPause = () => setPlaying(false);
+
+    audio.addEventListener("timeupdate", onTimeUpdate);
+    audio.addEventListener("ended", onEnded);
+    audio.addEventListener("pause", onPause);
+    return () => {
+      audio.removeEventListener("timeupdate", onTimeUpdate);
+      audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("pause", onPause);
+    };
+  }, [url]);
+
+  useEffect(() => {
+    if (url && playing) {
+      audioRef.current?.play();
+    }
+  }, [url, playing]);
+
+  return (
+    <div className="rounded-lg border border-border/60 p-3">
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          {icon}
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium">{label}</p>
+          <p className="text-xs text-muted-foreground">30s preview</p>
+        </div>
+        <button
+          onClick={playing ? () => audioRef.current?.pause() : handlePlay}
+          className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+        >
+          {playing ? "Pause" : "Play Preview"}
+        </button>
+      </div>
+      {url && <audio ref={audioRef} src={url} preload="auto" />}
+    </div>
+  );
+}
+
+
+// ── LRC 첫 5줄 미리보기 ──
+function LrcPreview({
+  storagePath,
+  getUrl,
+}: {
+  storagePath: string;
+  getUrl: (path: string) => Promise<string | null>;
+}) {
+  const [lines, setLines] = useState<string[] | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleLoad = async () => {
+    setLoading(true);
+    const url = await getUrl(storagePath);
+    if (!url) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await fetch(url);
+      const text = await res.text();
+      const allLines = text.split("\n").filter((l) => l.trim());
+      setLines(allLines.slice(0, 5));
+    } catch {
+      toast.error("Failed to load preview.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="rounded-lg border border-border/60 p-3">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <FileText className="h-5 w-5 text-primary" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium">LRC File</p>
+          <p className="text-xs text-muted-foreground">First 5 lines preview</p>
+        </div>
+        {!lines && (
+          <button
+            onClick={handleLoad}
+            disabled={loading}
+            className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+          >
+            {loading ? "Loading..." : "Show Preview"}
+          </button>
+        )}
+      </div>
+      {lines && (
+        <div className="mt-2 rounded-lg bg-muted/50 p-3 font-mono text-xs space-y-1">
+          {lines.map((line, i) => (
+            <p key={i} className="text-muted-foreground">{line}</p>
+          ))}
+          <p className="text-amber-400 mt-2">... subscribe to see full lyrics</p>
+        </div>
+      )}
     </div>
   );
 }

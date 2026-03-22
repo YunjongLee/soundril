@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "./auth-provider";
@@ -15,6 +16,8 @@ import {
   CreditCard,
   LogOut,
   Coins,
+  Menu,
+  X,
 } from "lucide-react";
 
 const navItems = [
@@ -25,7 +28,11 @@ const navItems = [
   { href: "/dashboard/pricing", label: "Pricing", icon: CreditCard },
 ];
 
-export function Sidebar() {
+function SidebarContent({
+  onNavigate,
+}: {
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, profile } = useAuth();
@@ -37,22 +44,16 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-64 border-r border-border/40 bg-card/50 flex flex-col h-screen fixed left-0 top-0">
-      {/* Logo */}
-      <div className="h-14 flex items-center px-6 border-b border-border/40">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-          <AudioLines className="h-5 w-5 text-primary" />
-          Soundril
-        </Link>
-      </div>
-
-      {/* Credits */}
+    <>
+      {/* Minutes */}
       <div className="px-4 py-3 mx-3 mt-4 rounded-lg bg-primary/10 border border-primary/20">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Coins className="h-3.5 w-3.5" />
-          Credits
+          Minutes
         </div>
-        <div className="text-lg font-semibold text-primary mt-0.5">{profile?.credits ?? "--"}</div>
+        <div className="text-lg font-semibold text-primary mt-0.5">
+          {profile?.credits ?? "--"}
+        </div>
       </div>
 
       {/* Navigation */}
@@ -65,6 +66,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
                 isActive
@@ -112,6 +114,71 @@ export function Sidebar() {
           Sign Out
         </button>
       </div>
-    </aside>
+    </>
+  );
+}
+
+export function Sidebar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { profile } = useAuth();
+
+  return (
+    <>
+      {/* 모바일 헤더 */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 border-b border-border/40 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="p-1.5 rounded-lg hover:bg-muted"
+          >
+            {mobileOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </button>
+          <Link href="/" className="flex items-center gap-2 font-bold text-lg">
+            <AudioLines className="h-5 w-5 text-primary" />
+            Soundril
+          </Link>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-primary">
+          <Coins className="h-3.5 w-3.5" />
+          {profile?.credits ?? "--"}
+        </div>
+      </header>
+
+      {/* 모바일 오버레이 */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/50"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* 모바일 드로어 */}
+      <aside
+        className={cn(
+          "lg:hidden fixed top-14 left-0 z-50 w-64 h-[calc(100vh-3.5rem)] border-r border-border/40 bg-card flex flex-col transition-transform duration-200",
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <SidebarContent onNavigate={() => setMobileOpen(false)} />
+      </aside>
+
+      {/* 데스크톱 사이드바 */}
+      <aside className="hidden lg:flex w-64 border-r border-border/40 bg-card/50 flex-col h-screen fixed left-0 top-0">
+        <div className="h-14 flex items-center px-6 border-b border-border/40">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-bold text-lg"
+          >
+            <AudioLines className="h-5 w-5 text-primary" />
+            Soundril
+          </Link>
+        </div>
+        <SidebarContent />
+      </aside>
+    </>
   );
 }

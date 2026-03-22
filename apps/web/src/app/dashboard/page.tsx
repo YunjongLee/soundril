@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/components/auth-provider";
-import { Waveform } from "@/components/waveform";
-import { Music, FileText, ArrowRight, Clock, Coins } from "lucide-react";
+import { Music, FileText, ArrowRight, Coins } from "lucide-react";
 
 export default function DashboardPage() {
   const { user, profile } = useAuth();
@@ -20,25 +19,18 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         <div className="rounded-xl border border-border/60 bg-card p-5">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Coins className="h-4 w-4" />
-            Credits Remaining
+            Minutes Remaining
           </div>
           <p className="text-2xl font-bold mt-2">{profile?.credits ?? "--"}</p>
         </div>
         <div className="rounded-xl border border-border/60 bg-card p-5">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            Jobs Today
-          </div>
-          <p className="text-2xl font-bold mt-2">--</p>
-        </div>
-        <div className="rounded-xl border border-border/60 bg-card p-5">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Coins className="h-4 w-4" />
-            Credits Used
+            Minutes Used
           </div>
           <p className="text-2xl font-bold mt-2">{profile?.totalCreditsUsed ?? "--"}</p>
         </div>
@@ -60,9 +52,6 @@ export default function DashboardPage() {
           <p className="text-muted-foreground text-sm mt-1">
             Remove vocals and extract the instrumental track from any song.
           </p>
-          <div className="flex items-center gap-4 mt-4">
-            <Waveform bars={7} size="sm" className="opacity-50" />
-          </div>
         </Link>
 
         <Link
@@ -79,9 +68,6 @@ export default function DashboardPage() {
           <p className="text-muted-foreground text-sm mt-1">
             Generate word-level synchronized lyrics from audio and text.
           </p>
-          <div className="flex items-center gap-4 mt-4">
-            <Waveform bars={7} size="sm" className="opacity-50" />
-          </div>
         </Link>
       </div>
     </div>
