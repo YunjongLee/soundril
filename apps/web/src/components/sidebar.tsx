@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "./auth-provider";
+import { useT, languages, type Lang } from "@/lib/i18n";
 import { auth } from "@/lib/firebase/client";
 import { signOut } from "firebase/auth";
 import { cn } from "@/lib/utils";
@@ -14,18 +15,37 @@ import {
   FileText,
   History,
   CreditCard,
+  Receipt,
+  Settings,
   LogOut,
   Coins,
   Menu,
   X,
+  Globe,
 } from "lucide-react";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/mr", label: "AR → MR", icon: Music },
-  { href: "/dashboard/lrc", label: "AR → LRC", icon: FileText },
-  { href: "/dashboard/history", label: "History", icon: History },
-  { href: "/dashboard/pricing", label: "Pricing", icon: CreditCard },
+const navGroups = [
+  {
+    items: [
+      { href: "/dashboard", labelKey: "sidebar.dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    titleKey: "sidebar.tools",
+    items: [
+      { href: "/dashboard/mr", labelKey: "sidebar.arToMr", icon: Music },
+      { href: "/dashboard/lrc", labelKey: "sidebar.arToLrc", icon: FileText },
+      { href: "/dashboard/history", labelKey: "sidebar.history", icon: History },
+    ],
+  },
+  {
+    titleKey: "sidebar.billing",
+    items: [
+      { href: "/dashboard/pricing", labelKey: "sidebar.pricing", icon: CreditCard },
+      { href: "/dashboard/subscription", labelKey: "sidebar.subscription", icon: Settings },
+      { href: "/dashboard/invoices", labelKey: "sidebar.invoices", icon: Receipt },
+    ],
+  },
 ];
 
 function SidebarContent({
@@ -36,6 +56,7 @@ function SidebarContent({
   const pathname = usePathname();
   const router = useRouter();
   const { user, profile } = useAuth();
+  const { t, lang, setLang } = useT();
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -49,7 +70,7 @@ function SidebarContent({
       <div className="px-4 py-3 mx-3 mt-4 rounded-lg bg-primary/10 border border-primary/20">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Coins className="h-3.5 w-3.5" />
-          Minutes
+          {t("sidebar.minutes")}
         </div>
         <div className="text-lg font-semibold text-primary mt-0.5">
           {profile?.credits ?? "--"}
@@ -57,28 +78,37 @@ function SidebarContent({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(item.href));
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavigate}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                isActive
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 px-3 py-4 space-y-4">
+        {navGroups.map((group, gi) => (
+          <div key={gi} className="space-y-1">
+            {group.titleKey && (
+              <p className="px-3 text-[11px] font-semibold text-muted-foreground/50 uppercase tracking-wider mb-1">
+                {t(group.titleKey)}
+              </p>
+            )}
+            {group.items.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/dashboard" && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onNavigate}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                    isActive
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {t(item.labelKey)}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* User & Logout */}
@@ -106,12 +136,24 @@ function SidebarContent({
             </div>
           </div>
         )}
+        <div className="relative flex items-center gap-3 px-3 py-2">
+          <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value as Lang)}
+            className="appearance-none bg-transparent text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors focus:outline-none flex-1"
+          >
+            {Object.entries(languages).map(([code, name]) => (
+              <option key={code} value={code}>{name}</option>
+            ))}
+          </select>
+        </div>
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted w-full transition-colors"
         >
           <LogOut className="h-4 w-4" />
-          Sign Out
+          {t("sidebar.signOut")}
         </button>
       </div>
     </>

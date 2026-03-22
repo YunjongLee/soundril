@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 import { useAuth } from "@/components/auth-provider";
+import { useT } from "@/lib/i18n";
 import { Waveform } from "@/components/waveform";
 import Link from "next/link";
 import {
@@ -50,6 +51,7 @@ const statusColors = {
 
 export default function HistoryPage() {
   const { user } = useAuth();
+  const { t } = useT();
   const [jobs, setJobs] = useState<JobItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -82,6 +84,13 @@ export default function HistoryPage() {
     );
   }
 
+  const typeLabel = (type: string) =>
+    type === "mr"
+      ? t("history.mr")
+      : type === "lrc"
+        ? t("history.lrc")
+        : t("history.lrcPlusMr");
+
   return (
     <div className="max-w-3xl">
       <div className="mb-8">
@@ -89,10 +98,10 @@ export default function HistoryPage() {
           <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
             <HistoryIcon className="h-4.5 w-4.5 text-primary" />
           </div>
-          History
+          {t("history.title")}
         </h1>
         <p className="text-muted-foreground mt-2">
-          Your recent processing jobs.
+          {t("history.subtitle")}
         </p>
       </div>
 
@@ -104,9 +113,9 @@ export default function HistoryPage() {
             animated={false}
             className="justify-center opacity-30 mb-4"
           />
-          <p className="text-muted-foreground">No jobs yet.</p>
+          <p className="text-muted-foreground">{t("history.noJobsYet")}</p>
           <Link href="/dashboard" className="text-primary text-sm mt-2 inline-block">
-            Start your first job
+            {t("history.startFirstJob")}
           </Link>
         </div>
       ) : (
@@ -129,12 +138,8 @@ export default function HistoryPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{job.inputFileName}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {job.type === "mr"
-                      ? "MR"
-                      : job.type === "lrc"
-                        ? "LRC"
-                        : "LRC + MR"}{" "}
-                    · {job.creditsCharged} min
+                    {typeLabel(job.type)}{" "}
+                    · {job.creditsCharged} {t("common.min")}
                     {job.createdAt &&
                       ` · ${new Date(job.createdAt.seconds * 1000).toLocaleDateString()}`}
                   </p>

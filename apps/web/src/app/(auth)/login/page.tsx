@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase/client";
 import { useAuth } from "@/components/auth-provider";
+import { useT } from "@/lib/i18n";
 import { Waveform } from "@/components/waveform";
 import { AudioLines } from "lucide-react";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading } = useAuth();
+  const { t } = useT();
 
   const redirect = searchParams.get("redirect") || "/dashboard";
 
@@ -40,7 +42,7 @@ function LoginContent() {
       router.replace(redirect);
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Login failed. Please try again.");
+      toast.error(t("login.loginFailed"));
     }
   };
 
@@ -64,9 +66,9 @@ function LoginContent() {
           <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
             <AudioLines className="h-6 w-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold">Welcome to Soundril</h1>
+          <h1 className="text-2xl font-bold">{t("login.welcome")}</h1>
           <p className="text-muted-foreground text-sm mt-2">
-            Sign in to start processing audio
+            {t("login.subtitle")}
           </p>
         </div>
 
@@ -92,11 +94,11 @@ function LoginContent() {
               fill="#EA4335"
             />
           </svg>
-          Continue with Google
+          {t("login.continueWithGoogle")}
         </button>
 
         <p className="text-xs text-muted-foreground text-center mt-6">
-          Get 10 free minutes when you sign up.
+          {t("login.freeMinutes")}
         </p>
       </div>
     </div>

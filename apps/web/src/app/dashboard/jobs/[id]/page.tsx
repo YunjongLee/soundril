@@ -6,6 +6,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { toast } from "sonner";
 import { db, auth } from "@/lib/firebase/client";
 import { useAuth } from "@/components/auth-provider";
+import { useT } from "@/lib/i18n";
 import { Waveform } from "@/components/waveform";
 import {
   Music,
@@ -42,31 +43,31 @@ interface Job {
 const statusConfig = {
   queued: {
     icon: Clock,
-    label: "Queued",
+    labelKey: "job.queued",
     color: "text-yellow-500",
     bgColor: "bg-yellow-500/10",
   },
   processing: {
     icon: Loader2,
-    label: "Processing",
+    labelKey: "job.processing",
     color: "text-blue-500",
     bgColor: "bg-blue-500/10",
   },
   completed: {
     icon: CheckCircle2,
-    label: "Completed",
+    labelKey: "job.completed",
     color: "text-green-500",
     bgColor: "bg-green-500/10",
   },
   failed: {
     icon: XCircle,
-    label: "Failed",
+    labelKey: "job.failed",
     color: "text-red-500",
     bgColor: "bg-red-500/10",
   },
   canceled: {
     icon: XCircle,
-    label: "Canceled",
+    labelKey: "job.canceled",
     color: "text-muted-foreground",
     bgColor: "bg-muted",
   },
@@ -76,6 +77,7 @@ export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { t, lang } = useT();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -109,12 +111,12 @@ export default function JobDetailPage() {
   if (!job) {
     return (
       <div className="text-center py-20">
-        <p className="text-muted-foreground">Job not found.</p>
+        <p className="text-muted-foreground">{t("job.jobNotFound")}</p>
         <Link
           href="/dashboard"
           className="text-primary text-sm mt-2 inline-block"
         >
-          Back to Dashboard
+          {t("job.backToDashboard")}
         </Link>
       </div>
     );
@@ -126,8 +128,14 @@ export default function JobDetailPage() {
   const StatusIcon = status.icon;
   const isActive = job.status === "queued" || job.status === "processing";
 
+  const typeLabel =
+    job.type === "mr"
+      ? t("job.mrExtraction")
+      : job.type === "lrc"
+        ? t("job.lrcGeneration")
+        : t("job.lrcPlusMr");
+
   const handleDownload = async (path: string, filename: string) => {
-    // Download via signed URL from API
     const idToken = await user?.getIdToken();
     const res = await fetch(
       `/api/jobs/${jobId}?download=${encodeURIComponent(path)}&filename=${encodeURIComponent(filename)}`,
@@ -141,7 +149,6 @@ export default function JobDetailPage() {
     a.click();
   };
 
-  // 미리보기: 오디오 URL 가져오기
   const getPreviewUrl = useCallback(async (path: string) => {
     const idToken = await auth.currentUser?.getIdToken();
     const res = await fetch(
@@ -160,7 +167,7 @@ export default function JobDetailPage() {
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
-        Back to History
+        {t("job.backToHistory")}
       </Link>
 
       {/* Header */}
@@ -168,12 +175,7 @@ export default function JobDetailPage() {
         <div>
           <h1 className="text-2xl font-bold">{job.inputFileName}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {job.type === "mr"
-              ? "MR Extraction"
-              : job.type === "lrc"
-                ? "LRC Generation"
-                : "LRC + MR"}{" "}
-            · {job.creditsCharged} min
+            {typeLabel} · {job.creditsCharged} {t("common.min")}
           </p>
         </div>
         <div
@@ -182,7 +184,7 @@ export default function JobDetailPage() {
           <StatusIcon
             className={`h-3.5 w-3.5 ${job.status === "processing" ? "animate-spin" : ""}`}
           />
-          {status.label}
+          {t(status.labelKey)}
         </div>
       </div>
 
@@ -191,7 +193,7 @@ export default function JobDetailPage() {
         <div className="rounded-xl border border-border/60 bg-card p-6 mb-6">
           <div className="flex items-center justify-between text-sm mb-3">
             <span className="text-muted-foreground">
-              {job.progressStep || "Waiting..."}
+              {job.progressStep || t("job.waiting")}
             </span>
             <span className="font-medium">{job.progress}%</span>
           </div>
@@ -217,19 +219,18 @@ export default function JobDetailPage() {
       {/* Results */}
       {job.status === "completed" && (
         <div className="rounded-xl border border-border/60 bg-card p-6 mb-6">
-          <h3 className="font-medium mb-4">Results</h3>
+          <h3 className="font-medium mb-4">{t("job.results")}</h3>
 
-          {/* 무료 유저: 미리보기 안내 */}
           {!isPaid && (
             <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 mb-4">
               <div className="flex items-start gap-2 text-sm text-amber-400">
                 <Lock className="h-4 w-4 shrink-0 mt-0.5" />
                 <div>
-                  Preview only.{" "}
+                  {t("job.previewOnly")}{" "}
                   <Link href="/dashboard/pricing" className="underline hover:text-amber-300">
-                    Subscribe
+                    {t("job.subscribeToDownload")}
                   </Link>{" "}
-                  to download full results.
+                  {t("job.toDownloadFullResults")}
                 </div>
               </div>
             </div>
@@ -246,13 +247,13 @@ export default function JobDetailPage() {
                     <Music className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">MR Track</p>
-                    <p className="text-xs text-muted-foreground">MP3 320kbps</p>
+                    <p className="text-sm font-medium">{t("job.mrTrack")}</p>
+                    <p className="text-xs text-muted-foreground">{t("job.mp3Quality")}</p>
                   </div>
                   <Download className="h-4 w-4 text-muted-foreground" />
                 </button>
               ) : (
-                <AudioPreview label="MR Track" icon={<Music className="h-5 w-5 text-primary" />} storagePath={job.mrStoragePath} getUrl={getPreviewUrl} />
+                <AudioPreview label={t("job.mrTrack")} icon={<Music className="h-5 w-5 text-primary" />} storagePath={job.mrStoragePath} getUrl={getPreviewUrl} t={t} />
               )
             )}
             {job.vocalsStoragePath && (
@@ -265,13 +266,13 @@ export default function JobDetailPage() {
                     <Mic className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Vocals Only</p>
-                    <p className="text-xs text-muted-foreground">MP3 320kbps</p>
+                    <p className="text-sm font-medium">{t("job.vocalsOnly")}</p>
+                    <p className="text-xs text-muted-foreground">{t("job.mp3Quality")}</p>
                   </div>
                   <Download className="h-4 w-4 text-muted-foreground" />
                 </button>
               ) : (
-                <AudioPreview label="Vocals Only" icon={<Mic className="h-5 w-5 text-primary" />} storagePath={job.vocalsStoragePath} getUrl={getPreviewUrl} />
+                <AudioPreview label={t("job.vocalsOnly")} icon={<Mic className="h-5 w-5 text-primary" />} storagePath={job.vocalsStoragePath} getUrl={getPreviewUrl} t={t} />
               )
             )}
             {job.lrcStoragePath && (
@@ -284,20 +285,20 @@ export default function JobDetailPage() {
                     <FileText className="h-5 w-5 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium">LRC File</p>
-                    <p className="text-xs text-muted-foreground">Synchronized lyrics</p>
+                    <p className="text-sm font-medium">{t("job.lrcFile")}</p>
+                    <p className="text-xs text-muted-foreground">{t("job.synchronizedLyrics")}</p>
                   </div>
                   <Download className="h-4 w-4 text-muted-foreground" />
                 </button>
               ) : (
-                <LrcPreview storagePath={job.lrcStoragePath} getUrl={getPreviewUrl} />
+                <LrcPreview storagePath={job.lrcStoragePath} getUrl={getPreviewUrl} t={t} />
               )
             )}
           </div>
 
           {job.processingTimeMs && (
             <p className="text-xs text-muted-foreground mt-4">
-              Processed in{" "}
+              {t("job.processedIn")}{" "}
               {job.processingTimeMs < 60000
                 ? `${(job.processingTimeMs / 1000).toFixed(1)}s`
                 : `${Math.floor(job.processingTimeMs / 60000)}m ${Math.round((job.processingTimeMs % 60000) / 1000)}s`}
@@ -308,24 +309,24 @@ export default function JobDetailPage() {
 
       {/* Job info */}
       <div className="rounded-xl border border-border/60 bg-card p-6">
-        <h3 className="font-medium mb-4">Details</h3>
+        <h3 className="font-medium mb-4">{t("job.details")}</h3>
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Job ID</dt>
+            <dt className="text-muted-foreground">{t("job.jobId")}</dt>
             <dd className="font-mono text-xs">{jobId}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Duration</dt>
+            <dt className="text-muted-foreground">{t("job.duration")}</dt>
             <dd>
               {Math.floor(job.inputDurationSeconds / 60)}:
               {String(job.inputDurationSeconds % 60).padStart(2, "0")}
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Created</dt>
+            <dt className="text-muted-foreground">{t("job.created")}</dt>
             <dd>
               {job.createdAt
-                ? new Date(job.createdAt.seconds * 1000).toLocaleString()
+                ? new Date(job.createdAt.seconds * 1000).toLocaleString(lang)
                 : "--"}
             </dd>
           </div>
@@ -342,11 +343,13 @@ function AudioPreview({
   icon,
   storagePath,
   getUrl,
+  t,
 }: {
   label: string;
   icon: React.ReactNode;
   storagePath: string;
   getUrl: (path: string) => Promise<string | null>;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [url, setUrl] = useState<string | null>(null);
@@ -370,7 +373,7 @@ function AudioPreview({
         audio.pause();
         audio.currentTime = 0;
         setPlaying(false);
-        toast.info("Preview limited to 30 seconds. Subscribe to hear the full track.");
+        toast.info(t("job.previewLimited"));
       }
     };
     const onEnded = () => setPlaying(false);
@@ -384,7 +387,7 @@ function AudioPreview({
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("pause", onPause);
     };
-  }, [url]);
+  }, [url, t]);
 
   useEffect(() => {
     if (url && playing) {
@@ -400,13 +403,13 @@ function AudioPreview({
         </div>
         <div className="flex-1">
           <p className="text-sm font-medium">{label}</p>
-          <p className="text-xs text-muted-foreground">30s preview</p>
+          <p className="text-xs text-muted-foreground">{t("job.previewDuration")}</p>
         </div>
         <button
           onClick={playing ? () => audioRef.current?.pause() : handlePlay}
           className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
         >
-          {playing ? "Pause" : "Play Preview"}
+          {playing ? t("job.pause") : t("job.playPreview")}
         </button>
       </div>
       {url && <audio ref={audioRef} src={url} preload="auto" />}
@@ -419,9 +422,11 @@ function AudioPreview({
 function LrcPreview({
   storagePath,
   getUrl,
+  t,
 }: {
   storagePath: string;
   getUrl: (path: string) => Promise<string | null>;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }) {
   const [lines, setLines] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -439,7 +444,7 @@ function LrcPreview({
       const allLines = text.split("\n").filter((l) => l.trim());
       setLines(allLines.slice(0, 5));
     } catch {
-      toast.error("Failed to load preview.");
+      toast.error(t("job.failedToLoadPreview"));
     }
     setLoading(false);
   };
@@ -451,8 +456,8 @@ function LrcPreview({
           <FileText className="h-5 w-5 text-primary" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-medium">LRC File</p>
-          <p className="text-xs text-muted-foreground">First 5 lines preview</p>
+          <p className="text-sm font-medium">{t("job.lrcFile")}</p>
+          <p className="text-xs text-muted-foreground">{t("job.first5Lines")}</p>
         </div>
         {!lines && (
           <button
@@ -460,7 +465,7 @@ function LrcPreview({
             disabled={loading}
             className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
           >
-            {loading ? "Loading..." : "Show Preview"}
+            {loading ? t("job.loading") : t("job.showPreview")}
           </button>
         )}
       </div>
@@ -469,7 +474,7 @@ function LrcPreview({
           {lines.map((line, i) => (
             <p key={i} className="text-muted-foreground">{line}</p>
           ))}
-          <p className="text-amber-400 mt-2">... subscribe to see full lyrics</p>
+          <p className="text-amber-400 mt-2">{t("job.subscribeFullLyrics")}</p>
         </div>
       )}
     </div>

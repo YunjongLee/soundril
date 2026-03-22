@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
+import { useT } from "@/lib/i18n";
 import { auth } from "@/lib/firebase/client";
 import { Waveform } from "@/components/waveform";
 import { Upload, FileText, X, Music, AlertCircle, Coins } from "lucide-react";
@@ -26,6 +27,7 @@ function getMaxFileSize(plan: string) {
 export default function LRCPage() {
   const router = useRouter();
   const { user, profile } = useAuth();
+  const { t } = useT();
   const maxFileSize = getMaxFileSize(profile?.plan ?? "free");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -44,11 +46,11 @@ export default function LRCPage() {
 
   const handleFile = (f: File) => {
     if (!ACCEPTED_TYPES.includes(f.type) && !f.name.match(/\.(mp3|wav|flac|ogg|m4a)$/i)) {
-      toast.error("Unsupported format. Use MP3, WAV, FLAC, OGG, or M4A.");
+      toast.error(t("common.unsupportedFormat"));
       return;
     }
     if (f.size > maxFileSize) {
-      toast.error(`File too large. Maximum ${maxFileSize / 1024 / 1024}MB.`);
+      toast.error(t("common.fileTooLarge", { maxSize: maxFileSize / 1024 / 1024 }));
       return;
     }
     setFile(f);
@@ -56,7 +58,7 @@ export default function LRCPage() {
     audio.addEventListener("loadedmetadata", () => {
       const dur = Math.ceil(audio.duration);
       if (dur > MAX_DURATION) {
-        toast.error(`Audio too long. Maximum ${MAX_DURATION / 60} minutes.`);
+        toast.error(t("common.audioTooLong", { maxDuration: MAX_DURATION / 60 }));
         setFile(null);
         setDuration(null);
       } else {
@@ -65,7 +67,7 @@ export default function LRCPage() {
       URL.revokeObjectURL(audio.src);
     });
     audio.addEventListener("error", () => {
-      toast.error("Could not read audio file. The file may be corrupted.");
+      toast.error(t("common.cannotReadAudio"));
       setFile(null);
       URL.revokeObjectURL(audio.src);
     });
@@ -82,18 +84,18 @@ export default function LRCPage() {
   const handleSubmit = async () => {
     if (!file || !user || !duration) return;
     if (!lyrics.trim()) {
-      toast.error("Please enter lyrics.");
+      toast.error(t("lrc.pleaseEnterLyrics"));
       return;
     }
     if (insufficientCredits) {
-      toast.error("Not enough minutes.");
+      toast.error(t("common.notEnoughMinutes"));
       return;
     }
     setSubmitting(true);
 
     try {
       const idToken = await auth.currentUser?.getIdToken();
-      if (!idToken) throw new Error("Please sign in again.");
+      if (!idToken) throw new Error(t("common.pleaseSignInAgain"));
 
       const formData = new FormData();
       formData.append("file", file);
@@ -110,15 +112,15 @@ export default function LRCPage() {
       if (!res.ok) {
         const data = await res.json();
         if (res.status === 402) {
-          throw new Error("Not enough minutes. Please upgrade your plan.");
+          throw new Error(t("common.notEnoughMinutesUpgrade"));
         }
-        throw new Error(data.error || "Failed to create job.");
+        throw new Error(data.error || t("common.failedToCreateJob"));
       }
 
       const { jobId } = await res.json();
       router.push(`/dashboard/jobs/${jobId}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+      toast.error(error instanceof Error ? error.message : t("common.somethingWentWrong"));
       setSubmitting(false);
     }
   };
@@ -130,10 +132,10 @@ export default function LRCPage() {
           <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
             <FileText className="h-4.5 w-4.5 text-primary" />
           </div>
-          AR → LRC
+          {t("lrc.title")}
         </h1>
         <p className="text-muted-foreground mt-2">
-          Upload audio and paste lyrics to generate a synchronized LRC file.
+          {t("lrc.subtitle")}
         </p>
       </div>
 
@@ -191,9 +193,9 @@ export default function LRCPage() {
         ) : (
           <>
             <Upload className="h-8 w-8 text-muted-foreground mx-auto" />
-            <p className="mt-3 font-medium">Drop your audio file here</p>
+            <p className="mt-3 font-medium">{t("common.dropAudioFile")}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              MP3, WAV, FLAC, OGG, M4A (max {maxFileSize / 1024 / 1024}MB, 10min)
+              {t("common.orClickToBrowse", { maxSize: maxFileSize / 1024 / 1024 })}
             </p>
           </>
         )}
@@ -201,16 +203,16 @@ export default function LRCPage() {
 
       {/* Lyrics */}
       <div className="mt-6">
-        <label className="block text-sm font-medium mb-2">Lyrics</label>
+        <label className="block text-sm font-medium mb-2">{t("lrc.lyrics")}</label>
         <textarea
           value={lyrics}
           onChange={(e) => setLyrics(e.target.value)}
-          placeholder="Paste your lyrics here (one line per line)..."
+          placeholder={t("lrc.lyricsPlaceholder")}
           rows={12}
           className="w-full rounded-lg border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-y placeholder:text-muted-foreground"
         />
         <p className="text-xs text-muted-foreground mt-1">
-          {lyricsLineCount} line{lyricsLineCount !== 1 && "s"}
+          {t(lyricsLineCount === 1 ? "lrc.lineCount" : "lrc.lineCountPlural", { count: lyricsLineCount })}
         </p>
       </div>
 
@@ -225,9 +227,9 @@ export default function LRCPage() {
               className="rounded border-border"
             />
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Extract vocals for accurate sync</span>
+              <span className="text-sm font-medium">{t("lrc.extractVocals")}</span>
               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">
-                Recommended
+                {t("lrc.recommended")}
               </span>
             </div>
           </div>
@@ -236,14 +238,14 @@ export default function LRCPage() {
               <span className={includeMR ? "text-green-400" : "text-muted-foreground"}>
                 {credits}
               </span>
-              {" required / "}
+              {t("lrc.creditRequired")} /{" "}
               <span className="text-primary">{userCredits}</span>
-              {" available min"}
+              {t("lrc.creditAvailable")}
             </span>
           )}
         </label>
         <p className="text-xs text-muted-foreground mt-2 ml-6">
-          Separates vocals from background music for better recognition. Includes MR & vocals download.
+          {t("lrc.extractVocalsDesc")}
         </p>
       </div>
 
@@ -255,34 +257,33 @@ export default function LRCPage() {
             : "border-border/60 bg-card"
         }`}>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Minutes required</span>
+            <span className="text-muted-foreground">{t("common.minutesRequired")}</span>
             <span className="font-medium">
-              {credits} min
+              {credits} {t("common.min")}
               {includeMR && (
                 <span className="text-xs text-muted-foreground ml-1">
-                  (LRC + MR)
+                  {t("lrc.lrcPlusMr")}
                 </span>
               )}
             </span>
           </div>
           <div className="flex items-center justify-between text-sm mt-1.5">
-            <span className="text-muted-foreground">Your balance</span>
+            <span className="text-muted-foreground">{t("common.yourBalance")}</span>
             <span className={`font-medium flex items-center gap-1 ${
               insufficientCredits ? "text-red-400" : "text-primary"
             }`}>
               <Coins className="h-3.5 w-3.5" />
-              {userCredits} min
+              {userCredits} {t("common.min")}
             </span>
           </div>
           {insufficientCredits && (
             <div className="mt-3 flex items-start gap-2 text-sm text-red-400">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
               <div>
-                Not enough minutes.{" "}
+                {t("common.notEnoughMinutes")}{" "}
                 <Link href="/dashboard/pricing" className="underline hover:text-red-300">
-                  Upgrade your plan
-                </Link>{" "}
-                to get more.
+                  {t("common.upgradeYourPlan")}
+                </Link>
               </div>
             </div>
           )}
@@ -298,7 +299,7 @@ export default function LRCPage() {
         {submitting ? (
           <Waveform bars={5} size="sm" barClassName="bg-primary-foreground/60" />
         ) : (
-          "Generate LRC"
+          t("lrc.generateLrc")
         )}
       </button>
     </div>

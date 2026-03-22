@@ -5,8 +5,9 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { Nav } from "@/components/nav";
 import { useAuth } from "@/components/auth-provider";
+import { useT } from "@/lib/i18n";
 import { Waveform } from "@/components/waveform";
-import { Music, FileText, Zap, Check, AudioLines } from "lucide-react";
+import { Music, FileText, Zap, Check } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -17,74 +18,75 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.1 } },
 };
 
-const features = [
-  {
-    icon: Music,
-    title: "AR → MR",
-    description:
-      "Remove vocals from any song using AI-powered source separation. Get studio-quality instrumental tracks instantly.",
-  },
-  {
-    icon: FileText,
-    title: "AR → LRC",
-    description:
-      "Generate word-level synchronized lyrics files. Perfect for karaoke, subtitles, and music apps.",
-  },
-  {
-    icon: Zap,
-    title: "Fast & Accurate",
-    description:
-      "Commercial-grade accuracy powered by state-of-the-art AI. Process any song in minutes.",
-  },
-];
-
-const plans = [
-  {
-    id: "free",
-    name: "Starter",
-    monthly: { price: "$0", sub: "Always free" },
-    yearly: { price: "$0", sub: "Always free" },
-    features: [
-      "10 Minutes",
-      "Free Result Previews",
-      "50MB Upload File Limit",
-    ],
-    cta: "Get Started",
-    highlighted: false,
-  },
-  {
-    id: "basic",
-    name: "Basic",
-    monthly: { price: "$9.99", sub: "billed monthly" },
-    yearly: { price: "$7.49", sub: "$90 billed annually" },
-    features: [
-      "100 Minutes/mo",
-      "Result Downloads",
-      "200MB Upload File Limit",
-    ],
-    cta: "Subscribe",
-    highlighted: true,
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    monthly: { price: "$19.99", sub: "billed monthly" },
-    yearly: { price: "$14.99", sub: "$180 billed annually" },
-    features: [
-      "300 Minutes/mo",
-      "Result Downloads",
-      "200MB Upload File Limit",
-      "Priority Processing",
-    ],
-    cta: "Subscribe",
-    highlighted: false,
-  },
-];
-
 export default function LandingPage() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
+  const { t } = useT();
   const userPlan = profile?.plan ?? null;
   const [yearly, setYearly] = useState(false);
+
+  const features = [
+    {
+      id: "mr",
+      icon: Music,
+      title: t("landing.features.mrTitle"),
+      description: t("landing.features.mrDesc"),
+    },
+    {
+      id: "lrc",
+      icon: FileText,
+      title: t("landing.features.lrcTitle"),
+      description: t("landing.features.lrcDesc"),
+    },
+    {
+      id: "fast",
+      icon: Zap,
+      title: t("landing.features.fastTitle"),
+      description: t("landing.features.fastDesc"),
+    },
+  ];
+
+  const plans = [
+    {
+      id: "free",
+      name: t("pricing.starter"),
+      monthly: { price: "$0", sub: t("pricing.alwaysFree") },
+      yearly: { price: "$0", sub: t("pricing.alwaysFree") },
+      features: [
+        t("pricing.minutes10"),
+        t("pricing.freeResultPreviews"),
+        t("pricing.upload50MB"),
+      ],
+      cta: t("pricing.getStarted"),
+      highlighted: false,
+    },
+    {
+      id: "basic",
+      name: t("pricing.basic"),
+      monthly: { price: "$9.99", sub: t("pricing.billedMonthly") },
+      yearly: { price: "$7.49", sub: t("pricing.billedAnnually90") },
+      features: [
+        yearly ? t("pricing.minutes1200") : t("pricing.minutes100"),
+        t("pricing.resultDownloads"),
+        t("pricing.upload200MB"),
+      ],
+      cta: t("pricing.subscribe"),
+      highlighted: true,
+    },
+    {
+      id: "pro",
+      name: t("pricing.pro"),
+      monthly: { price: "$19.99", sub: t("pricing.billedMonthly") },
+      yearly: { price: "$14.99", sub: t("pricing.billedAnnually180") },
+      features: [
+        yearly ? t("pricing.minutes3600") : t("pricing.minutes300"),
+        t("pricing.resultDownloads"),
+        t("pricing.upload200MB"),
+        t("pricing.priorityProcessing"),
+      ],
+      cta: t("pricing.subscribe"),
+      highlighted: false,
+    },
+  ];
 
   return (
     <div className="min-h-screen">
@@ -109,7 +111,7 @@ export default function LandingPage() {
               <div className="w-0.5 rounded-full bg-primary/60 animate-[wave-xs_1.2s_ease-in-out_infinite]" style={{ animationDelay: "0.15s" }} />
               <div className="w-0.5 rounded-full bg-primary/60 animate-[wave-xs_1.2s_ease-in-out_infinite]" style={{ animationDelay: "0.3s" }} />
             </div>
-            AI-Powered Audio Tools
+            {t("landing.hero.badge")}
           </motion.div>
 
           <motion.h1
@@ -118,9 +120,9 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight max-w-4xl"
           >
-            Transform Audio
+            {t("landing.hero.title1")}
             <br />
-            with <span className="text-primary">AI Precision</span>
+            {t("landing.hero.title2")}<span className="text-primary">{t("landing.hero.titleHighlight")}</span>
           </motion.h1>
 
           <motion.p
@@ -129,8 +131,7 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg md:text-xl text-muted-foreground mt-6 max-w-2xl"
           >
-            Extract instrumentals, generate synchronized lyrics. Professional
-            audio processing powered by state-of-the-art AI models.
+            {t("landing.hero.subtitle")}
           </motion.p>
 
           <motion.div
@@ -140,27 +141,29 @@ export default function LandingPage() {
             className="flex gap-4 mt-10"
           >
             <Link
-              href="/login"
+              href={user ? "/dashboard" : "/login"}
               className="inline-flex items-center justify-center rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8 transition-colors"
             >
-              Get Started Free
+              {user ? t("nav.dashboard") : t("landing.hero.getStarted")}
             </Link>
             <Link
               href="#features"
               className="inline-flex items-center justify-center rounded-lg text-sm font-medium border border-border hover:bg-muted h-11 px-8 transition-colors"
             >
-              Learn More
+              {t("landing.hero.learnMore")}
             </Link>
           </motion.div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="text-sm text-muted-foreground mt-4"
-          >
-            10 free minutes on signup. No credit card required.
-          </motion.p>
+          {!user && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="text-sm text-muted-foreground mt-4"
+            >
+              {t("landing.hero.freeMinutes")}
+            </motion.p>
+          )}
         </div>
       </section>
 
@@ -176,11 +179,10 @@ export default function LandingPage() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold">
-              Powerful Audio Tools
+              {t("landing.features.title")}
             </h2>
             <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">
-              From vocal removal to lyrics synchronization, everything you need
-              in one place.
+              {t("landing.features.subtitle")}
             </p>
           </motion.div>
 
@@ -193,7 +195,7 @@ export default function LandingPage() {
           >
             {features.map((feature) => (
               <motion.div
-                key={feature.title}
+                key={feature.id}
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
                 className="rounded-xl border border-border/60 bg-card p-6 hover:border-primary/30 hover:-translate-y-1 transition-all duration-300"
@@ -222,9 +224,9 @@ export default function LandingPage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold">How It Works</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">{t("landing.howItWorks.title")}</h2>
             <p className="text-muted-foreground mt-3">
-              Three simple steps to transform your audio.
+              {t("landing.howItWorks.subtitle")}
             </p>
           </motion.div>
 
@@ -238,18 +240,18 @@ export default function LandingPage() {
             {[
               {
                 step: "1",
-                title: "Upload",
-                desc: "Upload your audio file (MP3, WAV, FLAC)",
+                title: t("landing.howItWorks.uploadTitle"),
+                desc: t("landing.howItWorks.uploadDesc"),
               },
               {
                 step: "2",
-                title: "Process",
-                desc: "AI separates vocals and generates timestamps",
+                title: t("landing.howItWorks.processTitle"),
+                desc: t("landing.howItWorks.processDesc"),
               },
               {
                 step: "3",
-                title: "Download",
-                desc: "Get your MR track or LRC file instantly",
+                title: t("landing.howItWorks.downloadTitle"),
+                desc: t("landing.howItWorks.downloadDesc"),
               },
             ].map((item) => (
               <motion.div
@@ -282,9 +284,9 @@ export default function LandingPage() {
             transition={{ duration: 0.5 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold">Choose Your Plan</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">{t("pricing.chooseYourPlan")}</h2>
             <p className="text-muted-foreground mt-3">
-              Try it free. Upgrade for higher limits and advanced features.
+              {t("pricing.tryFreeSubtitle")}
             </p>
           </motion.div>
 
@@ -297,7 +299,7 @@ export default function LandingPage() {
                   !yearly ? "bg-muted text-foreground font-medium" : "text-muted-foreground"
                 }`}
               >
-                Monthly
+                {t("pricing.monthly")}
               </button>
               <button
                 onClick={() => setYearly(true)}
@@ -305,8 +307,8 @@ export default function LandingPage() {
                   yearly ? "bg-muted text-foreground font-medium" : "text-muted-foreground"
                 }`}
               >
-                Annually
-                <span className="text-[10px] font-semibold text-primary">Save 3 Months</span>
+                {t("pricing.annually")}
+                <span className="text-[10px] font-semibold text-primary">{t("pricing.save3Months")}</span>
               </button>
             </div>
           </div>
@@ -320,7 +322,7 @@ export default function LandingPage() {
           >
             {plans.map((plan) => (
               <motion.div
-                key={plan.name}
+                key={plan.id}
                 variants={fadeInUp}
                 transition={{ duration: 0.5 }}
                 className={`relative rounded-xl border p-6 flex flex-col hover:-translate-y-1 transition-transform duration-300 ${
@@ -331,7 +333,7 @@ export default function LandingPage() {
               >
                 {plan.highlighted && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold px-3 py-1 rounded-full bg-primary text-primary-foreground whitespace-nowrap">
-                    MOST POPULAR
+                    {t("pricing.mostPopular")}
                   </div>
                 )}
                 <h3 className="font-semibold text-lg">{plan.name}</h3>
@@ -340,7 +342,7 @@ export default function LandingPage() {
                     {yearly ? plan.yearly.price : plan.monthly.price}
                   </span>
                   {plan.id !== "free" && (
-                    <span className="text-muted-foreground text-sm">/mo</span>
+                    <span className="text-muted-foreground text-sm">{t("pricing.perMonth")}</span>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -358,7 +360,7 @@ export default function LandingPage() {
 
                 {userPlan === plan.id ? (
                   <div className="mt-6 inline-flex items-center justify-center rounded-lg text-sm font-medium h-10 border border-border text-muted-foreground cursor-default">
-                    Current Plan
+                    {t("pricing.currentPlan")}
                   </div>
                 ) : (
                   <Link
@@ -378,20 +380,38 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Final CTA */}
+      <section className="py-20 md:py-28 bg-muted/30">
+        <div className="container text-center">
+          <h2 className="text-3xl md:text-4xl font-bold">
+            {t("landing.cta.title")}
+          </h2>
+          <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+            {t("landing.cta.subtitle")}
+          </p>
+          <Link
+            href={user ? "/dashboard" : "/login"}
+            className="inline-flex items-center justify-center rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8 transition-colors mt-8"
+          >
+            {user ? t("nav.dashboard") : t("landing.hero.getStarted")}
+          </Link>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-border/40 py-10">
         <div className="container">
           <div className="flex flex-col-reverse items-center md:flex-row md:justify-between gap-4">
             <p className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} Soundril. All rights reserved.
+              &copy; {new Date().getFullYear()} {t("landing.footer.copyright")}
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-sm text-muted-foreground">
               <div className="flex gap-6">
                 <Link href="/privacy" className="hover:text-foreground transition-colors">
-                  Privacy Policy
+                  {t("landing.footer.privacyPolicy")}
                 </Link>
                 <Link href="/terms" className="hover:text-foreground transition-colors">
-                  Terms of Use
+                  {t("landing.footer.termsOfUse")}
                 </Link>
               </div>
               <Link href="/help" className="hover:text-foreground transition-colors">
