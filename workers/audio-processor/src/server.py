@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from .pipeline import process_job
 from .logger import get_logger
-from .storage import update_job_status
+from .storage import update_job_status, refund_job_credits
 
 app = FastAPI(title="Soundril Audio Processor")
 logger = get_logger("server")
@@ -105,8 +105,11 @@ async def process(request: Request):
                 "errorMessage": error_msg[:500],
                 "processingTimeMs": elapsed_ms,
             })
-        except Exception:
-            logger.error(f"Failed to update job status for {req.jobId}")
+            # 크레딧 환불
+            await refund_job_credits(req.jobId)
+            logger.info(f"Credits refunded for job {req.jobId}")
+        except Exception as refund_err:
+            logger.error(f"Failed to update/refund job {req.jobId}: {refund_err}")
 
         # Return 200 so Cloud Tasks doesn't retry
         return {"status": "failed", "jobId": req.jobId, "error": error_msg[:200]}

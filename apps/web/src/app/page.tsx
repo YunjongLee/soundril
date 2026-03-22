@@ -1,9 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "motion/react";
 import { Nav } from "@/components/nav";
 import { Waveform } from "@/components/waveform";
 import { Music, FileText, Zap, Check } from "lucide-react";
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
+
+const stagger = {
+  visible: { transition: { staggerChildren: 0.1 } },
+};
 
 const features = [
   {
@@ -98,22 +108,47 @@ export default function LandingPage() {
         </div>
 
         <div className="container relative flex flex-col items-center text-center py-24 md:py-32 lg:py-40">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm mb-6">
-            <Waveform bars={3} size="sm" className="gap-[2px]" />
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm mb-6"
+          >
+            <div className="flex items-center gap-[2px] h-3">
+              <div className="w-0.5 rounded-full bg-primary/60 animate-[wave-xs_1.2s_ease-in-out_infinite]" style={{ animationDelay: "0s" }} />
+              <div className="w-0.5 rounded-full bg-primary/60 animate-[wave-xs_1.2s_ease-in-out_infinite]" style={{ animationDelay: "0.15s" }} />
+              <div className="w-0.5 rounded-full bg-primary/60 animate-[wave-xs_1.2s_ease-in-out_infinite]" style={{ animationDelay: "0.3s" }} />
+            </div>
             AI-Powered Audio Tools
-          </div>
+          </motion.div>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight max-w-4xl">
-            Transform Audio with{" "}
-            <span className="text-primary">AI Precision</span>
-          </h1>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight max-w-4xl"
+          >
+            Transform Audio
+            <br />
+            with <span className="text-primary">AI Precision</span>
+          </motion.h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground mt-6 max-w-2xl">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-lg md:text-xl text-muted-foreground mt-6 max-w-2xl"
+          >
             Extract instrumentals, generate synchronized lyrics. Professional
             audio processing powered by state-of-the-art AI models.
-          </p>
+          </motion.p>
 
-          <div className="flex gap-4 mt-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex gap-4 mt-10"
+          >
             <Link
               href="/login"
               className="inline-flex items-center justify-center rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-8 transition-colors"
@@ -126,18 +161,30 @@ export default function LandingPage() {
             >
               Learn More
             </Link>
-          </div>
+          </motion.div>
 
-          <p className="text-sm text-muted-foreground mt-4">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="text-sm text-muted-foreground mt-4"
+          >
             10 free credits on signup. No credit card required.
-          </p>
+          </motion.p>
         </div>
       </section>
 
       {/* Features */}
       <section id="features" className="py-20 md:py-28">
         <div className="container">
-          <div className="text-center mb-16">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
             <h2 className="text-3xl md:text-4xl font-bold">
               Powerful Audio Tools
             </h2>
@@ -145,13 +192,21 @@ export default function LandingPage() {
               From vocal removal to lyrics synchronization, everything you need
               in one place.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={stagger}
+            className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+          >
             {features.map((feature) => (
-              <div
+              <motion.div
                 key={feature.title}
-                className="rounded-xl border border-border/60 bg-card p-6 hover:border-primary/30 transition-colors"
+                variants={fadeInUp}
+                transition={{ duration: 0.5 }}
+                className="rounded-xl border border-border/60 bg-card p-6 hover:border-primary/30 hover:-translate-y-1 transition-all duration-300"
               >
                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <feature.icon className="h-5 w-5 text-primary" />
@@ -160,23 +215,36 @@ export default function LandingPage() {
                 <p className="text-muted-foreground text-sm mt-2">
                   {feature.description}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* How it works */}
       <section className="py-20 md:py-28 bg-muted/30">
         <div className="container">
-          <div className="text-center mb-16">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
             <h2 className="text-3xl md:text-4xl font-bold">How It Works</h2>
             <p className="text-muted-foreground mt-3">
               Three simple steps to transform your audio.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={stagger}
+            className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto"
+          >
             {[
               {
                 step: "1",
@@ -194,7 +262,12 @@ export default function LandingPage() {
                 desc: "Get your MR track or LRC file instantly",
               },
             ].map((item) => (
-              <div key={item.step} className="text-center">
+              <motion.div
+                key={item.step}
+                variants={fadeInUp}
+                transition={{ duration: 0.5 }}
+                className="text-center"
+              >
                 <div className="h-12 w-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto text-primary font-bold">
                   {item.step}
                 </div>
@@ -202,29 +275,42 @@ export default function LandingPage() {
                 <p className="text-muted-foreground text-sm mt-2">
                   {item.desc}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Pricing */}
       <section id="pricing" className="py-20 md:py-28">
         <div className="container">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Simple Pricing
-            </h2>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeInUp}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold">Simple Pricing</h2>
             <p className="text-muted-foreground mt-3">
               1 credit = 1 minute of audio processing.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="grid md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={stagger}
+            className="grid md:grid-cols-4 gap-6 max-w-5xl mx-auto"
+          >
             {plans.map((plan) => (
-              <div
+              <motion.div
                 key={plan.name}
-                className={`rounded-xl border p-6 flex flex-col ${
+                variants={fadeInUp}
+                transition={{ duration: 0.5 }}
+                className={`rounded-xl border p-6 flex flex-col hover:-translate-y-1 transition-transform duration-300 ${
                   plan.highlighted
                     ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                     : "border-border/60 bg-card"
@@ -265,9 +351,9 @@ export default function LandingPage() {
                 >
                   {plan.cta}
                 </Link>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 

@@ -69,3 +69,46 @@ async def update_job_progress(job_id: str, progress: int, step: str):
         "progress": progress,
         "progressStep": step,
     })
+
+
+async def refund_job_credits(job_id: str):
+    """작업 실패 시 크레딧 환불. job doc에서 userId, creditsCharged를 읽어서 환불."""
+    job_ref = _db.collection("jobs").document(job_id)
+    job_doc = job_ref.get()
+    if not job_doc.exists:
+        return
+
+    job = job_doc.to_dict()
+    user_id = job.get("userId")
+    credits = job.get("creditsCharged", 0)
+    if not user_id or credits <= 0:
+        return
+
+    user_ref = _db.collection("users").document(user_id)
+
+    @firestore.transactional
+    def _refund(tx):
+        user_doc = user_ref.get(transaction=tx)
+        if not user_doc.exists:
+            return
+        current = user_doc.to_dict().get("credits", 0)
+        new_balance = current + credits
+
+        tx.update(user_ref, {
+            "credits": new_balance,
+            "totalCreditsUsed": firestore.Increment(-credits),
+            "updatedAt": firestore.SERVER_TIMESTAMP,
+        })
+        tx.set(_db.collection("creditTransactions").document(), {
+            "userId": user_id,
+            "type": "job_refund",
+            "amount": credits,
+            "balanceBefore": current,
+            "balanceAfter": new_balance,
+            "jobId": job_id,
+            "description": "Job failed - refund",
+            "createdAt": firestore.SERVER_TIMESTAMP,
+        })
+
+    tx = _db.transaction()
+    _refund(tx)

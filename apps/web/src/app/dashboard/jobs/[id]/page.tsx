@@ -116,7 +116,7 @@ export default function JobDetailPage() {
     );
   }
 
-  const status = statusConfig[job.status];
+  const status = statusConfig[job.status] || statusConfig.failed;
   const StatusIcon = status.icon;
   const isActive = job.status === "queued" || job.status === "processing";
 

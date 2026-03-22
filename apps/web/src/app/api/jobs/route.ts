@@ -8,6 +8,7 @@ export async function POST(request: NextRequest) {
   let jobId: string | null = null;
   let userId: string | null = null;
   let creditsCharged = 0;
+  let charged = false;
 
   try {
     // 1. Auth
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
       jobId,
       `${type.toUpperCase()} - ${file.name}`
     );
+    charged = true;
 
     // 6. Upload file to Storage
     const bucket = adminStorage.bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
@@ -105,8 +107,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Job creation error:", error);
 
-    // Rollback: refund credits if charged
-    if (userId && jobId && creditsCharged > 0) {
+    // Rollback: refund credits only if actually charged
+    if (userId && jobId && charged) {
       try {
         await refundCredits(userId, creditsCharged, jobId, "Job creation failed - refund");
       } catch (refundError) {
