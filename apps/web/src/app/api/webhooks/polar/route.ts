@@ -13,7 +13,7 @@ import {
   getCreditsForProduct,
 } from "@/lib/subscription";
 import { adminDb } from "@/lib/firebase/server";
-import { sendSubscriptionEmail, sendCancellationEmail, sendPaymentFailedEmail } from "@/lib/email";
+// Polar handles subscription/cancellation/payment emails automatically
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -112,39 +112,13 @@ export async function POST(request: NextRequest) {
               status: sub.status,
             }, previousCredits);
 
-            const isYearly = (new Date(periodEnd).getTime() - new Date(periodStart).getTime()) > 60 * 24 * 60 * 60 * 1000;
-            const totalCredits = plan === "basic" ? (isYearly ? 1200 : 100) : (isYearly ? 3600 : 300);
-            const creditsGranted = Math.max(0, totalCredits - previousCredits);
-
-            // 크레딧이 추가 지급된 경우에만 메일 발송
-            if (creditsGranted > 0 && existingPlan !== plan) {
-              const userData = existingUser.data();
-              if (userData?.email) {
-                sendSubscriptionEmail({
-                  to: userData.email,
-                  name: userData.displayName || "",
-                  plan,
-                  credits: totalCredits,
-                }).catch((err) => console.error("Subscription email failed:", err));
-              }
-            }
           }
         }
         break;
       }
 
       case "subscription.past_due": {
-        const sub = event.data;
-        const firebaseUid = sub.metadata?.firebaseUid as string | undefined;
-        if (firebaseUid) {
-          const userData = (await adminDb.collection("users").doc(firebaseUid).get()).data();
-          if (userData?.email) {
-            sendPaymentFailedEmail({
-              to: userData.email,
-              name: userData.displayName || "",
-            }).catch((err) => console.error("Payment failed email error:", err));
-          }
-        }
+        // Polar handles payment failure emails
         break;
       }
 
@@ -153,19 +127,6 @@ export async function POST(request: NextRequest) {
         const firebaseUid = sub.metadata?.firebaseUid as string | undefined;
         if (firebaseUid) {
           await cancelSubscription(firebaseUid);
-
-          // 취소 확인 메일
-          const userData = (await adminDb.collection("users").doc(firebaseUid).get()).data();
-          if (userData?.email) {
-            const endDate = sub.currentPeriodEnd instanceof Date
-              ? sub.currentPeriodEnd.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
-              : String(sub.currentPeriodEnd ?? "");
-            sendCancellationEmail({
-              to: userData.email,
-              name: userData.displayName || "",
-              endDate,
-            }).catch((err) => console.error("Cancellation email failed:", err));
-          }
         }
         break;
       }
