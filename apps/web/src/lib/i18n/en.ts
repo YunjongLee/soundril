@@ -96,6 +96,7 @@ const en = {
     howMinutesWork: "How credits work",
     howMinutesWorkDesc:
       "1 minute of audio = 1 credit.\nA 4-minute song uses 4 credits. Use your credits for any tool — MR, LRC, or both.",
+    planUpdated: "Your plan has been updated.",
     paymentComingSoon: "Payment integration coming soon.",
   },
   login: {

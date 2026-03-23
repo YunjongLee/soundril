@@ -4,17 +4,17 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
+import { getPlanDisplayName, isPaidPlan } from "@/lib/plan";
 import { Settings, ArrowRight, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 function SubscriptionContent() {
-  const { profile } = useAuth();
+  const { profile, productId } = useAuth();
   const { t, lang } = useT();
   const searchParams = useSearchParams();
-  const plan = profile?.plan ?? "free";
-  const isPaid = plan === "basic" || plan === "pro";
+  const isPaid = isPaidPlan(productId);
   const sub = profile?.subscription as {
     currentPeriodStart?: string;
     currentPeriodEnd?: string;
@@ -69,7 +69,7 @@ function SubscriptionContent() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">{t("subscription.currentPlan")}</p>
-            <p className="text-xl font-bold mt-1 capitalize">{plan === "free" ? t("pricing.starter") : plan === "basic" ? t("pricing.basic") : t("pricing.pro")}</p>
+            <p className="text-xl font-bold mt-1">{getPlanDisplayName(productId)}</p>
           </div>
           <div className="text-right">
             <p className="text-sm text-muted-foreground">{t("dashboard.minutesRemaining")}</p>

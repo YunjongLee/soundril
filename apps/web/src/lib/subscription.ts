@@ -1,9 +1,9 @@
 import { adminDb } from "./firebase/server";
 import { FieldValue } from "firebase-admin/firestore";
 
-const PLAN_CREDITS: Record<string, number> = {
-  basic: 100,
-  pro: 300,
+const PLAN_CREDITS: Record<string, { monthly: number; yearly: number }> = {
+  basic: { monthly: 100, yearly: 1200 },
+  pro: { monthly: 300, yearly: 3600 },
 };
 
 /**
@@ -19,14 +19,18 @@ export async function activateSubscription(
     currentPeriodStart: string;
     currentPeriodEnd: string;
     status: string;
-  }
+  },
+  skipCredits = false
 ) {
-  const credits = PLAN_CREDITS[plan] ?? 0;
+  const isYearly =
+    new Date(subscription.currentPeriodEnd).getTime() -
+    new Date(subscription.currentPeriodStart).getTime() >
+    60 * 24 * 60 * 60 * 1000; // > 60 days
+  const credits = PLAN_CREDITS[plan]?.[isYearly ? "yearly" : "monthly"] ?? 0;
   const userRef = adminDb.collection("users").doc(firebaseUid);
 
   await adminDb.runTransaction(async (tx) => {
-    tx.update(userRef, {
-      plan,
+    const updateData: Record<string, unknown> = {
       subscription: {
         polarSubscriptionId: subscription.polarSubscriptionId,
         polarCustomerId: subscription.polarCustomerId,
@@ -35,20 +39,27 @@ export async function activateSubscription(
         currentPeriodEnd: subscription.currentPeriodEnd,
         status: subscription.status,
       },
-      credits: FieldValue.increment(credits),
       updatedAt: FieldValue.serverTimestamp(),
-    });
+    };
 
-    // 크레딧 지급 기록
-    const txRef = adminDb.collection("creditTransactions").doc();
-    tx.set(txRef, {
-      userId: firebaseUid,
-      type: "subscription_grant",
-      amount: credits,
-      jobId: null,
-      description: `${plan} plan subscription - ${credits} credits`,
-      createdAt: FieldValue.serverTimestamp(),
-    });
+    if (!skipCredits) {
+      updateData.credits = FieldValue.increment(credits);
+    }
+
+    tx.update(userRef, updateData);
+
+    // 크레딧 지급 기록 (지급 시에만)
+    if (!skipCredits) {
+      const txRef = adminDb.collection("creditTransactions").doc();
+      tx.set(txRef, {
+        userId: firebaseUid,
+        type: "subscription_grant",
+        amount: credits,
+        jobId: null,
+        description: `${plan} plan subscription - ${credits} credits`,
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    }
   });
 }
 
@@ -61,7 +72,11 @@ export async function renewSubscription(
   currentPeriodStart: string,
   currentPeriodEnd: string
 ) {
-  const credits = PLAN_CREDITS[plan] ?? 0;
+  const isYearly =
+    new Date(currentPeriodEnd).getTime() -
+    new Date(currentPeriodStart).getTime() >
+    60 * 24 * 60 * 60 * 1000;
+  const credits = PLAN_CREDITS[plan]?.[isYearly ? "yearly" : "monthly"] ?? 0;
   const userRef = adminDb.collection("users").doc(firebaseUid);
 
   await adminDb.runTransaction(async (tx) => {
@@ -113,7 +128,6 @@ export async function uncancelSubscription(firebaseUid: string) {
 export async function expireSubscription(firebaseUid: string) {
   const userRef = adminDb.collection("users").doc(firebaseUid);
   await userRef.update({
-    plan: "free",
     subscription: null,
     updatedAt: FieldValue.serverTimestamp(),
   });

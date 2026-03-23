@@ -4,11 +4,14 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
+import { getMaxFileSize } from "@/lib/plan";
 import { auth } from "@/lib/firebase/client";
 import { Waveform } from "@/components/waveform";
 import { Upload, Music, X, AlertCircle, Coins } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+
+// getMaxFileSize moved to @/lib/plan
 
 const ACCEPTED_TYPES = [
   "audio/mpeg",
@@ -20,15 +23,11 @@ const ACCEPTED_TYPES = [
 ];
 const MAX_DURATION = 600; // 10분
 
-function getMaxFileSize(plan: string) {
-  return plan === "basic" || plan === "pro" ? 200 * 1024 * 1024 : 50 * 1024 * 1024;
-}
-
 export default function MRPage() {
   const router = useRouter();
-  const { user, profile } = useAuth();
+  const { user, profile, productId } = useAuth();
   const { t } = useT();
-  const maxFileSize = getMaxFileSize(profile?.plan ?? "free");
+  const maxFileSize = getMaxFileSize(productId);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [duration, setDuration] = useState<number | null>(null);

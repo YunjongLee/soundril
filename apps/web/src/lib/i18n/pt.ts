@@ -100,6 +100,7 @@ const pt: Translations = {
     howMinutesWork: "Como funcionam os créditos",
     howMinutesWorkDesc:
       "1 minuto de áudio = 1 crédito.\nUma música de 4 minutos usa 4 créditos. Use seus créditos em qualquer ferramenta — MR, LRC, ou ambas.",
+    planUpdated: "Seu plano foi atualizado.",
     paymentComingSoon: "Integração de pagamento em breve.",
   },
   login: {

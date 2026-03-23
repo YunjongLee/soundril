@@ -96,6 +96,7 @@ const zh: Translations = {
     howMinutesWork: "额度说明",
     howMinutesWorkDesc:
       "1分钟音频 = 1额度。\n一首4分钟的歌曲使用4额度。额度可用于任何工具 — MR、LRC 或两者兼用。",
+    planUpdated: "您的方案已更新。",
     paymentComingSoon: "支付功能即将上线。",
   },
   login: {

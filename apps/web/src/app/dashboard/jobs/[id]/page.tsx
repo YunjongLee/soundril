@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { db, auth } from "@/lib/firebase/client";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
+import { isPaidPlan } from "@/lib/plan";
 import { Waveform } from "@/components/waveform";
 import {
   Music,
@@ -122,8 +123,8 @@ export default function JobDetailPage() {
     );
   }
 
-  const { profile } = useAuth();
-  const isPaid = profile?.plan === "basic" || profile?.plan === "pro";
+  const { productId } = useAuth();
+  const isPaid = isPaidPlan(productId);
   const status = statusConfig[job.status] || statusConfig.failed;
   const StatusIcon = status.icon;
   const isActive = job.status === "queued" || job.status === "processing";

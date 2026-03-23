@@ -33,7 +33,6 @@ export async function POST(request: NextRequest) {
         email: decoded.email || null,
         displayName: decoded.name || null,
         photoUrl: decoded.picture || null,
-        plan: "free",
         credits: 0,
         totalCreditsUsed: 0,
         subscription: null,

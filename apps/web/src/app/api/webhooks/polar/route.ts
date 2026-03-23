@@ -74,7 +74,11 @@ export async function POST(request: NextRequest) {
             // 같은 구독, 다른 기간 → 갱신
             await renewSubscription(firebaseUid, plan, periodStart, periodEnd);
           } else {
-            // 신규 구독
+            const existingProductId = existingUser.data()?.subscription?.productId;
+            const existingPlan = existingProductId ? getPlanFromProductId(existingProductId) : null;
+            const isSamePlan = existingPlan === plan;
+
+            // 구독 정보 업데이트 (같은 플랜 내 주기 변경이면 크레딧 미지급)
             await activateSubscription(firebaseUid, plan, {
               polarSubscriptionId: sub.id,
               polarCustomerId: sub.customerId,
@@ -82,18 +86,21 @@ export async function POST(request: NextRequest) {
               currentPeriodStart: periodStart,
               currentPeriodEnd: periodEnd,
               status: sub.status,
-            });
+            }, isSamePlan);
 
-            // 구독 확인 메일
-            const userData = existingUser.data();
-            if (userData?.email) {
-              const credits = plan === "basic" ? 100 : 300;
-              sendSubscriptionEmail({
-                to: userData.email,
-                name: userData.displayName || "",
-                plan,
-                credits,
-              }).catch((err) => console.error("Subscription email failed:", err));
+            // 신규 구독 또는 플랜 업그레이드 시에만 메일 발송
+            if (!isSamePlan) {
+              const userData = existingUser.data();
+              if (userData?.email) {
+                const isYearly = (new Date(periodEnd).getTime() - new Date(periodStart).getTime()) > 60 * 24 * 60 * 60 * 1000;
+                const credits = plan === "basic" ? (isYearly ? 1200 : 100) : (isYearly ? 3600 : 300);
+                sendSubscriptionEmail({
+                  to: userData.email,
+                  name: userData.displayName || "",
+                  plan,
+                  credits,
+                }).catch((err) => console.error("Subscription email failed:", err));
+              }
             }
           }
         }

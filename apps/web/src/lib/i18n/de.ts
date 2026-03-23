@@ -100,6 +100,7 @@ const de: Translations = {
     howMinutesWork: "So funktioniert das Guthaben",
     howMinutesWorkDesc:
       "1 Minute Audio = 1 Guthaben.\nEin 4-Minuten-Song verbraucht 4 Guthaben. Verwende dein Guthaben für jedes Tool — MR, LRC oder beides.",
+    planUpdated: "Ihr Plan wurde aktualisiert.",
     paymentComingSoon: "Zahlungsintegration kommt bald.",
   },
   login: {

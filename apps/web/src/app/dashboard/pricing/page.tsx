@@ -4,13 +4,19 @@ import { useState, useEffect } from "react";
 import { Check, CreditCard } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
+import { getPlanName, isPaidPlan, type PlanName } from "@/lib/plan";
+
+const PLAN_RANK: Record<PlanName, number> = { free: 0, basic: 1, pro: 2 };
 import { toast } from "sonner";
 import { Waveform } from "@/components/waveform";
 
 export default function PricingPage() {
-  const { profile } = useAuth();
+  const { profile, productId: currentProductId } = useAuth();
   const { t } = useT();
-  const userPlan = profile?.plan ?? "free";
+  const userPlan = getPlanName(currentProductId);
+  const isCurrentYearly = profile?.subscription?.currentPeriodStart && profile?.subscription?.currentPeriodEnd
+    ? (new Date(profile.subscription.currentPeriodEnd).getTime() - new Date(profile.subscription.currentPeriodStart).getTime()) > 60 * 24 * 60 * 60 * 1000
+    : false;
   const [yearly, setYearly] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -27,8 +33,8 @@ export default function PricingPage() {
     {
       id: "free",
       name: t("pricing.starter"),
-      monthly: { price: "$0", sub: t("pricing.alwaysFree") },
-      yearly: { price: "$0", sub: t("pricing.alwaysFree") },
+      monthly: { price: "$0", sub: t("pricing.alwaysFree"), productId: "" },
+      yearly: { price: "$0", sub: t("pricing.alwaysFree"), productId: "" },
       features: [
         t("pricing.minutes10"),
         t("pricing.freeResultPreviews"),
@@ -39,8 +45,8 @@ export default function PricingPage() {
     {
       id: "basic",
       name: t("pricing.basic"),
-      monthly: { price: "$9.99", sub: t("pricing.billedMonthly") },
-      yearly: { price: "$7.50", sub: t("pricing.billedAnnually90") },
+      monthly: { price: "$9.99", sub: t("pricing.billedMonthly"), productId: process.env.NEXT_PUBLIC_POLAR_BASIC_MONTHLY_PRODUCT_ID ?? "" },
+      yearly: { price: "$7.50", sub: t("pricing.billedAnnually90"), productId: process.env.NEXT_PUBLIC_POLAR_BASIC_YEARLY_PRODUCT_ID ?? "" },
       features: [
         yearly ? t("pricing.minutes1200") : t("pricing.minutes100"),
         t("pricing.resultDownloads"),
@@ -51,8 +57,8 @@ export default function PricingPage() {
     {
       id: "pro",
       name: t("pricing.pro"),
-      monthly: { price: "$19.99", sub: t("pricing.billedMonthly") },
-      yearly: { price: "$15", sub: t("pricing.billedAnnually180") },
+      monthly: { price: "$19.99", sub: t("pricing.billedMonthly"), productId: process.env.NEXT_PUBLIC_POLAR_PRO_MONTHLY_PRODUCT_ID ?? "" },
+      yearly: { price: "$15", sub: t("pricing.billedAnnually180"), productId: process.env.NEXT_PUBLIC_POLAR_PRO_YEARLY_PRODUCT_ID ?? "" },
       features: [
         yearly ? t("pricing.minutes3600") : t("pricing.minutes300"),
         t("pricing.resultDownloads"),
@@ -63,21 +69,40 @@ export default function PricingPage() {
     },
   ];
 
+  const hasSubscription = !!currentProductId;
+
   const handleSubscribe = async (planId: string) => {
     if (planId === "free") return;
     setLoading(planId);
     try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plan: planId,
-          period: yearly ? "yearly" : "monthly",
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      window.location.href = data.url;
+      if (hasSubscription) {
+        // 기존 구독자 → 플랜/주기 변경
+        const res = await fetch("/api/subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            plan: planId,
+            period: yearly ? "yearly" : "monthly",
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        toast.success(t("pricing.planUpdated"));
+        setLoading(null);
+      } else {
+        // 신규 → 체크아웃
+        const res = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            plan: planId,
+            period: yearly ? "yearly" : "monthly",
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        window.location.href = data.url;
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong.");
       setLoading(null);
@@ -155,29 +180,34 @@ export default function PricingPage() {
               ))}
             </ul>
 
-            {userPlan === plan.id ? (
-              <div className="mt-5 inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 border border-border text-muted-foreground cursor-default">
-                {t("pricing.currentPlan")}
-              </div>
-            ) : plan.id === "free" ? (
-              <div className="mt-5 h-9" />
-            ) : (
-              <button
-                onClick={() => handleSubscribe(plan.id)}
-                disabled={loading !== null}
-                className={`mt-5 inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 transition-colors disabled:opacity-50 ${
-                  plan.highlighted
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "border border-border hover:bg-muted"
-                }`}
-              >
-                {loading === plan.id ? (
-                  <Waveform bars={3} size="sm" className="h-4" barClassName="bg-primary-foreground/60" />
-                ) : (
-                  t("pricing.subscribe")
-                )}
-              </button>
-            )}
+            <div className={`mt-5 transition-opacity duration-300 ${profile ? "opacity-100" : "opacity-0"}`}>
+              {((plan.id === "free" && userPlan === "free") ||
+               (currentProductId && currentProductId === (yearly ? plan.yearly.productId : plan.monthly.productId))) ? (
+                <div className="inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 border border-border text-muted-foreground cursor-default w-full">
+                  {t("pricing.currentPlan")}
+                </div>
+              ) : plan.id === "free" ||
+                 PLAN_RANK[plan.id as PlanName] < PLAN_RANK[userPlan] ||
+                 (plan.id === userPlan && isCurrentYearly && !yearly) ? (
+                <div className="h-9" />
+              ) : (
+                <button
+                  onClick={() => handleSubscribe(plan.id)}
+                  disabled={loading !== null}
+                  className={`w-full inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 transition-colors disabled:opacity-50 ${
+                    plan.highlighted
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                      : "border border-border hover:bg-muted"
+                  }`}
+                >
+                  {loading === plan.id ? (
+                    <Waveform bars={3} size="sm" className="h-3" barClassName="bg-primary-foreground/60" />
+                  ) : (
+                    t("pricing.subscribe")
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>

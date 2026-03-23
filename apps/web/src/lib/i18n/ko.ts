@@ -98,6 +98,7 @@ const ko: Translations = {
     howMinutesWork: "크레딧 안내",
     howMinutesWorkDesc:
       "오디오 1분 = 1크레딧 차감.\n4분짜리 곡은 4크레딧이 차감됩니다. MR, LRC 어떤 도구든 자유롭게 사용하세요.",
+    planUpdated: "요금제가 변경되었습니다.",
     paymentComingSoon: "결제 기능이 곧 출시됩니다.",
   },
   login: {

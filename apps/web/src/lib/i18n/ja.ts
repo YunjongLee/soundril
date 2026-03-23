@@ -98,6 +98,7 @@ const ja: Translations = {
     howMinutesWork: "クレジットの仕組み",
     howMinutesWorkDesc:
       "1分のオーディオ = 1クレジット。\n4分の曲は4クレジットを使用します。クレジットはどのツールにも使えます — MR、LRC、または両方。",
+    planUpdated: "プランが変更されました。",
     paymentComingSoon: "決済機能は近日公開予定です。",
   },
   login: {

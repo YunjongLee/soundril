@@ -14,7 +14,6 @@ import { getClientAuth, getClientDb } from "@/lib/firebase/client";
 
 interface UserProfile {
   credits: number;
-  plan: string;
   totalCreditsUsed: number;
   subscription?: {
     polarSubscriptionId: string;
@@ -62,7 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = snap.data();
         setProfile({
           credits: data.credits ?? 0,
-          plan: data.plan ?? "free",
           totalCreditsUsed: data.totalCreditsUsed ?? 0,
           subscription: data.subscription ?? null,
         });
@@ -84,5 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+  const ctx = useContext(AuthContext);
+  const productId = ctx.profile?.subscription?.status === "active"
+    ? ctx.profile.subscription.productId
+    : null;
+  return { ...ctx, productId };
 }

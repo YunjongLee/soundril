@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
     const data = userDoc.data()!;
     return NextResponse.json({
       credits: data.credits,
-      plan: data.plan,
       totalCreditsUsed: data.totalCreditsUsed,
+      productId: data.subscription?.productId ?? null,
     });
   } catch (error) {
     console.error("Credits fetch error:", error);

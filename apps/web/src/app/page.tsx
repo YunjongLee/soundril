@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { Nav } from "@/components/nav";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
+import { getPlanName } from "@/lib/plan";
 import { Waveform } from "@/components/waveform";
 import { Music, FileText, Zap, Check } from "lucide-react";
 
@@ -19,9 +20,9 @@ const stagger = {
 };
 
 export default function LandingPage() {
-  const { user, profile } = useAuth();
+  const { user, productId: currentProductId } = useAuth();
   const { t } = useT();
-  const userPlan = profile?.plan ?? null;
+  const userPlan = getPlanName(currentProductId);
   const [yearly, setYearly] = useState(false);
 
   const features = [

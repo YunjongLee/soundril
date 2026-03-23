@@ -29,7 +29,7 @@ export async function POST() {
 
     return NextResponse.json({ url: portal.customerPortalUrl });
   } catch (error) {
-    console.error("Portal error:", error);
+    console.error("Portal error:", JSON.stringify(error, Object.getOwnPropertyNames(error as object)));
     return NextResponse.json(
       { error: "Failed to create portal session" },
       { status: 500 }
