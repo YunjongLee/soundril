@@ -98,6 +98,18 @@ function SubscriptionContent() {
             </dl>
           </div>
 
+          {/* 다음 기간 플랜 변경 예정 */}
+          {sub?.pendingUpdate?.productId && (
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 mb-6">
+              <p className="text-sm text-amber-400">
+                {t("subscription.pendingChange", {
+                  plan: getPlanDisplayName(sub.pendingUpdate.productId),
+                  date: formatDate(sub.pendingUpdate.appliesAt),
+                })}
+              </p>
+            </div>
+          )}
+
           <button
             onClick={handlePortal}
             disabled={portalLoading}

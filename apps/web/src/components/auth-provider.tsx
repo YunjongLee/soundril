@@ -22,6 +22,10 @@ interface UserProfile {
     currentPeriodStart: string;
     currentPeriodEnd: string;
     status: string;
+    pendingUpdate?: {
+      productId: string | null;
+      appliesAt: string;
+    } | null;
   } | null;
 }
 

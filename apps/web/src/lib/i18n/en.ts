@@ -205,6 +205,7 @@ const en = {
     nextBilling: "Next billing date",
     status: "Status",
     activated: "Your subscription is now active! Credits have been added.",
+    pendingChange: "Your plan will change to {plan} on {date}.",
     cancelSubscription: "Cancel Subscription",
     cancelConfirm: "Are you sure you want to cancel your subscription?",
   },

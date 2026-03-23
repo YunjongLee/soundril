@@ -63,12 +63,29 @@ export async function POST(request: NextRequest) {
             ? sub.currentPeriodEnd.toISOString()
             : sub.currentPeriodEnd ? String(sub.currentPeriodEnd) : "";
 
+          // pendingUpdate 처리
+          const pending = "pendingUpdate" in sub && sub.pendingUpdate
+            ? {
+                productId: (sub.pendingUpdate as { productId?: string | null }).productId ?? null,
+                appliesAt: (sub.pendingUpdate as { appliesAt?: Date | string }).appliesAt instanceof Date
+                  ? (sub.pendingUpdate as { appliesAt: Date }).appliesAt.toISOString()
+                  : String((sub.pendingUpdate as { appliesAt?: string }).appliesAt ?? ""),
+              }
+            : null;
+
+          // Firestore에 pendingUpdate 저장/제거
+          if (existingSub) {
+            await adminDb.collection("users").doc(firebaseUid).update({
+              "subscription.pendingUpdate": pending,
+            });
+          }
+
           if (
             existingSub?.polarSubscriptionId === sub.id &&
             existingSub?.currentPeriodStart === periodStart &&
             existingSub?.productId === sub.productId
           ) {
-            // 같은 구독, 같은 기간, 같은 상품 → 중복 이벤트 무시
+            // 같은 구독, 같은 기간, 같은 상품 → pendingUpdate만 업데이트하고 종료
             break;
           }
 
