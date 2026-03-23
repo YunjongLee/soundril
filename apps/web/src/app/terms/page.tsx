@@ -7,7 +7,7 @@ export default function TermsPage() {
       <div className="container max-w-3xl pt-24 pb-16">
         <h1 className="text-3xl font-bold mb-8">Terms of Use</h1>
         <div className="prose prose-invert prose-sm max-w-none space-y-6 text-muted-foreground">
-          <p className="text-sm">Last updated: March 22, 2026</p>
+          <p className="text-sm">Last updated: March 23, 2026</p>
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">1. Acceptance of Terms</h2>
@@ -37,18 +37,26 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-foreground">4. Subscriptions & Minutes</h2>
+            <h2 className="text-lg font-semibold text-foreground">4. Subscriptions & Credits</h2>
             <p>
-              Paid subscriptions provide a monthly allocation of processing minutes. Unused minutes
-              do not roll over to the next billing period. Subscriptions renew automatically unless
-              cancelled before the renewal date.
+              Paid subscriptions provide a monthly allocation of processing credits (1 credit = 1
+              minute of audio). Unused credits do not roll over to the next billing period.
+              Subscriptions renew automatically unless cancelled before the renewal date.
+            </p>
+            <p className="mt-2">
+              All payments are processed by Polar (polar.sh), our Merchant of Record. Polar
+              handles billing, tax collection, and invoicing on our behalf. By subscribing, you
+              also agree to{" "}
+              <a href="https://polar.sh/legal/terms" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                Polar&apos;s Terms of Service
+              </a>.
             </p>
           </section>
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">5. Free Tier</h2>
             <p>
-              Free accounts receive 10 minutes upon signup. Free users can preview results but
+              Free accounts receive 10 credits upon signup. Free users can preview results but
               cannot download full files. Downloads require an active paid subscription.
             </p>
           </section>
@@ -71,7 +79,7 @@ export default function TermsPage() {
             </ul>
             <p className="font-medium text-foreground mt-3">We reserve the right to decline refunds in the following cases:</p>
             <ul className="list-disc pl-5 space-y-1">
-              <li>Cancellation without a specific reason after minutes have been used.</li>
+              <li>Cancellation without a specific reason after credits have been used.</li>
               <li>Expectation of features not stated on our website.</li>
               <li>Processing a file in full means agreeing with the quality provided by the preview.</li>
             </ul>

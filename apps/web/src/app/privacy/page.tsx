@@ -8,7 +8,7 @@ export default function PrivacyPage() {
       <div className="container max-w-3xl pt-24 pb-16">
         <h1 className="text-3xl font-bold mb-8">Privacy Policy</h1>
         <div className="prose prose-invert prose-sm max-w-none space-y-6 text-muted-foreground">
-          <p className="text-sm">Last updated: March 22, 2026</p>
+          <p className="text-sm">Last updated: March 23, 2026</p>
 
           <section>
             <h2 className="text-lg font-semibold text-foreground">1. Information We Collect</h2>
@@ -40,16 +40,38 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-foreground">4. Data Sharing</h2>
+            <h2 className="text-lg font-semibold text-foreground">4. Payment Information</h2>
             <p>
-              We do not sell, trade, or share your personal information or uploaded content with
-              third parties. Your audio files are processed solely for the purpose of providing
-              our services and are not used for any other purpose.
+              Payments are processed by Polar (polar.sh), our Merchant of Record. When you
+              subscribe, Polar collects your payment details (card number, billing address) on
+              our behalf. We do not store your payment information directly. Polar handles all
+              tax calculations, invoicing, and compliance. For more information, see{" "}
+              <a href="https://polar.sh/legal/privacy" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                Polar&apos;s Privacy Policy
+              </a>.
             </p>
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-foreground">5. Security</h2>
+            <h2 className="text-lg font-semibold text-foreground">5. Data Sharing</h2>
+            <p>
+              We do not sell or trade your personal information or uploaded content. We share
+              limited data with the following third-party services solely to operate our platform:
+            </p>
+            <ul className="list-disc pl-5 space-y-1 mt-2">
+              <li><strong>Polar</strong> — payment processing, invoicing, and tax compliance</li>
+              <li><strong>Google Cloud Platform</strong> — audio file storage and processing</li>
+              <li><strong>Firebase</strong> — authentication and user data</li>
+              <li><strong>Resend</strong> — transactional email delivery</li>
+            </ul>
+            <p className="mt-2">
+              Your audio files are processed solely for the purpose of providing our services
+              and are not used for any other purpose.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-foreground">6. Security</h2>
             <p>
               We implement industry-standard security measures including encrypted data
               transmission (HTTPS), secure cloud storage, and access controls to protect
@@ -58,7 +80,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-foreground">6. Cookies</h2>
+            <h2 className="text-lg font-semibold text-foreground">7. Cookies</h2>
             <p>
               We use essential cookies for authentication and session management.
               We do not use tracking or advertising cookies.
@@ -66,7 +88,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-foreground">7. Your Rights</h2>
+            <h2 className="text-lg font-semibold text-foreground">8. Your Rights</h2>
             <p>
               You may request access to, correction of, or deletion of your personal data at any
               time by contacting us at{" "}
@@ -77,7 +99,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-foreground">8. Changes to This Policy</h2>
+            <h2 className="text-lg font-semibold text-foreground">9. Changes to This Policy</h2>
             <p>
               We may update this Privacy Policy from time to time. We will notify you of any
               changes by posting the new policy on this page and updating the date above.
@@ -85,7 +107,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold text-foreground">9. Contact</h2>
+            <h2 className="text-lg font-semibold text-foreground">10. Contact</h2>
             <p>
               If you have any questions about this Privacy Policy, please contact us at{" "}
               <a href="mailto:help@soundril.com" className="text-primary hover:underline">

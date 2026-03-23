@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/components/auth-provider";
 import { LanguageProvider } from "@/lib/i18n";
+import { GoogleAnalytics } from "@/components/google-analytics";
+import { CookieConsent } from "@/components/cookie-consent";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -46,6 +48,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <GoogleAnalytics />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -57,6 +60,7 @@ export default function RootLayout({
               {children}
             </LanguageProvider>
             <Toaster theme="dark" />
+            <CookieConsent />
           </AuthProvider>
         </ThemeProvider>
       </body>
