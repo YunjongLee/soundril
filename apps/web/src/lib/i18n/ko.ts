@@ -228,6 +228,7 @@ const ko: Translations = {
     optional: "(선택)",
     addFile: "파일을 추가하거나 여기에 놓으세요",
     filesSelected: "{count}개 파일 선택됨: {filenames}",
+    messageSent: "메시지가 전송되었습니다. 빠른 시일 내에 답변드리겠습니다.",
     emailOpened:
       "이메일 앱이 열렸습니다. 메일을 보내주세요.",
     fillAllFields: "모든 항목을 입력해 주세요.",

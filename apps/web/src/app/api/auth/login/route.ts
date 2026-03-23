@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { grantSignupBonus } from "@/lib/credits";
+import { sendWelcomeEmail } from "@/lib/email";
 
 const SESSION_EXPIRY = 60 * 60 * 24 * 14 * 1000; // 14 days
 
@@ -41,6 +42,14 @@ export async function POST(request: NextRequest) {
       });
 
       await grantSignupBonus(uid);
+
+      // 환영 메일 발송 (실패해도 로그인은 진행)
+      if (decoded.email) {
+        sendWelcomeEmail({
+          to: decoded.email,
+          name: decoded.name || "",
+        }).catch((err) => console.error("Welcome email failed:", err));
+      }
     } else {
       // Existing user - update last login info
       await userRef.update({

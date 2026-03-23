@@ -234,6 +234,7 @@ const es: Translations = {
     optional: "(opcional)",
     addFile: "Añadir archivo o arrastrar aquí",
     filesSelected: "{count} archivo(s) seleccionado(s): {filenames}",
+    messageSent: "Tu mensaje ha sido enviado. Te responderemos pronto.",
     emailOpened:
       "Se ha abierto tu cliente de correo. Por favor, envía el correo.",
     fillAllFields: "Por favor, completa todos los campos.",

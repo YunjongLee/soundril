@@ -23,14 +23,25 @@ export default function HelpPage() {
 
     setSending(true);
 
-    // mailto fallback — 실제 백엔드 이메일 API 연동 전까지
-    const email = user?.email || "";
-    const mailtoUrl = `mailto:help@soundril.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-      `From: ${email}\n\n${description}`
-    )}`;
-    window.open(mailtoUrl, "_blank");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user?.email || "",
+          subject,
+          description,
+        }),
+      });
 
-    toast.success(t("help.emailOpened"));
+      if (!res.ok) throw new Error();
+
+      toast.success(t("help.messageSent"));
+      setSubject("");
+      setDescription("");
+    } catch {
+      toast.error(t("common.somethingWentWrong"));
+    }
     setSending(false);
   };
 

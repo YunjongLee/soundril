@@ -234,6 +234,7 @@ const de: Translations = {
     optional: "(optional)",
     addFile: "Datei hinzufügen oder hierher ziehen",
     filesSelected: "{count} Datei(en) ausgewählt: {filenames}",
+    messageSent: "Ihre Nachricht wurde gesendet. Wir melden uns in Kürze.",
     emailOpened:
       "Dein E-Mail-Programm wurde geöffnet. Bitte sende die E-Mail.",
     fillAllFields: "Bitte fülle alle Felder aus.",

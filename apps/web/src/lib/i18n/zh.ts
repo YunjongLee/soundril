@@ -222,6 +222,7 @@ const zh: Translations = {
     optional: "（可选）",
     addFile: "添加文件或拖放至此",
     filesSelected: "已选择 {count} 个文件：{filenames}",
+    messageSent: "消息已发送，我们会尽快回复您。",
     emailOpened: "邮件客户端已打开，请发送邮件。",
     fillAllFields: "请填写所有字段。",
     submit: "提交",

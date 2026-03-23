@@ -226,6 +226,7 @@ const ja: Translations = {
     optional: "（任意）",
     addFile: "ファイルを追加またはドロップ",
     filesSelected: "{count} 件のファイルを選択：{filenames}",
+    messageSent: "メッセージが送信されました。折り返しご連絡いたします。",
     emailOpened:
       "メールクライアントが開きました。メールを送信してください。",
     fillAllFields: "すべての項目を入力してください。",

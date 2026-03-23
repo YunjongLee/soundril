@@ -233,6 +233,7 @@ const fr: Translations = {
     optional: "(facultatif)",
     addFile: "Ajouter un fichier ou glisser-déposer ici",
     filesSelected: "{count} fichier(s) sélectionné(s) : {filenames}",
+    messageSent: "Votre message a été envoyé. Nous vous répondrons bientôt.",
     emailOpened:
       "Votre client de messagerie a été ouvert. Veuillez envoyer l'e-mail.",
     fillAllFields: "Veuillez remplir tous les champs.",

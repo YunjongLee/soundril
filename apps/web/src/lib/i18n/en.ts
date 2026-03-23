@@ -226,6 +226,7 @@ const en = {
     optional: "(optional)",
     addFile: "Add file or drop files here",
     filesSelected: "{count} file(s) selected: {filenames}",
+    messageSent: "Your message has been sent. We'll get back to you soon.",
     emailOpened:
       "Your email client has been opened. Please send the email.",
     fillAllFields: "Please fill in all fields.",

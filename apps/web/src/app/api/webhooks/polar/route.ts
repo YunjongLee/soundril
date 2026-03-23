@@ -12,6 +12,7 @@ import {
   expireSubscription,
 } from "@/lib/subscription";
 import { adminDb } from "@/lib/firebase/server";
+import { sendSubscriptionEmail, sendCancellationEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -82,6 +83,18 @@ export async function POST(request: NextRequest) {
               currentPeriodEnd: periodEnd,
               status: sub.status,
             });
+
+            // 구독 확인 메일
+            const userData = existingUser.data();
+            if (userData?.email) {
+              const credits = plan === "basic" ? 100 : 300;
+              sendSubscriptionEmail({
+                to: userData.email,
+                name: userData.displayName || "",
+                plan,
+                credits,
+              }).catch((err) => console.error("Subscription email failed:", err));
+            }
           }
         }
         break;
@@ -92,6 +105,19 @@ export async function POST(request: NextRequest) {
         const firebaseUid = sub.metadata?.firebaseUid as string | undefined;
         if (firebaseUid) {
           await cancelSubscription(firebaseUid);
+
+          // 취소 확인 메일
+          const userData = (await adminDb.collection("users").doc(firebaseUid).get()).data();
+          if (userData?.email) {
+            const endDate = sub.currentPeriodEnd instanceof Date
+              ? sub.currentPeriodEnd.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+              : String(sub.currentPeriodEnd ?? "");
+            sendCancellationEmail({
+              to: userData.email,
+              name: userData.displayName || "",
+              endDate,
+            }).catch((err) => console.error("Cancellation email failed:", err));
+          }
         }
         break;
       }
