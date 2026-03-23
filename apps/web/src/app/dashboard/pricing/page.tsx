@@ -5,12 +5,14 @@ import { Check, CreditCard } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
 import { toast } from "sonner";
+import { Waveform } from "@/components/waveform";
 
 export default function PricingPage() {
   const { profile } = useAuth();
   const { t } = useT();
   const userPlan = profile?.plan ?? "free";
   const [yearly, setYearly] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
 
   const plans = [
     {
@@ -29,7 +31,7 @@ export default function PricingPage() {
       id: "basic",
       name: t("pricing.basic"),
       monthly: { price: "$9.99", sub: t("pricing.billedMonthly") },
-      yearly: { price: "$7.49", sub: t("pricing.billedAnnually90") },
+      yearly: { price: "$7.50", sub: t("pricing.billedAnnually90") },
       features: [
         yearly ? t("pricing.minutes1200") : t("pricing.minutes100"),
         t("pricing.resultDownloads"),
@@ -41,7 +43,7 @@ export default function PricingPage() {
       id: "pro",
       name: t("pricing.pro"),
       monthly: { price: "$19.99", sub: t("pricing.billedMonthly") },
-      yearly: { price: "$14.99", sub: t("pricing.billedAnnually180") },
+      yearly: { price: "$15", sub: t("pricing.billedAnnually180") },
       features: [
         yearly ? t("pricing.minutes3600") : t("pricing.minutes300"),
         t("pricing.resultDownloads"),
@@ -51,6 +53,27 @@ export default function PricingPage() {
       highlighted: false,
     },
   ];
+
+  const handleSubscribe = async (planId: string) => {
+    if (planId === "free") return;
+    setLoading(planId);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan: planId,
+          period: yearly ? "yearly" : "monthly",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      window.location.href = data.url;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+      setLoading(null);
+    }
+  };
 
   return (
     <div className="max-w-3xl">
@@ -127,16 +150,23 @@ export default function PricingPage() {
               <div className="mt-5 inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 border border-border text-muted-foreground cursor-default">
                 {t("pricing.currentPlan")}
               </div>
+            ) : plan.id === "free" ? (
+              <div className="mt-5 h-9" />
             ) : (
               <button
-                onClick={() => toast.info(t("pricing.paymentComingSoon"))}
-                className={`mt-5 inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 transition-colors ${
+                onClick={() => handleSubscribe(plan.id)}
+                disabled={loading !== null}
+                className={`mt-5 inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 transition-colors disabled:opacity-50 ${
                   plan.highlighted
                     ? "bg-primary text-primary-foreground hover:bg-primary/90"
                     : "border border-border hover:bg-muted"
                 }`}
               >
-                {t("pricing.subscribe")}
+                {loading === plan.id ? (
+                  <Waveform bars={3} size="sm" barClassName="bg-primary-foreground/60" />
+                ) : (
+                  t("pricing.subscribe")
+                )}
               </button>
             )}
           </div>

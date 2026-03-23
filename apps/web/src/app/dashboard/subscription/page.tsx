@@ -1,15 +1,51 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
-import { Settings, ArrowRight } from "lucide-react";
+import { Settings, ArrowRight, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function SubscriptionPage() {
+function SubscriptionContent() {
   const { profile } = useAuth();
-  const { t } = useT();
+  const { t, lang } = useT();
+  const searchParams = useSearchParams();
   const plan = profile?.plan ?? "free";
   const isPaid = plan === "basic" || plan === "pro";
+  const sub = profile?.subscription as {
+    currentPeriodStart?: string;
+    currentPeriodEnd?: string;
+    status?: string;
+  } | null;
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  // 결제 성공 시 표시
+  const success = searchParams.get("success");
+
+  const handlePortal = async () => {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/portal", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      window.location.href = data.url;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong.");
+      setPortalLoading(false);
+    }
+  };
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "--";
+    return new Date(dateStr).toLocaleDateString(lang, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   return (
     <div className="max-w-2xl">
@@ -21,6 +57,12 @@ export default function SubscriptionPage() {
           {t("subscription.title")}
         </h1>
       </div>
+
+      {success && (
+        <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-4 mb-6">
+          <p className="text-sm text-green-400">{t("subscription.activated")}</p>
+        </div>
+      )}
 
       {/* Current Plan */}
       <div className="rounded-xl border border-border/60 bg-card p-6 mb-6">
@@ -42,37 +84,28 @@ export default function SubscriptionPage() {
           <div className="rounded-xl border border-border/60 bg-card p-6 mb-6">
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">{t("subscription.billingCycle")}</dt>
-                <dd className="font-medium">--</dd>
-              </div>
-              <div className="flex justify-between">
                 <dt className="text-muted-foreground">{t("subscription.startDate")}</dt>
-                <dd className="font-medium">--</dd>
+                <dd className="font-medium">{formatDate(sub?.currentPeriodStart)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">{t("subscription.endDate")}</dt>
-                <dd className="font-medium">--</dd>
+                <dd className="font-medium">{formatDate(sub?.currentPeriodEnd)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">{t("subscription.nextBilling")}</dt>
-                <dd className="font-medium">--</dd>
+                <dt className="text-muted-foreground">{t("subscription.status")}</dt>
+                <dd className="font-medium capitalize">{sub?.status ?? "--"}</dd>
               </div>
             </dl>
           </div>
 
-          <div className="flex gap-3">
-            <Link
-              href="/dashboard/pricing"
-              className="inline-flex items-center justify-center rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-6 transition-colors"
-            >
-              {t("subscription.managePlan")}
-            </Link>
-            <button
-              className="inline-flex items-center justify-center rounded-lg text-sm font-medium border border-border text-muted-foreground hover:bg-muted h-10 px-6 transition-colors"
-            >
-              {t("subscription.cancelSubscription")}
-            </button>
-          </div>
+          <button
+            onClick={handlePortal}
+            disabled={portalLoading}
+            className="inline-flex items-center gap-2 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 h-10 px-6 transition-colors"
+          >
+            {t("subscription.managePlan")}
+            <ExternalLink className="h-3.5 w-3.5" />
+          </button>
         </>
       ) : (
         <>
@@ -91,5 +124,13 @@ export default function SubscriptionPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function SubscriptionPage() {
+  return (
+    <Suspense>
+      <SubscriptionContent />
+    </Suspense>
   );
 }

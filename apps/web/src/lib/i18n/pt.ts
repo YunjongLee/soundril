@@ -208,6 +208,8 @@ const pt: Translations = {
     startDate: "Data de início",
     endDate: "Data de término",
     nextBilling: "Próxima cobrança",
+    status: "Status",
+    activated: "Sua assinatura está ativa! Os créditos foram adicionados.",
     cancelSubscription: "Cancelar assinatura",
     cancelConfirm: "Tem certeza de que deseja cancelar sua assinatura?",
   },

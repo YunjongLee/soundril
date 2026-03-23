@@ -208,6 +208,8 @@ const ru: Translations = {
     startDate: "Дата начала",
     endDate: "Дата окончания",
     nextBilling: "Следующий платёж",
+    status: "Статус",
+    activated: "Подписка активирована! Кредиты добавлены.",
     cancelSubscription: "Отменить подписку",
     cancelConfirm: "Вы уверены, что хотите отменить подписку?",
   },

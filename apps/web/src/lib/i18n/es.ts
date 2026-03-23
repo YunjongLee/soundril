@@ -208,6 +208,8 @@ const es: Translations = {
     startDate: "Fecha de inicio",
     endDate: "Fecha de fin",
     nextBilling: "Próxima facturación",
+    status: "Estado",
+    activated: "¡Tu suscripción está activa! Los créditos han sido añadidos.",
     cancelSubscription: "Cancelar suscripción",
     cancelConfirm: "¿Seguro que quieres cancelar tu suscripción?",
   },

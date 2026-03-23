@@ -207,6 +207,8 @@ const fr: Translations = {
     startDate: "Date de début",
     endDate: "Date de fin",
     nextBilling: "Prochaine facturation",
+    status: "Statut",
+    activated: "Votre abonnement est maintenant actif ! Les crédits ont été ajoutés.",
     cancelSubscription: "Annuler l'abonnement",
     cancelConfirm: "Êtes-vous sûr de vouloir annuler votre abonnement ?",
   },

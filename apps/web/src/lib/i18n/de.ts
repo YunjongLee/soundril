@@ -208,6 +208,8 @@ const de: Translations = {
     startDate: "Startdatum",
     endDate: "Enddatum",
     nextBilling: "Nächste Abrechnung",
+    status: "Status",
+    activated: "Ihr Abonnement ist jetzt aktiv! Guthaben wurde hinzugefügt.",
     cancelSubscription: "Abonnement kündigen",
     cancelConfirm: "Bist du sicher, dass du dein Abonnement kündigen möchtest?",
   },

@@ -16,6 +16,14 @@ interface UserProfile {
   credits: number;
   plan: string;
   totalCreditsUsed: number;
+  subscription?: {
+    polarSubscriptionId: string;
+    polarCustomerId: string;
+    productId: string;
+    currentPeriodStart: string;
+    currentPeriodEnd: string;
+    status: string;
+  } | null;
 }
 
 interface AuthContext {
@@ -56,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           credits: data.credits ?? 0,
           plan: data.plan ?? "free",
           totalCreditsUsed: data.totalCreditsUsed ?? 0,
+          subscription: data.subscription ?? null,
         });
       }
     });

@@ -202,6 +202,8 @@ const ja: Translations = {
     startDate: "開始日",
     endDate: "終了日",
     nextBilling: "次回課金日",
+    status: "ステータス",
+    activated: "サブスクリプションが有効になりました！クレジットが追加されました。",
     cancelSubscription: "サブスクリプションを解約",
     cancelConfirm: "本当にサブスクリプションを解約しますか？",
   },

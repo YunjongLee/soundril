@@ -63,7 +63,7 @@ export default function LandingPage() {
       id: "basic",
       name: t("pricing.basic"),
       monthly: { price: "$9.99", sub: t("pricing.billedMonthly") },
-      yearly: { price: "$7.49", sub: t("pricing.billedAnnually90") },
+      yearly: { price: "$7.50", sub: t("pricing.billedAnnually90") },
       features: [
         yearly ? t("pricing.minutes1200") : t("pricing.minutes100"),
         t("pricing.resultDownloads"),
@@ -76,7 +76,7 @@ export default function LandingPage() {
       id: "pro",
       name: t("pricing.pro"),
       monthly: { price: "$19.99", sub: t("pricing.billedMonthly") },
-      yearly: { price: "$14.99", sub: t("pricing.billedAnnually180") },
+      yearly: { price: "$15", sub: t("pricing.billedAnnually180") },
       features: [
         yearly ? t("pricing.minutes3600") : t("pricing.minutes300"),
         t("pricing.resultDownloads"),

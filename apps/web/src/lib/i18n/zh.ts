@@ -198,6 +198,8 @@ const zh: Translations = {
     startDate: "开始日期",
     endDate: "结束日期",
     nextBilling: "下次计费日期",
+    status: "状态",
+    activated: "订阅已激活！积分已添加。",
     cancelSubscription: "取消订阅",
     cancelConfirm: "确定要取消订阅吗？",
   },
