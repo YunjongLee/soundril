@@ -39,7 +39,7 @@ function LoginContent() {
         throw new Error("Login failed");
       }
 
-      router.replace(redirect);
+      window.location.href = redirect;
     } catch (error) {
       console.error("Login error:", error);
       toast.error(t("login.loginFailed"));
