@@ -9,6 +9,14 @@ const PLAN_CREDITS: Record<string, { monthly: number; yearly: number }> = {
 /**
  * 구독 활성화 시 유저 문서 업데이트 + 크레딧 지급.
  */
+/**
+ * 기존에 지급된 크레딧 계산 (plan + period 기반)
+ */
+export function getCreditsForProduct(plan: string | null, isYearly: boolean): number {
+  if (!plan) return 0;
+  return PLAN_CREDITS[plan]?.[isYearly ? "yearly" : "monthly"] ?? 0;
+}
+
 export async function activateSubscription(
   firebaseUid: string,
   plan: string,
@@ -20,13 +28,14 @@ export async function activateSubscription(
     currentPeriodEnd: string;
     status: string;
   },
-  skipCredits = false
+  previousCreditsGranted = 0
 ) {
   const isYearly =
     new Date(subscription.currentPeriodEnd).getTime() -
     new Date(subscription.currentPeriodStart).getTime() >
     60 * 24 * 60 * 60 * 1000; // > 60 days
-  const credits = PLAN_CREDITS[plan]?.[isYearly ? "yearly" : "monthly"] ?? 0;
+  const totalCredits = PLAN_CREDITS[plan]?.[isYearly ? "yearly" : "monthly"] ?? 0;
+  const creditsToGrant = Math.max(0, totalCredits - previousCreditsGranted);
   const userRef = adminDb.collection("users").doc(firebaseUid);
 
   await adminDb.runTransaction(async (tx) => {
@@ -42,21 +51,20 @@ export async function activateSubscription(
       updatedAt: FieldValue.serverTimestamp(),
     };
 
-    if (!skipCredits) {
-      updateData.credits = FieldValue.increment(credits);
+    if (creditsToGrant > 0) {
+      updateData.credits = FieldValue.increment(creditsToGrant);
     }
 
     tx.update(userRef, updateData);
 
-    // 크레딧 지급 기록 (지급 시에만)
-    if (!skipCredits) {
+    if (creditsToGrant > 0) {
       const txRef = adminDb.collection("creditTransactions").doc();
       tx.set(txRef, {
         userId: firebaseUid,
         type: "subscription_grant",
-        amount: credits,
+        amount: creditsToGrant,
         jobId: null,
-        description: `${plan} plan subscription - ${credits} credits`,
+        description: `${plan} plan subscription - ${creditsToGrant} credits`,
         createdAt: FieldValue.serverTimestamp(),
       });
     }

@@ -10,6 +10,7 @@ import {
   cancelSubscription,
   uncancelSubscription,
   expireSubscription,
+  getCreditsForProduct,
 } from "@/lib/subscription";
 import { adminDb } from "@/lib/firebase/server";
 import { sendSubscriptionEmail, sendCancellationEmail, sendPaymentFailedEmail } from "@/lib/email";
@@ -75,11 +76,15 @@ export async function POST(request: NextRequest) {
             // 같은 구독, 다른 기간 또는 상품 변경 → 갱신
             await renewSubscription(firebaseUid, plan, periodStart, periodEnd, sub.productId);
           } else {
+            // 이전 구독에서 이미 지급된 크레딧 계산
             const existingProductId = existingUser.data()?.subscription?.productId;
             const existingPlan = existingProductId ? getPlanFromProductId(existingProductId) : null;
-            const isSamePlan = existingPlan === plan;
+            const existingSub2 = existingUser.data()?.subscription;
+            const wasYearly = existingSub2?.currentPeriodStart && existingSub2?.currentPeriodEnd
+              ? (new Date(existingSub2.currentPeriodEnd).getTime() - new Date(existingSub2.currentPeriodStart).getTime()) > 60 * 24 * 60 * 60 * 1000
+              : false;
+            const previousCredits = getCreditsForProduct(existingPlan, wasYearly);
 
-            // 구독 정보 업데이트 (같은 플랜 내 주기 변경이면 크레딧 미지급)
             await activateSubscription(firebaseUid, plan, {
               polarSubscriptionId: sub.id,
               polarCustomerId: sub.customerId,
@@ -87,19 +92,21 @@ export async function POST(request: NextRequest) {
               currentPeriodStart: periodStart,
               currentPeriodEnd: periodEnd,
               status: sub.status,
-            }, isSamePlan);
+            }, previousCredits);
 
-            // 신규 구독 또는 플랜 업그레이드 시에만 메일 발송
-            if (!isSamePlan) {
+            const isYearly = (new Date(periodEnd).getTime() - new Date(periodStart).getTime()) > 60 * 24 * 60 * 60 * 1000;
+            const totalCredits = plan === "basic" ? (isYearly ? 1200 : 100) : (isYearly ? 3600 : 300);
+            const creditsGranted = Math.max(0, totalCredits - previousCredits);
+
+            // 크레딧이 추가 지급된 경우에만 메일 발송
+            if (creditsGranted > 0 && existingPlan !== plan) {
               const userData = existingUser.data();
               if (userData?.email) {
-                const isYearly = (new Date(periodEnd).getTime() - new Date(periodStart).getTime()) > 60 * 24 * 60 * 60 * 1000;
-                const credits = plan === "basic" ? (isYearly ? 1200 : 100) : (isYearly ? 3600 : 300);
                 sendSubscriptionEmail({
                   to: userData.email,
                   name: userData.displayName || "",
                   plan,
-                  credits,
+                  credits: totalCredits,
                 }).catch((err) => console.error("Subscription email failed:", err));
               }
             }
