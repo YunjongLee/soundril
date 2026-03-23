@@ -70,7 +70,8 @@ export async function renewSubscription(
   firebaseUid: string,
   plan: string,
   currentPeriodStart: string,
-  currentPeriodEnd: string
+  currentPeriodEnd: string,
+  productId?: string
 ) {
   const isYearly =
     new Date(currentPeriodEnd).getTime() -
@@ -80,12 +81,16 @@ export async function renewSubscription(
   const userRef = adminDb.collection("users").doc(firebaseUid);
 
   await adminDb.runTransaction(async (tx) => {
-    tx.update(userRef, {
+    const updateData: Record<string, unknown> = {
       "subscription.currentPeriodStart": currentPeriodStart,
       "subscription.currentPeriodEnd": currentPeriodEnd,
       credits: FieldValue.increment(credits),
       updatedAt: FieldValue.serverTimestamp(),
-    });
+    };
+    if (productId) {
+      updateData["subscription.productId"] = productId;
+    }
+    tx.update(userRef, updateData);
 
     const txRef = adminDb.collection("creditTransactions").doc();
     tx.set(txRef, {

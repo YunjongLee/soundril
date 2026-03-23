@@ -64,15 +64,16 @@ export async function POST(request: NextRequest) {
 
           if (
             existingSub?.polarSubscriptionId === sub.id &&
-            existingSub?.currentPeriodStart === periodStart
+            existingSub?.currentPeriodStart === periodStart &&
+            existingSub?.productId === sub.productId
           ) {
-            // 같은 구독, 같은 기간 → 중복 이벤트 무시
+            // 같은 구독, 같은 기간, 같은 상품 → 중복 이벤트 무시
             break;
           }
 
           if (existingSub?.polarSubscriptionId === sub.id) {
-            // 같은 구독, 다른 기간 → 갱신
-            await renewSubscription(firebaseUid, plan, periodStart, periodEnd);
+            // 같은 구독, 다른 기간 또는 상품 변경 → 갱신
+            await renewSubscription(firebaseUid, plan, periodStart, periodEnd, sub.productId);
           } else {
             const existingProductId = existingUser.data()?.subscription?.productId;
             const existingPlan = existingProductId ? getPlanFromProductId(existingProductId) : null;

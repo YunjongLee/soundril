@@ -180,7 +180,7 @@ export default function PricingPage() {
               ))}
             </ul>
 
-            <div className={`mt-5 transition-opacity duration-300 ${profile ? "opacity-100" : "opacity-0"}`}>
+            <div className={`mt-5 h-9 transition-opacity duration-300 ${profile ? "opacity-100" : "opacity-0"}`}>
               {((plan.id === "free" && userPlan === "free") ||
                (currentProductId && currentProductId === (yearly ? plan.yearly.productId : plan.monthly.productId))) ? (
                 <div className="inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 border border-border text-muted-foreground cursor-default w-full">
@@ -188,9 +188,7 @@ export default function PricingPage() {
                 </div>
               ) : plan.id === "free" ||
                  PLAN_RANK[plan.id as PlanName] < PLAN_RANK[userPlan] ||
-                 (plan.id === userPlan && isCurrentYearly && !yearly) ? (
-                <div className="h-9" />
-              ) : (
+                 (plan.id === userPlan && isCurrentYearly && !yearly) ? null : (
                 <button
                   onClick={() => handleSubscribe(plan.id)}
                   disabled={loading !== null}
@@ -201,7 +199,7 @@ export default function PricingPage() {
                   }`}
                 >
                   {loading === plan.id ? (
-                    <Waveform bars={3} size="sm" className="h-3" barClassName="bg-primary-foreground/60" />
+                    <Waveform bars={3} size="sm" className="!h-2" barClassName="bg-primary-foreground/60" />
                   ) : (
                     t("pricing.subscribe")
                   )}
