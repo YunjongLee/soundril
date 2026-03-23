@@ -2,6 +2,7 @@ import { Polar } from "@polar-sh/sdk";
 
 export const polar = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN!,
+  server: (process.env.POLAR_ENVIRONMENT as "sandbox" | "production") || "production",
 });
 
 export const PLAN_PRODUCT_IDS: Record<string, { monthly: string; yearly: string }> = {
