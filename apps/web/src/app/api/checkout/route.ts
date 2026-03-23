@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { polar, PLAN_PRODUCT_IDS } from "@/lib/polar";
+import { getPolar, PLAN_PRODUCT_IDS } from "@/lib/polar";
 import { verifySession } from "@/lib/firebase/server";
 import { cookies } from "next/headers";
 
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://soundril.com";
 
-    const checkout = await polar.checkouts.create({
+    const checkout = await getPolar().checkouts.create({
       products: [productId],
       successUrl: `${appUrl}/dashboard/subscription?success=true`,
       customerEmail: session.email ?? undefined,

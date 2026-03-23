@@ -1,9 +1,16 @@
 import { Polar } from "@polar-sh/sdk";
 
-export const polar = new Polar({
-  accessToken: process.env.POLAR_ACCESS_TOKEN!,
-  server: (process.env.POLAR_ENVIRONMENT as "sandbox" | "production") || "production",
-});
+let _polar: Polar | null = null;
+
+export function getPolar(): Polar {
+  if (!_polar) {
+    _polar = new Polar({
+      accessToken: process.env.POLAR_ACCESS_TOKEN!,
+      server: (process.env.POLAR_ENVIRONMENT as "sandbox" | "production") || "production",
+    });
+  }
+  return _polar;
+}
 
 export const PLAN_PRODUCT_IDS: Record<string, { monthly: string; yearly: string }> = {
   basic: {

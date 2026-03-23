@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { polar } from "@/lib/polar";
+import { getPolar } from "@/lib/polar";
 import { verifySession, adminDb } from "@/lib/firebase/server";
 import { cookies } from "next/headers";
 
@@ -23,7 +23,7 @@ export async function POST() {
       );
     }
 
-    const portal = await polar.customerSessions.create({
+    const portal = await getPolar().customerSessions.create({
       customerId: polarCustomerId,
     });
 
