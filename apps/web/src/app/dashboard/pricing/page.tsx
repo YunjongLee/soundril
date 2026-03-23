@@ -4,11 +4,9 @@ import { useState, useEffect } from "react";
 import { Check, CreditCard, X } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
-import { getPlanName, isPaidPlan, type PlanName } from "@/lib/plan";
+import { getPlanName } from "@/lib/plan";
 import { toast } from "sonner";
 import { Waveform } from "@/components/waveform";
-
-const PLAN_RANK: Record<PlanName, number> = { free: 0, basic: 1, pro: 2 };
 const PLAN_CREDITS: Record<string, { monthly: number; yearly: number }> = {
   basic: { monthly: 100, yearly: 1200 },
   pro: { monthly: 300, yearly: 3600 },
@@ -205,8 +203,7 @@ export default function PricingPage() {
                   {t("pricing.currentPlan")}
                 </div>
               ) : plan.id === "free" ||
-                 PLAN_RANK[plan.id as PlanName] < PLAN_RANK[userPlan] ||
-                 (plan.id === userPlan && isCurrentYearly && !yearly) ? null : (
+                 (PLAN_CREDITS[plan.id]?.[yearly ? "yearly" : "monthly"] ?? 0) <= currentCredits ? null : (
                 <button
                   onClick={() => handleClick(plan.id)}
                   disabled={loading !== null}
@@ -241,7 +238,7 @@ export default function PricingPage() {
         <>
           <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setConfirmPlan(null)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-card border border-border/60 rounded-xl p-6 max-w-sm w-full shadow-lg">
+            <div className="bg-card border border-border/60 rounded-xl p-6 max-w-[410px] w-full shadow-lg">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-lg">{t("pricing.confirmTitle")}</h3>
                 <button onClick={() => setConfirmPlan(null)} className="p-1 rounded hover:bg-muted">
