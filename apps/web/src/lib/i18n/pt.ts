@@ -218,6 +218,7 @@ const pt: Translations = {
     nextBilling: "Próxima cobrança",
     status: "Status",
     activated: "Sua assinatura está ativa! Os créditos foram adicionados.",
+    canceledNotice: "Sua assinatura foi cancelada. Você pode continuar usando seu plano atual até {date}.",
     pendingChange: "Seu plano será alterado para {plan} em {date}.",
     cancelSubscription: "Cancelar assinatura",
     cancelConfirm: "Tem certeza de que deseja cancelar sua assinatura?",

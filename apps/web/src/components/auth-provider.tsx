@@ -87,8 +87,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  const productId = ctx.profile?.subscription?.status === "active"
-    ? ctx.profile.subscription.productId
+  const sub = ctx.profile?.subscription;
+  // active 또는 canceled(기간 내)일 때 유료 플랜 유지
+  const isWithinPeriod = sub?.currentPeriodEnd
+    ? new Date(sub.currentPeriodEnd).getTime() > Date.now()
+    : false;
+  const productId = sub && (sub.status === "active" || (sub.status === "canceled" && isWithinPeriod))
+    ? sub.productId
     : null;
   return { ...ctx, productId };
 }

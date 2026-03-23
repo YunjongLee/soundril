@@ -218,6 +218,7 @@ const ru: Translations = {
     nextBilling: "Следующий платёж",
     status: "Статус",
     activated: "Подписка активирована! Кредиты добавлены.",
+    canceledNotice: "Ваша подписка отменена. Вы можете продолжать использовать текущий план до {date}.",
     pendingChange: "Ваш план изменится на {plan} {date}.",
     cancelSubscription: "Отменить подписку",
     cancelConfirm: "Вы уверены, что хотите отменить подписку?",

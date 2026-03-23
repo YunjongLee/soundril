@@ -214,6 +214,7 @@ const ko: Translations = {
     nextBilling: "다음 결제일",
     status: "상태",
     activated: "구독이 활성화되었습니다! 크레딧이 추가되었습니다.",
+    canceledNotice: "구독이 취소되었습니다. {date}까지 현재 플랜을 이용할 수 있습니다.",
     pendingChange: "{date}부터 {plan} 플랜으로 변경됩니다.",
     cancelSubscription: "구독 취소",
     cancelConfirm: "정말 구독을 취소하시겠습니까?",

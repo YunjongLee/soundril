@@ -99,6 +99,17 @@ function SubscriptionContent() {
             </dl>
           </div>
 
+          {/* 구독 취소 안내 */}
+          {sub?.status === "canceled" && (
+            <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-4 mb-6">
+              <p className="text-sm text-red-400">
+                {t("subscription.canceledNotice", {
+                  date: formatDate(sub.currentPeriodEnd),
+                })}
+              </p>
+            </div>
+          )}
+
           {/* 다음 기간 플랜 변경 예정 */}
           {sub?.pendingUpdate?.productId && (
             <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 mb-6">

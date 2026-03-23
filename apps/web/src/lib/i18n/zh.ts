@@ -208,6 +208,7 @@ const zh: Translations = {
     nextBilling: "下次计费日期",
     status: "状态",
     activated: "订阅已激活！积分已添加。",
+    canceledNotice: "您的订阅已取消。当前方案可使用至 {date}。",
     pendingChange: "您的方案将于 {date} 变更为 {plan}。",
     cancelSubscription: "取消订阅",
     cancelConfirm: "确定要取消订阅吗？",
