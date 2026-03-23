@@ -34,7 +34,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ url: checkout.url });
+    const url = checkout.url;
+    if (!url) {
+      console.error("Checkout response missing url:", JSON.stringify(checkout));
+      return NextResponse.json({ error: "Checkout URL not returned" }, { status: 500 });
+    }
+
+    return NextResponse.json({ url });
   } catch (error) {
     console.error("Checkout error:", error);
     const message = error instanceof Error ? error.message : "Failed to create checkout";
