@@ -18,12 +18,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
     }
 
-    const productId = PLAN_PRODUCT_IDS[plan][period as "monthly" | "yearly"];
+    const productId = PLAN_PRODUCT_IDS[plan][period as "monthly" | "yearly"]?.trim();
     if (!productId) {
       return NextResponse.json({ error: "Invalid period" }, { status: 400 });
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://soundril.com";
+    const appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://soundril.com").trim();
 
     const checkout = await getPolar().checkouts.create({
       products: [productId],
@@ -43,9 +43,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url });
   } catch (error) {
     console.error("Checkout error:", error);
-    const message = error instanceof Error ? error.message : "Failed to create checkout";
     return NextResponse.json(
-      { error: message },
+      { error: "Failed to create checkout" },
       { status: 500 }
     );
   }
