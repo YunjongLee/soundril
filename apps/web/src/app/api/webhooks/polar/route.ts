@@ -64,12 +64,13 @@ export async function POST(request: NextRequest) {
             : sub.currentPeriodEnd ? String(sub.currentPeriodEnd) : "";
 
           // pendingUpdate 처리
-          const pending = "pendingUpdate" in sub && sub.pendingUpdate
+          const rawPending = "pendingUpdate" in sub ? (sub.pendingUpdate as unknown as { productId?: string | null; appliesAt?: Date | string } | null) : null;
+          const pending = rawPending
             ? {
-                productId: (sub.pendingUpdate as { productId?: string | null }).productId ?? null,
-                appliesAt: (sub.pendingUpdate as { appliesAt?: Date | string }).appliesAt instanceof Date
-                  ? (sub.pendingUpdate as { appliesAt: Date }).appliesAt.toISOString()
-                  : String((sub.pendingUpdate as { appliesAt?: string }).appliesAt ?? ""),
+                productId: rawPending.productId ?? null,
+                appliesAt: rawPending.appliesAt instanceof Date
+                  ? rawPending.appliesAt.toISOString()
+                  : String(rawPending.appliesAt ?? ""),
               }
             : null;
 
