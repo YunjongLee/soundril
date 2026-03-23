@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, CreditCard } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
@@ -13,6 +13,15 @@ export default function PricingPage() {
   const userPlan = profile?.plan ?? "free";
   const [yearly, setYearly] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
+
+  // 뒤로가기로 돌아왔을 때 로딩 상태 초기화
+  useEffect(() => {
+    const handlePageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setLoading(null);
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
 
   const plans = [
     {
@@ -163,7 +172,7 @@ export default function PricingPage() {
                 }`}
               >
                 {loading === plan.id ? (
-                  <Waveform bars={3} size="sm" barClassName="bg-primary-foreground/60" />
+                  <Waveform bars={3} size="sm" className="h-4" barClassName="bg-primary-foreground/60" />
                 ) : (
                   t("pricing.subscribe")
                 )}
