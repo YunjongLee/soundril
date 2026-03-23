@@ -210,6 +210,9 @@ const zh: Translations = {
     subtitle: "您的账单历史和收据。",
     noInvoices: "暂无账单。",
     noInvoicesDesc: "首次付款后，账单将显示在此处。",
+    reasonNew: "新订阅",
+    reasonRenewal: "续费",
+    reasonUpdate: "方案变更",
   },
   help: {
     title: "联系客服",

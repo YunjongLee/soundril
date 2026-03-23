@@ -221,6 +221,9 @@ const de: Translations = {
     noInvoices: "Noch keine Rechnungen.",
     noInvoicesDesc:
       "Rechnungen werden hier nach deiner ersten Zahlung angezeigt.",
+    reasonNew: "Neues Abonnement",
+    reasonRenewal: "Verlängerung",
+    reasonUpdate: "Planänderung",
   },
   help: {
     title: "Support kontaktieren",

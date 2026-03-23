@@ -216,6 +216,9 @@ const ko: Translations = {
     subtitle: "결제 내역 및 영수증.",
     noInvoices: "아직 청구서가 없습니다.",
     noInvoicesDesc: "첫 결제 후 청구서가 여기에 표시됩니다.",
+    reasonNew: "신규 구독",
+    reasonRenewal: "갱신",
+    reasonUpdate: "플랜 변경",
   },
   help: {
     title: "고객 지원",

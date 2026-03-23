@@ -214,6 +214,9 @@ const en = {
     subtitle: "Your billing history and receipts.",
     noInvoices: "No invoices yet.",
     noInvoicesDesc: "Invoices will appear here after your first payment.",
+    reasonNew: "New Subscription",
+    reasonRenewal: "Renewal",
+    reasonUpdate: "Plan Change",
   },
   help: {
     title: "Contact Support",

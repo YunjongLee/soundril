@@ -221,6 +221,9 @@ const es: Translations = {
     noInvoices: "Aún no hay facturas.",
     noInvoicesDesc:
       "Las facturas aparecerán aquí después de tu primer pago.",
+    reasonNew: "Nueva suscripción",
+    reasonRenewal: "Renovación",
+    reasonUpdate: "Cambio de plan",
   },
   help: {
     title: "Contactar con soporte",

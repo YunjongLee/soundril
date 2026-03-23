@@ -214,6 +214,9 @@ const ja: Translations = {
     subtitle: "お支払い履歴と領収書。",
     noInvoices: "請求はまだありません。",
     noInvoicesDesc: "最初のお支払い後にここに表示されます。",
+    reasonNew: "新規契約",
+    reasonRenewal: "更新",
+    reasonUpdate: "プラン変更",
   },
   help: {
     title: "サポートに問い合わせ",

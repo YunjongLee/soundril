@@ -220,6 +220,9 @@ const fr: Translations = {
     noInvoices: "Aucune facture pour le moment.",
     noInvoicesDesc:
       "Les factures apparaîtront ici après votre premier paiement.",
+    reasonNew: "Nouvel abonnement",
+    reasonRenewal: "Renouvellement",
+    reasonUpdate: "Changement de plan",
   },
   help: {
     title: "Contacter le support",

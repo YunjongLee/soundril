@@ -221,6 +221,9 @@ const ru: Translations = {
     noInvoices: "Счетов пока нет.",
     noInvoicesDesc:
       "Счета появятся здесь после вашего первого платежа.",
+    reasonNew: "Новая подписка",
+    reasonRenewal: "Продление",
+    reasonUpdate: "Изменение плана",
   },
   help: {
     title: "Связаться с поддержкой",
