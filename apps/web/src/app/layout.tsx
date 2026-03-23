@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/components/auth-provider";
 import { LanguageProvider } from "@/lib/i18n";
+import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { CookieConsent } from "@/components/cookie-consent";
 import { Toaster } from "sonner";
@@ -61,6 +62,7 @@ export default function RootLayout({
             </LanguageProvider>
             <Toaster theme="dark" />
             <CookieConsent />
+            <Analytics />
           </AuthProvider>
         </ThemeProvider>
       </body>
