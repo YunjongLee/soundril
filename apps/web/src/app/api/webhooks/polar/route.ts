@@ -12,7 +12,7 @@ import {
   expireSubscription,
 } from "@/lib/subscription";
 import { adminDb } from "@/lib/firebase/server";
-import { sendSubscriptionEmail, sendCancellationEmail } from "@/lib/email";
+import { sendSubscriptionEmail, sendCancellationEmail, sendPaymentFailedEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -95,6 +95,21 @@ export async function POST(request: NextRequest) {
                 credits,
               }).catch((err) => console.error("Subscription email failed:", err));
             }
+          }
+        }
+        break;
+      }
+
+      case "subscription.past_due": {
+        const sub = event.data;
+        const firebaseUid = sub.metadata?.firebaseUid as string | undefined;
+        if (firebaseUid) {
+          const userData = (await adminDb.collection("users").doc(firebaseUid).get()).data();
+          if (userData?.email) {
+            sendPaymentFailedEmail({
+              to: userData.email,
+              name: userData.displayName || "",
+            }).catch((err) => console.error("Payment failed email error:", err));
           }
         }
         break;

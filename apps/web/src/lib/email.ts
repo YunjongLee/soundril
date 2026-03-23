@@ -105,6 +105,36 @@ export async function sendSubscriptionEmail({
 }
 
 /**
+ * 결제 실패 안내 메일
+ */
+export async function sendPaymentFailedEmail({
+  to,
+  name,
+}: {
+  to: string;
+  name: string;
+}) {
+  return resend.emails.send({
+    from: FROM,
+    to,
+    subject: "Payment failed — please update your payment method",
+    html: `
+      <h2>Payment Failed</h2>
+      <p>Hi ${name || "there"},</p>
+      <p>We couldn't process your latest payment. Please update your payment method to keep your subscription active.</p>
+      <p>
+        <a href="https://soundril.com/dashboard/subscription" style="display:inline-block;background:#8249DF;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;">
+          Update Payment Method
+        </a>
+      </p>
+      <p style="color:#888;font-size:12px;margin-top:24px;">
+        If you have any questions, contact us at help@soundril.com
+      </p>
+    `,
+  });
+}
+
+/**
  * 구독 취소 확인 메일
  */
 export async function sendCancellationEmail({

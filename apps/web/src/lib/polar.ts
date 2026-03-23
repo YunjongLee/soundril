@@ -6,6 +6,7 @@ export function getPolar(): Polar {
   if (!_polar) {
     _polar = new Polar({
       accessToken: process.env.POLAR_ACCESS_TOKEN!,
+      ...(process.env.POLAR_ENVIRONMENT === "sandbox" && { server: "sandbox" as const }),
     });
   }
   return _polar;
