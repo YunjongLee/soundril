@@ -211,6 +211,7 @@ const de: Translations = {
     nextBilling: "Nächste Abrechnung",
     status: "Status",
     activated: "Ihr Abonnement ist jetzt aktiv! Guthaben wurde hinzugefügt.",
+    pendingChange: "Ihr Plan wird am {date} auf {plan} geändert.",
     cancelSubscription: "Abonnement kündigen",
     cancelConfirm: "Bist du sicher, dass du dein Abonnement kündigen möchtest?",
   },

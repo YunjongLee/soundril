@@ -211,6 +211,7 @@ const es: Translations = {
     nextBilling: "Próxima facturación",
     status: "Estado",
     activated: "¡Tu suscripción está activa! Los créditos han sido añadidos.",
+    pendingChange: "Tu plan cambiará a {plan} el {date}.",
     cancelSubscription: "Cancelar suscripción",
     cancelConfirm: "¿Seguro que quieres cancelar tu suscripción?",
   },

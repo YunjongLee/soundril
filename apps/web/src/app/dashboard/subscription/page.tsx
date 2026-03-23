@@ -18,6 +18,7 @@ function SubscriptionContent() {
   const sub = profile?.subscription as {
     currentPeriodStart?: string;
     currentPeriodEnd?: string;
+    pendingUpdate?: { productId: string | null; appliesAt: string } | null;
     status?: string;
   } | null;
   const [portalLoading, setPortalLoading] = useState(false);

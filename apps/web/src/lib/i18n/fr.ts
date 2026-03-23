@@ -210,6 +210,7 @@ const fr: Translations = {
     nextBilling: "Prochaine facturation",
     status: "Statut",
     activated: "Votre abonnement est maintenant actif ! Les crédits ont été ajoutés.",
+    pendingChange: "Votre plan passera à {plan} le {date}.",
     cancelSubscription: "Annuler l'abonnement",
     cancelConfirm: "Êtes-vous sûr de vouloir annuler votre abonnement ?",
   },
