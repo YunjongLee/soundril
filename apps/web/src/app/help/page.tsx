@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Nav } from "@/components/nav";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
-import { Send } from "lucide-react";
+import { Send, Paperclip, X } from "lucide-react";
 import { toast } from "sonner";
 
 export default function HelpPage() {
@@ -12,6 +12,7 @@ export default function HelpPage() {
   const { t } = useT();
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,14 +25,15 @@ export default function HelpPage() {
     setSending(true);
 
     try {
+      const formData = new FormData();
+      formData.append("email", user?.email || "");
+      formData.append("subject", subject);
+      formData.append("description", description);
+      files.forEach((f) => formData.append("files", f));
+
       const res = await fetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: user?.email || "",
-          subject,
-          description,
-        }),
+        body: formData,
       });
 
       if (!res.ok) throw new Error();
@@ -39,6 +41,7 @@ export default function HelpPage() {
       toast.success(t("help.messageSent"));
       setSubject("");
       setDescription("");
+      setFiles([]);
     } catch {
       toast.error(t("common.somethingWentWrong"));
     }
@@ -99,12 +102,33 @@ export default function HelpPage() {
                 multiple
                 className="hidden"
                 onChange={(e) => {
-                  const names = Array.from(e.target.files || []).map((f) => f.name);
-                  if (names.length) toast.info(t("help.filesSelected", { count: names.length, filenames: names.join(", ") }));
+                  const selected = Array.from(e.target.files || []);
+                  if (selected.length) {
+                    setFiles((prev) => [...prev, ...selected]);
+                  }
+                  e.target.value = "";
                 }}
               />
               <p className="text-sm text-muted-foreground">{t("help.addFile")}</p>
             </label>
+            {files.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                {files.map((f, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Paperclip className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate flex-1">{f.name}</span>
+                    <span className="text-xs shrink-0">{(f.size / 1024).toFixed(0)}KB</span>
+                    <button
+                      type="button"
+                      onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
+                      className="p-0.5 rounded hover:bg-muted shrink-0"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <button

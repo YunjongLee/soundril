@@ -11,10 +11,12 @@ export async function sendContactEmail({
   userEmail,
   subject,
   description,
+  attachments,
 }: {
   userEmail: string;
   subject: string;
   description: string;
+  attachments?: { filename: string; content: Buffer }[];
 }) {
   return resend.emails.send({
     from: FROM,
@@ -27,6 +29,10 @@ export async function sendContactEmail({
       <hr />
       <p>${description.replace(/\n/g, "<br />")}</p>
     `,
+    attachments: attachments?.map((a) => ({
+      filename: a.filename,
+      content: a.content,
+    })),
   });
 }
 

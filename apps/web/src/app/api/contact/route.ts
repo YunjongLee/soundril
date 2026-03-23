@@ -9,17 +9,30 @@ export async function POST(request: NextRequest) {
       (await cookies()).get("__session")?.value ?? ""
     );
 
-    const { email, subject, description } = await request.json();
+    const formData = await request.formData();
+    const email = (session?.email || formData.get("email") as string) ?? "";
+    const subject = formData.get("subject") as string;
+    const description = formData.get("description") as string;
+    const files = formData.getAll("files") as File[];
 
-    const userEmail = session?.email || email;
-    if (!userEmail || !subject || !description) {
+    if (!email || !subject || !description) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    await sendContactEmail({ userEmail, subject, description });
+    // 파일을 Resend 첨부파일 형식으로 변환
+    const attachments = await Promise.all(
+      files
+        .filter((f) => f.size > 0)
+        .map(async (f) => ({
+          filename: f.name,
+          content: Buffer.from(await f.arrayBuffer()),
+        }))
+    );
+
+    await sendContactEmail({ userEmail: email, subject, description, attachments });
 
     return NextResponse.json({ success: true });
   } catch (error) {
