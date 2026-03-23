@@ -100,6 +100,13 @@ const de: Translations = {
     howMinutesWork: "So funktioniert das Guthaben",
     howMinutesWorkDesc:
       "1 Minute Audio = 1 Guthaben.\nEin 4-Minuten-Song verbraucht 4 Guthaben. Verwende dein Guthaben für jedes Tool — MR, LRC oder beides.",
+    confirmTitle: "Plan ändern",
+    confirmFrom: "Aktueller Plan",
+    confirmTo: "Neuer Plan",
+    confirmCredits: "Zusätzliches Guthaben",
+    confirmProration: "Die Preisdifferenz wird sofort berechnet.",
+    confirmCancel: "Abbrechen",
+    confirmApply: "Änderung bestätigen",
     planUpdated: "Ihr Plan wurde aktualisiert.",
     paymentComingSoon: "Zahlungsintegration kommt bald.",
   },
@@ -221,6 +228,8 @@ const de: Translations = {
     noInvoices: "Noch keine Rechnungen.",
     noInvoicesDesc:
       "Rechnungen werden hier nach deiner ersten Zahlung angezeigt.",
+    download: "Rechnung herunterladen",
+    downloadFailed: "Rechnung konnte nicht heruntergeladen werden.",
     reasonNew: "Neues Abonnement",
     reasonRenewal: "Verlängerung",
     reasonUpdate: "Planänderung",

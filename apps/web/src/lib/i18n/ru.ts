@@ -100,6 +100,13 @@ const ru: Translations = {
     howMinutesWork: "Как работают кредиты",
     howMinutesWorkDesc:
       "1 минута аудио = 1 кредит.\nПесня длительностью 4 минуты использует 4 кредита. Тратьте кредиты на любой инструмент — MR, LRC или оба.",
+    confirmTitle: "Сменить план",
+    confirmFrom: "Текущий план",
+    confirmTo: "Новый план",
+    confirmCredits: "Дополнительные кредиты",
+    confirmProration: "Разница в цене будет списана сразу.",
+    confirmCancel: "Отмена",
+    confirmApply: "Подтвердить",
     planUpdated: "Ваш план был обновлён.",
     paymentComingSoon: "Интеграция оплаты скоро будет доступна.",
   },
@@ -221,6 +228,8 @@ const ru: Translations = {
     noInvoices: "Счетов пока нет.",
     noInvoicesDesc:
       "Счета появятся здесь после вашего первого платежа.",
+    download: "Скачать счёт",
+    downloadFailed: "Не удалось скачать счёт.",
     reasonNew: "Новая подписка",
     reasonRenewal: "Продление",
     reasonUpdate: "Изменение плана",

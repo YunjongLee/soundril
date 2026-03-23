@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n";
-import { Receipt, FileText } from "lucide-react";
+import { Receipt, FileText, Download } from "lucide-react";
+import { toast } from "sonner";
 
 interface Invoice {
   id: string;
@@ -17,6 +18,20 @@ export default function InvoicesPage() {
   const { t, lang } = useT();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState<string | null>(null);
+
+  const handleDownload = async (orderId: string) => {
+    setDownloading(orderId);
+    try {
+      const res = await fetch(`/api/invoices/${orderId}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      window.open(data.url, "_blank");
+    } catch {
+      toast.error(t("invoices.downloadFailed"));
+    }
+    setDownloading(null);
+  };
 
   useEffect(() => {
     fetch("/api/invoices")
@@ -94,10 +109,18 @@ export default function InvoicesPage() {
                   {formatDate(invoice.createdAt)}
                 </p>
               </div>
-              <div className="text-right">
+              <div className="text-right shrink-0">
                 <p className="font-medium">{formatCurrency(invoice.totalAmount, invoice.currency)}</p>
                 <p className="text-xs text-muted-foreground mt-0.5 capitalize">{invoice.status}</p>
               </div>
+              <button
+                onClick={() => handleDownload(invoice.id)}
+                disabled={downloading === invoice.id}
+                className="p-2 rounded-lg hover:bg-muted transition-colors shrink-0 disabled:opacity-50"
+                title={t("invoices.download")}
+              >
+                <Download className="h-4 w-4 text-muted-foreground" />
+              </button>
             </div>
           ))}
         </div>

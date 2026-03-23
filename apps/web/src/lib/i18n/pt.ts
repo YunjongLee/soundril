@@ -100,6 +100,13 @@ const pt: Translations = {
     howMinutesWork: "Como funcionam os créditos",
     howMinutesWorkDesc:
       "1 minuto de áudio = 1 crédito.\nUma música de 4 minutos usa 4 créditos. Use seus créditos em qualquer ferramenta — MR, LRC, ou ambas.",
+    confirmTitle: "Alterar plano",
+    confirmFrom: "Plano atual",
+    confirmTo: "Novo plano",
+    confirmCredits: "Créditos adicionais",
+    confirmProration: "A diferença de preço será cobrada imediatamente.",
+    confirmCancel: "Cancelar",
+    confirmApply: "Confirmar alteração",
     planUpdated: "Seu plano foi atualizado.",
     paymentComingSoon: "Integração de pagamento em breve.",
   },
@@ -221,6 +228,8 @@ const pt: Translations = {
     noInvoices: "Nenhuma fatura ainda.",
     noInvoicesDesc:
       "As faturas aparecerão aqui após seu primeiro pagamento.",
+    download: "Baixar fatura",
+    downloadFailed: "Falha ao baixar a fatura.",
     reasonNew: "Nova assinatura",
     reasonRenewal: "Renovação",
     reasonUpdate: "Mudança de plano",

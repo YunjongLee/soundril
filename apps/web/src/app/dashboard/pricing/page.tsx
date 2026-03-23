@@ -1,14 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, CreditCard } from "lucide-react";
+import { Check, CreditCard, X } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
 import { getPlanName, isPaidPlan, type PlanName } from "@/lib/plan";
-
-const PLAN_RANK: Record<PlanName, number> = { free: 0, basic: 1, pro: 2 };
 import { toast } from "sonner";
 import { Waveform } from "@/components/waveform";
+
+const PLAN_RANK: Record<PlanName, number> = { free: 0, basic: 1, pro: 2 };
+const PLAN_CREDITS: Record<string, { monthly: number; yearly: number }> = {
+  basic: { monthly: 100, yearly: 1200 },
+  pro: { monthly: 300, yearly: 3600 },
+};
 
 export default function PricingPage() {
   const { profile, productId: currentProductId } = useAuth();
@@ -19,6 +23,7 @@ export default function PricingPage() {
     : false;
   const [yearly, setYearly] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
+  const [confirmPlan, setConfirmPlan] = useState<string | null>(null);
 
   // 뒤로가기로 돌아왔을 때 로딩 상태 초기화
   useEffect(() => {
@@ -71,8 +76,21 @@ export default function PricingPage() {
 
   const hasSubscription = !!currentProductId;
 
+  const handleClick = (planId: string) => {
+    if (hasSubscription) {
+      setConfirmPlan(planId);
+    } else {
+      handleSubscribe(planId);
+    }
+  };
+
+  const currentCredits = PLAN_CREDITS[userPlan]?.[isCurrentYearly ? "yearly" : "monthly"] ?? 0;
+  const confirmCredits = confirmPlan ? (PLAN_CREDITS[confirmPlan]?.[yearly ? "yearly" : "monthly"] ?? 0) : 0;
+  const additionalCredits = Math.max(0, confirmCredits - currentCredits);
+
   const handleSubscribe = async (planId: string) => {
     if (planId === "free") return;
+    setConfirmPlan(null);
     setLoading(planId);
     try {
       if (hasSubscription) {
@@ -190,7 +208,7 @@ export default function PricingPage() {
                  PLAN_RANK[plan.id as PlanName] < PLAN_RANK[userPlan] ||
                  (plan.id === userPlan && isCurrentYearly && !yearly) ? null : (
                 <button
-                  onClick={() => handleSubscribe(plan.id)}
+                  onClick={() => handleClick(plan.id)}
                   disabled={loading !== null}
                   className={`w-full inline-flex items-center justify-center rounded-lg text-sm font-medium h-9 transition-colors disabled:opacity-50 ${
                     plan.highlighted
@@ -217,6 +235,57 @@ export default function PricingPage() {
           {t("pricing.howMinutesWorkDesc")}
         </p>
       </div>
+
+      {/* 확인 모달 */}
+      {confirmPlan && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setConfirmPlan(null)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-card border border-border/60 rounded-xl p-6 max-w-sm w-full shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-lg">{t("pricing.confirmTitle")}</h3>
+                <button onClick={() => setConfirmPlan(null)} className="p-1 rounded hover:bg-muted">
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </div>
+
+              <dl className="space-y-2 text-sm mb-6">
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">{t("pricing.confirmFrom")}</dt>
+                  <dd className="font-medium capitalize">{userPlan} ({isCurrentYearly ? t("pricing.annually") : t("pricing.monthly")})</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">{t("pricing.confirmTo")}</dt>
+                  <dd className="font-medium capitalize">{confirmPlan} ({yearly ? t("pricing.annually") : t("pricing.monthly")})</dd>
+                </div>
+                <div className="border-t border-border/40 pt-2 flex justify-between">
+                  <dt className="text-muted-foreground">{t("pricing.confirmCredits")}</dt>
+                  <dd className="font-medium text-primary">+{additionalCredits.toLocaleString()}</dd>
+                </div>
+              </dl>
+
+              <p className="text-xs text-muted-foreground mb-4">
+                {t("pricing.confirmProration")}
+              </p>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirmPlan(null)}
+                  className="flex-1 rounded-lg text-sm font-medium h-9 border border-border hover:bg-muted transition-colors"
+                >
+                  {t("pricing.confirmCancel")}
+                </button>
+                <button
+                  onClick={() => handleSubscribe(confirmPlan)}
+                  className="flex-1 rounded-lg text-sm font-medium h-9 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                >
+                  {t("pricing.confirmApply")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
