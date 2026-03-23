@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Checkout URL not returned" }, { status: 500 });
     }
 
-    return NextResponse.json({ url });
+    const darkUrl = url.includes("?") ? `${url}&theme=dark` : `${url}?theme=dark`;
+    return NextResponse.json({ url: darkUrl });
   } catch (error) {
     console.error("Checkout error:", error);
     return NextResponse.json(
