@@ -88,7 +88,7 @@ export default function JobDetailPage() {
   const getPreviewUrl = useCallback(async (path: string) => {
     const idToken = await auth.currentUser?.getIdToken();
     const res = await fetch(
-      `/api/jobs/${jobId}?download=${encodeURIComponent(path)}`,
+      `/api/jobs/${jobId}?download=${encodeURIComponent(path)}&preview=true`,
       { headers: { Authorization: `Bearer ${idToken}` } }
     );
     if (!res.ok) return null;

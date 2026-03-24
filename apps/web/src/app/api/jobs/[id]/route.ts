@@ -40,11 +40,14 @@ export async function GET(
 
       const bucket = adminStorage.bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
       const file = bucket.file(downloadPath);
+      const isPreview = request.nextUrl.searchParams.get("preview") === "true";
       const customName = request.nextUrl.searchParams.get("filename") || downloadPath.split("/").pop() || "download";
       const [url] = await file.getSignedUrl({
         action: "read",
         expires: Date.now() + 15 * 60 * 1000,
-        responseDisposition: `attachment; filename="${customName}"`,
+        ...(isPreview
+          ? { responseDisposition: "inline" }
+          : { responseDisposition: `attachment; filename="${customName}"` }),
       });
 
       return NextResponse.json({ url });
