@@ -11,6 +11,7 @@ export async function createProcessingTask(payload: {
   type: "mr" | "lrc" | "lrc_mr";
   inputStoragePath: string;
   lyrics?: string;
+  coverStoragePath?: string | null;
 }) {
   const projectId = process.env.GCP_PROJECT_ID;
   const location = process.env.GCP_LOCATION || "asia-northeast3";

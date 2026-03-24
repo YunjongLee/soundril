@@ -176,6 +176,7 @@ const ja: Translations = {
     pause: "一時停止",
     previewLimited:
       "プレビューは30秒に制限されています。登録するとフルトラックを聴けます。",
+    clickToLoad: "クリックして波形を読み込む",
     previewDuration: "30秒プレビュー",
     first5Lines: "最初の5行プレビュー",
     showPreview: "プレビューを表示",

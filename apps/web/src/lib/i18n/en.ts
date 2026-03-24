@@ -175,8 +175,9 @@ const en = {
     playPreview: "Play Preview",
     pause: "Pause",
     previewLimited:
-      "Preview limited to 30 seconds. Subscribe to hear the full track.",
-    previewDuration: "30s preview",
+      "Preview limited to 1 minute. Subscribe to hear the full track.",
+    clickToLoad: "Click to load waveform",
+    previewDuration: "1 min preview",
     first5Lines: "First 5 lines preview",
     showPreview: "Show Preview",
     loading: "Loading...",

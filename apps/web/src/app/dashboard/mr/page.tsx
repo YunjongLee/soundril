@@ -6,7 +6,8 @@ import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
 import { getMaxFileSize } from "@/lib/plan";
 import { auth, storage } from "@/lib/firebase/client";
-import { ref, uploadBytes } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { extractAlbumArt } from "@/lib/albumArt";
 import { Waveform } from "@/components/waveform";
 import { Upload, Music, X, AlertCircle, Coins } from "lucide-react";
 import { toast } from "sonner";
@@ -32,6 +33,7 @@ export default function MRPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [duration, setDuration] = useState<number | null>(null);
+  const [albumArt, setAlbumArt] = useState<Blob | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
@@ -50,6 +52,7 @@ export default function MRPage() {
     }
 
     setFile(f);
+    extractAlbumArt(f).then(setAlbumArt).catch(() => setAlbumArt(null));
     const audio = new Audio();
     audio.addEventListener("loadedmetadata", () => {
       const dur = Math.ceil(audio.duration);
@@ -91,11 +94,22 @@ export default function MRPage() {
       const idToken = await currentUser.getIdToken();
 
       // 1. Firebase Storage에 직접 업로드
-      const storagePath = `uploads/${currentUser.uid}/${Date.now()}/${file.name}`;
+      const timestamp = Date.now();
+      const storagePath = `uploads/${currentUser.uid}/${timestamp}/${file.name}`;
       const storageRef = ref(storage, storagePath);
       await uploadBytes(storageRef, file, { contentType: file.type || "audio/mpeg" });
 
-      // 2. API에 메타데이터만 전달
+      // 2. 앨범 아트 업로드 (있으면)
+      let coverStoragePath: string | null = null;
+      let coverUrl: string | null = null;
+      if (albumArt) {
+        coverStoragePath = `uploads/${currentUser.uid}/${timestamp}/cover.jpg`;
+        const coverRef = ref(storage, coverStoragePath);
+        await uploadBytes(coverRef, albumArt, { contentType: albumArt.type || "image/jpeg" });
+        coverUrl = await getDownloadURL(coverRef);
+      }
+
+      // 3. API에 메타데이터만 전달
       const res = await fetch("/api/jobs", {
         method: "POST",
         headers: {
@@ -107,6 +121,8 @@ export default function MRPage() {
           durationSeconds: duration,
           inputStoragePath: storagePath,
           inputFileName: file.name,
+          coverStoragePath,
+          coverUrl,
         }),
       });
 

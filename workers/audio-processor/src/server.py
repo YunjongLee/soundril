@@ -37,6 +37,7 @@ class ProcessRequest(BaseModel):
     type: str  # 'mr' | 'lrc' | 'lrc_mr'
     inputStoragePath: str
     lyrics: str | None = None
+    coverStoragePath: str | None = None
 
 
 @app.get("/")
@@ -77,6 +78,7 @@ async def process(request: Request):
             job_type=req.type,
             input_storage_path=req.inputStoragePath,
             lyrics=req.lyrics,
+            cover_storage_path=req.coverStoragePath,
         )
 
         elapsed_ms = int((time.time() - start_time) * 1000)

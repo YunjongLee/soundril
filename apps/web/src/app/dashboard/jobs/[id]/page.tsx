@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, type RefObject } from "react";
+import type WaveSurfer from "wavesurfer.js";
 import { useParams, useRouter } from "next/navigation";
 import { doc, onSnapshot } from "firebase/firestore";
 import { toast } from "sonner";
@@ -20,6 +21,9 @@ import {
   Clock,
   Loader2,
   ArrowLeft,
+  Play,
+  Pause,
+  Eye,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -82,13 +86,14 @@ export default function JobDetailPage() {
   const isPaid = isPaidPlan(productId);
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
+  const [playingTrack, setPlayingTrack] = useState<string | null>(null);
 
   const jobId = params.id as string;
 
   const getPreviewUrl = useCallback(async (path: string) => {
     const idToken = await auth.currentUser?.getIdToken();
     const res = await fetch(
-      `/api/jobs/${jobId}?download=${encodeURIComponent(path)}&preview=true`,
+      `/api/jobs/${jobId}?download=${encodeURIComponent(path)}`,
       { headers: { Authorization: `Bearer ${idToken}` } }
     );
     if (!res.ok) return null;
@@ -253,7 +258,7 @@ export default function JobDetailPage() {
                   <Download className="h-4 w-4 text-muted-foreground" />
                 </button>
               ) : (
-                <AudioPreview label={t("job.mrTrack")} icon={<Music className="h-5 w-5 text-primary" />} storagePath={job.mrStoragePath} getUrl={getPreviewUrl} t={t} />
+                <AudioPreview trackId="mr" label={t("job.mrTrack")} icon={<Music className="h-5 w-5 text-primary" />} storagePath={job.mrStoragePath} getUrl={getPreviewUrl} t={t} playingTrack={playingTrack} onPlay={setPlayingTrack} />
               )
             )}
             {job.vocalsStoragePath && (
@@ -272,7 +277,7 @@ export default function JobDetailPage() {
                   <Download className="h-4 w-4 text-muted-foreground" />
                 </button>
               ) : (
-                <AudioPreview label={t("job.vocalsOnly")} icon={<Mic className="h-5 w-5 text-primary" />} storagePath={job.vocalsStoragePath} getUrl={getPreviewUrl} t={t} />
+                <AudioPreview trackId="vocals" label={t("job.vocalsOnly")} icon={<Mic className="h-5 w-5 text-primary" />} storagePath={job.vocalsStoragePath} getUrl={getPreviewUrl} t={t} playingTrack={playingTrack} onPlay={setPlayingTrack} />
               )
             )}
             {job.lrcStoragePath && (
@@ -291,7 +296,7 @@ export default function JobDetailPage() {
                   <Download className="h-4 w-4 text-muted-foreground" />
                 </button>
               ) : (
-                <LrcPreview storagePath={job.lrcStoragePath} getUrl={getPreviewUrl} t={t} />
+                <LrcPreview storagePath={job.lrcStoragePath} t={t} />
               )
             )}
           </div>
@@ -337,82 +342,195 @@ export default function JobDetailPage() {
 }
 
 
-// ── 30초 오디오 미리보기 ──
+// ── AudioBuffer → WAV Blob 변환 ──
+function audioBufferToWav(buffer: AudioBuffer): Blob {
+  const numCh = buffer.numberOfChannels;
+  const sampleRate = buffer.sampleRate;
+  const length = buffer.length * numCh * 2 + 44;
+  const out = new ArrayBuffer(length);
+  const view = new DataView(out);
+
+  const writeString = (offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+  };
+
+  writeString(0, "RIFF");
+  view.setUint32(4, length - 8, true);
+  writeString(8, "WAVE");
+  writeString(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numCh, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * numCh * 2, true);
+  view.setUint16(32, numCh * 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, "data");
+  view.setUint32(40, length - 44, true);
+
+  const channels = [];
+  for (let ch = 0; ch < numCh; ch++) channels.push(buffer.getChannelData(ch));
+
+  let offset = 44;
+  for (let i = 0; i < buffer.length; i++) {
+    for (let ch = 0; ch < numCh; ch++) {
+      const sample = Math.max(-1, Math.min(1, channels[ch][i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([out], { type: "audio/wav" });
+}
+
+// ── 오디오 Waveform 미리보기 (1분 제한) ──
 function AudioPreview({
+  trackId,
   label,
   icon,
   storagePath,
   getUrl,
   t,
+  playingTrack,
+  onPlay,
 }: {
+  trackId: string;
   label: string;
   icon: React.ReactNode;
   storagePath: string;
   getUrl: (path: string) => Promise<string | null>;
   t: (key: string, params?: Record<string, string | number>) => string;
+  playingTrack: string | null;
+  onPlay: (id: string | null) => void;
 }) {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [url, setUrl] = useState<string | null>(null);
+  const waveRef = useRef<HTMLDivElement>(null);
+  const wsRef = useRef<WaveSurfer | null>(null);
+  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
-  const PREVIEW_LIMIT = 30;
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const PREVIEW_LIMIT = 60;
 
-  const handlePlay = async () => {
-    if (!url) {
-      const fetchedUrl = await getUrl(storagePath);
-      if (fetchedUrl) setUrl(fetchedUrl);
-    }
-    setPlaying(true);
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
+  // 자동 로드
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    let ws: WaveSurfer | null = null;
+    let cancelled = false;
 
-    const onTimeUpdate = () => {
-      if (audio.currentTime >= PREVIEW_LIMIT) {
-        audio.pause();
-        audio.currentTime = 0;
-        setPlaying(false);
-        toast.info(t("job.previewLimited"));
+    (async () => {
+      const url = await getUrl(storagePath);
+      if (!url || !waveRef.current || cancelled) {
+        setLoading(false);
+        return;
       }
-    };
-    const onEnded = () => setPlaying(false);
-    const onPause = () => setPlaying(false);
 
-    audio.addEventListener("timeupdate", onTimeUpdate);
-    audio.addEventListener("ended", onEnded);
-    audio.addEventListener("pause", onPause);
+      const WS = (await import("wavesurfer.js")).default;
+      if (cancelled) return;
+
+      // 오디오 fetch → 첫 1분만 잘라서 blob 생성
+      const response = await fetch(url);
+      if (cancelled) return;
+      const arrayBuffer = await response.arrayBuffer();
+      if (cancelled) return;
+
+      const audioCtx = new AudioContext();
+      const decoded = await audioCtx.decodeAudioData(arrayBuffer);
+      const limitSamples = Math.min(decoded.length, PREVIEW_LIMIT * decoded.sampleRate);
+      const trimmed = audioCtx.createBuffer(decoded.numberOfChannels, limitSamples, decoded.sampleRate);
+      for (let ch = 0; ch < decoded.numberOfChannels; ch++) {
+        trimmed.copyToChannel(decoded.getChannelData(ch).slice(0, limitSamples), ch);
+      }
+      await audioCtx.close();
+      if (cancelled) return;
+
+      // trimmed buffer → wav blob
+      const wavBlob = audioBufferToWav(trimmed);
+      const trimmedUrl = URL.createObjectURL(wavBlob);
+
+      ws = WS.create({
+        container: waveRef.current,
+        waveColor: "rgba(130, 73, 223, 0.3)",
+        progressColor: "#8249DF",
+        cursorColor: "#8249DF",
+        cursorWidth: 1,
+        barWidth: 2,
+        barGap: 1,
+        barRadius: 2,
+        height: 48,
+        normalize: true,
+        dragToSeek: true,
+        url: trimmedUrl,
+      });
+
+      ws.on("ready", () => {
+        setDuration(ws!.getDuration());
+        setLoaded(true);
+        setLoading(false);
+      });
+
+      ws.on("timeupdate", (time) => setCurrentTime(time));
+      ws.on("play", () => {
+        setPlaying(true);
+        onPlay(trackId);
+      });
+      ws.on("pause", () => {
+        setPlaying(false);
+        onPlay(null);
+      });
+      ws.on("finish", () => {
+        setPlaying(false);
+        setCurrentTime(0);
+        onPlay(null);
+      });
+
+      wsRef.current = ws;
+    })();
+
     return () => {
-      audio.removeEventListener("timeupdate", onTimeUpdate);
-      audio.removeEventListener("ended", onEnded);
-      audio.removeEventListener("pause", onPause);
+      cancelled = true;
+      ws?.destroy();
     };
-  }, [url, t]);
+  }, [storagePath, getUrl, t]);
 
+  // 다른 트랙 재생 시 자신 pause
   useEffect(() => {
-    if (url && playing) {
-      audioRef.current?.play();
+    if (playingTrack && playingTrack !== trackId && wsRef.current?.isPlaying()) {
+      wsRef.current.pause();
     }
-  }, [url, playing]);
+  }, [playingTrack, trackId]);
 
   return (
     <div className="rounded-lg border border-border/60 p-3">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mb-2">
         <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
           {icon}
         </div>
         <div className="flex-1">
           <p className="text-sm font-medium">{label}</p>
-          <p className="text-xs text-muted-foreground">{t("job.previewDuration")}</p>
+          <p className="text-xs text-muted-foreground">
+            {loaded ? `${formatTime(currentTime)} / ${formatTime(duration)}` : t("job.previewDuration")}
+          </p>
         </div>
         <button
-          onClick={playing ? () => audioRef.current?.pause() : handlePlay}
-          className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+          onClick={() => wsRef.current?.playPause()}
+          disabled={!loaded}
+          className="h-8 w-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-50"
         >
-          {playing ? t("job.pause") : t("job.playPreview")}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </button>
       </div>
-      {url && <audio ref={audioRef} src={url} preload="auto" />}
+      <div ref={waveRef} className={loaded ? "" : "hidden"} />
+      {loading && (
+        <div className="h-12 rounded-lg bg-muted/30 flex items-center justify-center">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        </div>
+      )}
     </div>
   );
 }
@@ -421,11 +539,9 @@ function AudioPreview({
 // ── LRC 첫 5줄 미리보기 ──
 function LrcPreview({
   storagePath,
-  getUrl,
   t,
 }: {
   storagePath: string;
-  getUrl: (path: string) => Promise<string | null>;
   t: (key: string, params?: Record<string, string | number>) => string;
 }) {
   const [lines, setLines] = useState<string[] | null>(null);
@@ -433,13 +549,13 @@ function LrcPreview({
 
   const handleLoad = async () => {
     setLoading(true);
-    const url = await getUrl(storagePath);
-    if (!url) {
-      setLoading(false);
-      return;
-    }
     try {
-      const res = await fetch(url);
+      const idToken = await auth.currentUser?.getIdToken();
+      const res = await fetch(
+        `/api/jobs/${storagePath.split("/")[2]}?download=${encodeURIComponent(storagePath)}&preview=true`,
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      );
+      if (!res.ok) throw new Error();
       const text = await res.text();
       const allLines = text.split("\n").filter((l) => l.trim());
       setLines(allLines.slice(0, 5));
@@ -463,9 +579,9 @@ function LrcPreview({
           <button
             onClick={handleLoad}
             disabled={loading}
-            className="text-xs font-medium px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+            className="h-8 w-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-50"
           >
-            {loading ? t("job.loading") : t("job.showPreview")}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
           </button>
         )}
       </div>

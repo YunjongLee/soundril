@@ -172,6 +172,7 @@ const zh: Translations = {
     playPreview: "播放预览",
     pause: "暂停",
     previewLimited: "预览限制30秒。订阅后可收听完整音轨。",
+    clickToLoad: "点击加载波形",
     previewDuration: "30秒预览",
     first5Lines: "前5行预览",
     showPreview: "显示预览",

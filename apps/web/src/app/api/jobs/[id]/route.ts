@@ -41,13 +41,20 @@ export async function GET(
       const bucket = adminStorage.bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
       const file = bucket.file(downloadPath);
       const isPreview = request.nextUrl.searchParams.get("preview") === "true";
+
+      if (isPreview) {
+        // 미리보기: 파일 내용을 직접 반환
+        const [content] = await file.download();
+        return new NextResponse(content.toString("utf-8"), {
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+        });
+      }
+
       const customName = request.nextUrl.searchParams.get("filename") || downloadPath.split("/").pop() || "download";
       const [url] = await file.getSignedUrl({
         action: "read",
         expires: Date.now() + 15 * 60 * 1000,
-        ...(isPreview
-          ? { responseDisposition: "inline" }
-          : { responseDisposition: `attachment; filename="${customName}"` }),
+        responseDisposition: `attachment; filename="${customName}"`,
       });
 
       return NextResponse.json({ url });

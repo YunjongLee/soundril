@@ -17,6 +17,7 @@ export function getPlanName(productId: string | null | undefined): PlanName {
 }
 
 export function isPaidPlan(productId: string | null | undefined): boolean {
+  if (productId === "admin") return true;
   return getPlanName(productId) !== "free";
 }
 

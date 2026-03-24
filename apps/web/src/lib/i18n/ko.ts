@@ -177,8 +177,9 @@ const ko: Translations = {
     playPreview: "미리 듣기",
     pause: "일시정지",
     previewLimited:
-      "미리보기는 30초까지 가능합니다. 전체 트랙은 구독 후 이용하세요.",
-    previewDuration: "30초 미리보기",
+      "미리보기는 1분까지 가능합니다. 전체 트랙은 구독 후 이용하세요.",
+    clickToLoad: "클릭하여 파형 로드",
+    previewDuration: "1분 미리보기",
     first5Lines: "처음 5줄 미리보기",
     showPreview: "미리보기",
     loading: "불러오는 중...",

@@ -180,6 +180,7 @@ const fr: Translations = {
     pause: "Pause",
     previewLimited:
       "Aperçu limité à 30 secondes. Abonnez-vous pour écouter la piste complète.",
+    clickToLoad: "Cliquez pour charger la forme d'onde",
     previewDuration: "Aperçu de 30s",
     first5Lines: "Aperçu des 5 premières lignes",
     showPreview: "Afficher l'aperçu",

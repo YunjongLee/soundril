@@ -30,6 +30,7 @@ interface JobItem {
   status: "queued" | "processing" | "completed" | "failed" | "canceled";
   inputFileName: string;
   creditsCharged: number;
+  coverUrl?: string | null;
   createdAt: { seconds: number };
 }
 
@@ -128,8 +129,10 @@ export default function HistoryPage() {
                 href={`/dashboard/jobs/${job.id}`}
                 className="flex items-center gap-4 rounded-lg border border-border/60 bg-card p-4 hover:border-primary/30 transition-colors"
               >
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  {job.type === "mr" ? (
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+                  {job.coverUrl ? (
+                    <img src={job.coverUrl} alt="" className="h-full w-full object-cover" />
+                  ) : job.type === "mr" ? (
                     <Music className="h-5 w-5 text-primary" />
                   ) : (
                     <FileText className="h-5 w-5 text-primary" />

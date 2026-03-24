@@ -181,6 +181,7 @@ const es: Translations = {
     pause: "Pausar",
     previewLimited:
       "Vista previa limitada a 30 segundos. Suscríbete para escuchar la pista completa.",
+    clickToLoad: "Haz clic para cargar la forma de onda",
     previewDuration: "Vista previa de 30s",
     first5Lines: "Vista previa de las 5 primeras líneas",
     showPreview: "Mostrar vista previa",

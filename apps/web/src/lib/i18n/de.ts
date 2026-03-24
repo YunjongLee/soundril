@@ -181,6 +181,7 @@ const de: Translations = {
     pause: "Pause",
     previewLimited:
       "Vorschau auf 30 Sekunden begrenzt. Abonniere, um den vollständigen Track zu hören.",
+    clickToLoad: "Klicken, um Wellenform zu laden",
     previewDuration: "30s Vorschau",
     first5Lines: "Vorschau der ersten 5 Zeilen",
     showPreview: "Vorschau anzeigen",

@@ -57,12 +57,25 @@ def separate_vocals(audio_path: str, output_dir: str) -> tuple[str, str]:
     return str(vocals_path), str(mr_path)
 
 
-def encode_mp3(wav_path: str, mp3_path: str, bitrate: str = "320k"):
-    """WAV → MP3 encoding via ffmpeg."""
-    result = subprocess.run(
-        ["ffmpeg", "-y", "-i", wav_path, "-b:a", bitrate, mp3_path],
-        capture_output=True, text=True,
-    )
+def encode_mp3(wav_path: str, mp3_path: str, bitrate: str = "320k", cover_path: str | None = None):
+    """WAV → MP3 encoding via ffmpeg. 앨범 아트가 있으면 임베딩."""
+    if cover_path and Path(cover_path).exists():
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", wav_path,
+            "-i", cover_path,
+            "-map", "0:a", "-map", "1:0",
+            "-c:a", "libmp3lame", "-b:a", bitrate,
+            "-c:v", "mjpeg",
+            "-id3v2_version", "3",
+            "-metadata:s:v", "title=Album cover",
+            "-metadata:s:v", "comment=Cover (front)",
+            mp3_path,
+        ]
+    else:
+        cmd = ["ffmpeg", "-y", "-i", wav_path, "-b:a", bitrate, mp3_path]
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         raise RuntimeError(f"ffmpeg encoding failed: {result.stderr[:300]}")
 
@@ -327,6 +340,7 @@ async def process_job(
     job_type: str,
     input_storage_path: str,
     lyrics: str | None = None,
+    cover_storage_path: str | None = None,
 ) -> dict:
     """Main processing pipeline. Returns dict with result storage paths."""
     work_dir = tempfile.mkdtemp(prefix=f"soundril_{job_id}_")
@@ -338,6 +352,18 @@ async def process_job(
         local_input = str(Path(work_dir) / input_filename)
         logger.info(f"Downloading {input_storage_path}...")
         await download_file(input_storage_path, local_input)
+
+        # Download cover art if available
+        local_cover: str | None = None
+        if cover_storage_path:
+            local_cover = str(Path(work_dir) / "cover.jpg")
+            try:
+                await download_file(cover_storage_path, local_cover)
+                logger.info("Cover art downloaded")
+            except Exception:
+                local_cover = None
+                logger.info("Cover art not found, skipping")
+
         await update_job_progress(job_id, 5, "Preparing audio...")
 
         # Step 1: Vocal separation
@@ -348,7 +374,7 @@ async def process_job(
         # Upload MR if needed
         if job_type in ("mr", "lrc_mr"):
             mr_mp3_path = str(Path(work_dir) / "mr.mp3")
-            encode_mp3(mr_path, mr_mp3_path)
+            encode_mp3(mr_path, mr_mp3_path, cover_path=local_cover)
             mr_storage_path = f"results/{user_id}/{job_id}/mr.mp3"
             await upload_file(mr_mp3_path, mr_storage_path)
             result["mrStoragePath"] = mr_storage_path
@@ -357,7 +383,7 @@ async def process_job(
         # Upload vocals (MR 포함 타입만)
         if job_type in ("mr", "lrc_mr"):
             vocals_mp3_path = str(Path(work_dir) / "vocals.mp3")
-            encode_mp3(vocals_path, vocals_mp3_path)
+            encode_mp3(vocals_path, vocals_mp3_path, cover_path=local_cover)
             vocals_storage_path = f"results/{user_id}/{job_id}/vocals.mp3"
             await upload_file(vocals_mp3_path, vocals_storage_path)
             result["vocalsStoragePath"] = vocals_storage_path

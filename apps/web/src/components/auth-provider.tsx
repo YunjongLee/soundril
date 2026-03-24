@@ -15,6 +15,7 @@ import { getClientAuth, getClientDb } from "@/lib/firebase/client";
 interface UserProfile {
   credits: number;
   totalCreditsUsed: number;
+  isAdmin?: boolean;
   subscription?: {
     polarSubscriptionId: string;
     polarCustomerId: string;
@@ -60,12 +61,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) return;
 
-    const unsub = onSnapshot(doc(getClientDb(), "users", user.uid), (snap) => {
+    const unsub = onSnapshot(doc(getClientDb(), "users", user.uid), async (snap) => {
       if (snap.exists()) {
         const data = snap.data();
+        // admin claim 확인
+        const tokenResult = await user.getIdTokenResult(true);
+        const isAdmin = tokenResult.claims.admin === true;
+
         setProfile({
           credits: data.credits ?? 0,
           totalCreditsUsed: data.totalCreditsUsed ?? 0,
+          isAdmin,
           subscription: data.subscription ?? null,
         });
       }
@@ -92,8 +98,11 @@ export function useAuth() {
   const isWithinPeriod = sub?.currentPeriodEnd
     ? new Date(sub.currentPeriodEnd).getTime() > Date.now()
     : false;
-  const productId = sub && (sub.status === "active" || (sub.status === "canceled" && isWithinPeriod))
-    ? sub.productId
-    : null;
+  const isAdmin = ctx.profile?.isAdmin === true;
+  const productId = isAdmin
+    ? "admin"
+    : sub && (sub.status === "active" || (sub.status === "canceled" && isWithinPeriod))
+      ? sub.productId
+      : null;
   return { ...ctx, productId };
 }
