@@ -5,7 +5,9 @@ export type TransactionType =
   | "signup_bonus"
   | "subscription_grant"
   | "job_charge"
-  | "job_refund";
+  | "job_refund"
+  | "admin_grant"
+  | "admin_deduction";
 
 /**
  * 분 필요량 계산.
@@ -105,6 +107,53 @@ export async function refundCredits(
       balanceBefore: currentCredits,
       balanceAfter: newBalance,
       jobId,
+      description,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
+    return { balanceBefore: currentCredits, balanceAfter: newBalance };
+  });
+}
+
+/**
+ * Admin 크레딧 수동 조정 (grant or deduction).
+ * amount > 0 → grant, amount < 0 → deduction.
+ */
+export async function adminAdjustCredits(
+  userId: string,
+  amount: number,
+  description: string
+) {
+  return adminDb.runTransaction(async (tx) => {
+    const userRef = adminDb.collection("users").doc(userId);
+    const userDoc = await tx.get(userRef);
+
+    if (!userDoc.exists) {
+      throw new Error("User not found");
+    }
+
+    const currentCredits = userDoc.data()!.credits as number;
+    const newBalance = currentCredits + amount;
+
+    if (newBalance < 0) {
+      throw new Error(
+        `Insufficient credits: ${currentCredits} available, cannot deduct ${Math.abs(amount)}`
+      );
+    }
+
+    tx.update(userRef, {
+      credits: newBalance,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    const txRef = adminDb.collection("creditTransactions").doc();
+    tx.set(txRef, {
+      userId,
+      type: (amount > 0 ? "admin_grant" : "admin_deduction") as TransactionType,
+      amount,
+      balanceBefore: currentCredits,
+      balanceAfter: newBalance,
+      jobId: null,
       description,
       createdAt: FieldValue.serverTimestamp(),
     });

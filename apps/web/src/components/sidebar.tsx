@@ -22,6 +22,8 @@ import {
   Menu,
   X,
   Globe,
+  Activity,
+  Users,
 } from "lucide-react";
 
 const navGroups = [
@@ -109,6 +111,40 @@ function SidebarContent({
             })}
           </div>
         ))}
+
+        {/* Admin */}
+        {profile?.isAdmin && (
+          <div className="space-y-1">
+            <p className="px-3 text-[11px] font-semibold text-muted-foreground/50 uppercase tracking-wider mb-1">
+              Admin
+            </p>
+            {[
+              { href: "/dashboard/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+              { href: "/dashboard/admin/jobs", label: "Job Monitor", icon: Activity, exact: false },
+              { href: "/dashboard/admin/users", label: "Users", icon: Users, exact: false },
+            ].map((item) => {
+              const isActive = item.exact
+                ? pathname === item.href
+                : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onNavigate}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                    isActive
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </nav>
 
       {/* User & Logout */}
