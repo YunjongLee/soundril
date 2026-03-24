@@ -85,6 +85,17 @@ export default function JobDetailPage() {
 
   const jobId = params.id as string;
 
+  const getPreviewUrl = useCallback(async (path: string) => {
+    const idToken = await auth.currentUser?.getIdToken();
+    const res = await fetch(
+      `/api/jobs/${jobId}?download=${encodeURIComponent(path)}`,
+      { headers: { Authorization: `Bearer ${idToken}` } }
+    );
+    if (!res.ok) return null;
+    const { url } = await res.json();
+    return url as string;
+  }, [jobId]);
+
   useEffect(() => {
     if (!jobId) return;
 
@@ -148,17 +159,6 @@ export default function JobDetailPage() {
     a.download = filename;
     a.click();
   };
-
-  const getPreviewUrl = useCallback(async (path: string) => {
-    const idToken = await auth.currentUser?.getIdToken();
-    const res = await fetch(
-      `/api/jobs/${jobId}?download=${encodeURIComponent(path)}`,
-      { headers: { Authorization: `Bearer ${idToken}` } }
-    );
-    if (!res.ok) return null;
-    const { url } = await res.json();
-    return url as string;
-  }, [jobId]);
 
   return (
     <div className="max-w-2xl">
