@@ -77,8 +77,9 @@ const statusConfig = {
 export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, productId } = useAuth();
   const { t, lang } = useT();
+  const isPaid = isPaidPlan(productId);
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -123,8 +124,6 @@ export default function JobDetailPage() {
     );
   }
 
-  const { productId } = useAuth();
-  const isPaid = isPaidPlan(productId);
   const status = statusConfig[job.status] || statusConfig.failed;
   const StatusIcon = status.icon;
   const isActive = job.status === "queued" || job.status === "processing";
