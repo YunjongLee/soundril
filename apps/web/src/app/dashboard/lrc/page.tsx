@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
 import { getMaxFileSize } from "@/lib/plan";
-import { auth } from "@/lib/firebase/client";
+import { auth, storage } from "@/lib/firebase/client";
+import { ref, uploadBytes } from "firebase/storage";
 import { Waveform } from "@/components/waveform";
 import { Upload, FileText, X, Music, AlertCircle, Coins } from "lucide-react";
 import { toast } from "sonner";
@@ -91,19 +92,29 @@ export default function LRCPage() {
     setSubmitting(true);
 
     try {
-      const idToken = await auth.currentUser?.getIdToken();
-      if (!idToken) throw new Error(t("common.pleaseSignInAgain"));
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error(t("common.pleaseSignInAgain"));
+      const idToken = await currentUser.getIdToken();
 
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("type", type);
-      formData.append("durationSeconds", String(duration));
-      formData.append("lyrics", lyrics);
+      // 1. Firebase Storage에 직접 업로드
+      const storagePath = `uploads/${currentUser.uid}/${Date.now()}/${file.name}`;
+      const storageRef = ref(storage, storagePath);
+      await uploadBytes(storageRef, file, { contentType: file.type || "audio/mpeg" });
 
+      // 2. API에 메타데이터만 전달
       const res = await fetch("/api/jobs", {
         method: "POST",
-        headers: { Authorization: `Bearer ${idToken}` },
-        body: formData,
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          type,
+          durationSeconds: duration,
+          inputStoragePath: storagePath,
+          inputFileName: file.name,
+          lyrics,
+        }),
       });
 
       if (!res.ok) {

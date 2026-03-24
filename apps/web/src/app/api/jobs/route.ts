@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { adminAuth, adminDb, adminStorage } from "@/lib/firebase/server";
+import { adminAuth, adminDb } from "@/lib/firebase/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { calculateCredits, chargeCredits, refundCredits } from "@/lib/credits";
 import { createProcessingTask } from "@/lib/cloudTasks";
@@ -21,14 +21,15 @@ export async function POST(request: NextRequest) {
     const decoded = await adminAuth.verifyIdToken(idToken);
     userId = decoded.uid;
 
-    // 2. Parse form data
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
-    const type = formData.get("type") as "mr" | "lrc" | "lrc_mr";
-    const durationSeconds = Number(formData.get("durationSeconds"));
-    const lyrics = formData.get("lyrics") as string | null;
+    // 2. Parse request body
+    const body = await request.json();
+    const type = body.type as "mr" | "lrc" | "lrc_mr";
+    const durationSeconds = Number(body.durationSeconds);
+    const inputStoragePath = body.inputStoragePath as string;
+    const inputFileName = body.inputFileName as string;
+    const lyrics = (body.lyrics as string) || null;
 
-    if (!file || !type || !durationSeconds) {
+    if (!type || !durationSeconds || !inputStoragePath || !inputFileName) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -46,31 +47,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Calculate credits
+    // 3. Validate storage path belongs to user
+    if (!inputStoragePath.startsWith(`uploads/${userId}/`)) {
+      return NextResponse.json({ error: "Invalid file path" }, { status: 403 });
+    }
+
+    // 4. Calculate credits
     creditsCharged = calculateCredits(durationSeconds, type);
 
-    // 4. Create job doc
+    // 5. Create job doc
     const jobRef = adminDb.collection("jobs").doc();
     jobId = jobRef.id;
 
-    const inputStoragePath = `uploads/${userId}/${jobId}/${file.name}`;
-
-    // 5. Charge credits (Firestore transaction)
+    // 6. Charge credits (Firestore transaction)
     await chargeCredits(
       userId,
       creditsCharged,
       jobId,
-      `${type.toUpperCase()} - ${file.name}`
+      `${type.toUpperCase()} - ${inputFileName}`
     );
     charged = true;
-
-    // 6. Upload file to Storage
-    const bucket = adminStorage.bucket(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
-    const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const storageFile = bucket.file(inputStoragePath);
-    await storageFile.save(fileBuffer, {
-      contentType: file.type || "audio/mpeg",
-    });
 
     // 7. Create job document
     await jobRef.set({
@@ -80,7 +76,7 @@ export async function POST(request: NextRequest) {
       progress: 0,
       progressStep: "",
       inputStoragePath,
-      inputFileName: file.name,
+      inputFileName,
       inputDurationSeconds: durationSeconds,
       lyrics: lyrics || null,
       creditsCharged,
