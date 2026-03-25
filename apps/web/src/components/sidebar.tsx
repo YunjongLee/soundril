@@ -80,7 +80,7 @@ function SidebarContent({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-4">
+      <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto">
         {navGroups.map((group, gi) => (
           <div key={gi} className="space-y-1">
             {group.titleKey && (
