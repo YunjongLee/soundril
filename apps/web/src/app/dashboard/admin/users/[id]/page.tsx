@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Waveform } from "@/components/waveform";
+import { adminFetch } from "@/lib/admin-fetch";
 
 interface UserDetail {
   id: string;
@@ -84,7 +85,7 @@ export default function AdminUserDetailPage() {
   const [adjusting, setAdjusting] = useState(false);
 
   const fetchUser = useCallback(async () => {
-    const res = await fetch(`/api/admin/users/${userId}`);
+    const res = await adminFetch(`/api/admin/users/${userId}`);
     if (!res.ok) throw new Error("Failed to fetch user");
     return res.json();
   }, [userId]);
@@ -106,7 +107,7 @@ export default function AdminUserDetailPage() {
     }
     setAdjusting(true);
     try {
-      const res = await fetch(`/api/admin/users/${userId}/credits`, {
+      const res = await adminFetch(`/api/admin/users/${userId}/credits`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: num, description: description.trim() }),

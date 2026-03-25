@@ -12,6 +12,7 @@ import {
   Ban,
 } from "lucide-react";
 import { Waveform } from "@/components/waveform";
+import { adminFetch } from "@/lib/admin-fetch";
 
 interface Job {
   id: string;
@@ -82,7 +83,7 @@ export default function AdminJobsPage() {
       params.set("limit", "50");
       if (cursor) params.set("startAfter", cursor);
 
-      const res = await fetch(`/api/admin/jobs?${params}`);
+      const res = await adminFetch(`/api/admin/jobs?${params}`);
       if (!res.ok) throw new Error("Failed to fetch jobs");
       return res.json() as Promise<{ jobs: Job[]; hasMore: boolean }>;
     },
@@ -112,7 +113,7 @@ export default function AdminJobsPage() {
     if (!window.confirm("Cancel this job? Credits will be refunded.")) return;
     setActionLoading(jobId);
     try {
-      const res = await fetch(`/api/admin/jobs/${jobId}/cancel`, {
+      const res = await adminFetch(`/api/admin/jobs/${jobId}/cancel`, {
         method: "POST",
       });
       if (!res.ok) {
@@ -137,7 +138,7 @@ export default function AdminJobsPage() {
       return;
     setActionLoading(jobId);
     try {
-      const res = await fetch(`/api/admin/jobs/${jobId}/retry`, {
+      const res = await adminFetch(`/api/admin/jobs/${jobId}/retry`, {
         method: "POST",
       });
       if (!res.ok) {

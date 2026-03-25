@@ -15,6 +15,7 @@ import {
   Activity,
 } from "lucide-react";
 import { Waveform } from "@/components/waveform";
+import { adminFetch } from "@/lib/admin-fetch";
 
 interface Stats {
   today: {
@@ -75,12 +76,20 @@ function StatCard({
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch("/api/admin/stats")
-      .then((r) => r.json())
+    adminFetch("/api/admin/stats")
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load stats");
+        return r.json();
+      })
       .then((data) => {
         setStats(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
         setLoading(false);
       });
   }, []);
@@ -93,7 +102,13 @@ export default function AdminDashboardPage() {
     );
   }
 
-  if (!stats) return null;
+  if (error || !stats) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-muted-foreground">Failed to load admin stats. Try refreshing.</p>
+      </div>
+    );
+  }
 
   const todayFailed = stats.today.byStatus.failed || 0;
   const todayCompleted = stats.today.byStatus.completed || 0;

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Users, Search, Coins } from "lucide-react";
 import { Waveform } from "@/components/waveform";
+import { adminFetch } from "@/lib/admin-fetch";
 
 interface UserItem {
   id: string;
@@ -31,7 +32,7 @@ export default function AdminUsersPage() {
       params.set("limit", "50");
       if (cursor) params.set("startAfter", cursor);
 
-      const res = await fetch(`/api/admin/users?${params}`);
+      const res = await adminFetch(`/api/admin/users?${params}`);
       if (!res.ok) throw new Error("Failed to fetch users");
       return res.json() as Promise<{ users: UserItem[]; hasMore: boolean }>;
     },
