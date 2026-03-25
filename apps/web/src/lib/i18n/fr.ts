@@ -118,6 +118,7 @@ const fr: Translations = {
   },
   dashboard: {
     welcomeBack: "Bon retour",
+    welcomeBackName: "Bon retour, {name}",
     chooseToolToStart: "Choisissez un outil pour commencer.",
     minutesRemaining: "Crédits restants",
     minutesUsed: "Crédits utilisés",

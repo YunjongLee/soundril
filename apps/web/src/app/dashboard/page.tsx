@@ -83,7 +83,7 @@ export default function DashboardPage() {
     <div className="max-w-4xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold">
-          {t("dashboard.welcomeBack")}{user?.displayName ? `, ${user.displayName.split(" ")[0]}` : ""}
+          {user?.displayName ? t("dashboard.welcomeBackName", { name: user.displayName.split(" ")[0] }) : t("dashboard.welcomeBack")}
         </h1>
         <p className="text-muted-foreground mt-1">
           {t("dashboard.chooseToolToStart")}

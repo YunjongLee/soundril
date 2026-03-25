@@ -119,6 +119,7 @@ const de: Translations = {
   },
   dashboard: {
     welcomeBack: "Willkommen zurück",
+    welcomeBackName: "Willkommen zurück, {name}",
     chooseToolToStart: "Wähle ein Werkzeug, um loszulegen.",
     minutesRemaining: "Verbleibendes Guthaben",
     minutesUsed: "Verbrauchtes Guthaben",

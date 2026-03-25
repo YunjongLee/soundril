@@ -115,6 +115,7 @@ const zh: Translations = {
   },
   dashboard: {
     welcomeBack: "欢迎回来",
+    welcomeBackName: "欢迎回来，{name}",
     chooseToolToStart: "选择一个工具开始使用。",
     minutesRemaining: "剩余额度",
     minutesUsed: "已用额度",

@@ -119,6 +119,7 @@ const ru: Translations = {
   },
   dashboard: {
     welcomeBack: "С возвращением",
+    welcomeBackName: "С возвращением, {name}",
     chooseToolToStart: "Выберите инструмент, чтобы начать.",
     minutesRemaining: "Остаток кредитов",
     minutesUsed: "Использовано кредитов",

@@ -119,6 +119,7 @@ const es: Translations = {
   },
   dashboard: {
     welcomeBack: "Bienvenido de nuevo",
+    welcomeBackName: "Bienvenido de nuevo, {name}",
     chooseToolToStart: "Elige una herramienta para empezar.",
     minutesRemaining: "Créditos restantes",
     minutesUsed: "Créditos usados",

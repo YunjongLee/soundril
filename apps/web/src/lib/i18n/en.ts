@@ -115,6 +115,7 @@ const en = {
   },
   dashboard: {
     welcomeBack: "Welcome back",
+    welcomeBackName: "Welcome back, {name}",
     chooseToolToStart: "Choose a tool to get started.",
     minutesRemaining: "Credits Remaining",
     minutesUsed: "Credits Used",

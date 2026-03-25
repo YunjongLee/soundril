@@ -117,6 +117,7 @@ const ja: Translations = {
   },
   dashboard: {
     welcomeBack: "おかえりなさい",
+    welcomeBackName: "おかえりなさい、{name}さん",
     chooseToolToStart: "ツールを選んで始めましょう。",
     minutesRemaining: "残りクレジット",
     minutesUsed: "使用済みクレジット",

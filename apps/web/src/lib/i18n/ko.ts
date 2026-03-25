@@ -117,6 +117,7 @@ const ko: Translations = {
   },
   dashboard: {
     welcomeBack: "안녕하세요",
+    welcomeBackName: "안녕하세요, {name}님",
     chooseToolToStart: "사용할 도구를 선택하세요.",
     minutesRemaining: "남은 크레딧",
     minutesUsed: "사용한 크레딧",
