@@ -23,7 +23,7 @@ export function Nav() {
             <select
               value={lang}
               onChange={(e) => setLang(e.target.value as Lang)}
-              className="appearance-none bg-transparent text-sm text-muted-foreground hover:text-foreground h-9 pl-7 pr-2 rounded-md cursor-pointer transition-colors focus:outline-none"
+              className="appearance-none bg-transparent text-sm text-muted-foreground hover:text-foreground h-9 pl-7 pr-2 md:pr-2 rounded-md cursor-pointer transition-colors focus:outline-none w-9 md:w-auto overflow-hidden"
             >
               {Object.entries(languages).map(([code, name]) => (
                 <option key={code} value={code}>{name}</option>
