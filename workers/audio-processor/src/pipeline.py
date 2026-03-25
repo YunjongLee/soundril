@@ -3,9 +3,9 @@ Audio processing pipeline.
 Ported from lrc-generator/generate.py.
 """
 
+import asyncio
 import re
 import subprocess
-import sys
 import tempfile
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -16,6 +16,15 @@ from .logger import get_logger
 logger = get_logger("pipeline")
 
 
+# ── Model caches (persist across requests on same Cloud Run instance) ──
+
+_demucs_model = None
+_demucs_device = None
+_whisper_model = None
+_whisper_device = None
+_align_models: dict = {}
+
+
 def detect_device() -> str:
     import torch
     if torch.cuda.is_available():
@@ -23,38 +32,88 @@ def detect_device() -> str:
     return "cpu"
 
 
+def _get_demucs_model(device: str):
+    global _demucs_model, _demucs_device
+    if _demucs_model is None or _demucs_device != device:
+        from demucs.pretrained import get_model
+        logger.info(f"Loading Demucs model (device={device})...")
+        _demucs_model = get_model("htdemucs")
+        _demucs_model.eval()
+        _demucs_model.to(device)
+        _demucs_device = device
+        logger.info("Demucs model loaded")
+    return _demucs_model
+
+
+def _get_whisper_model(device: str):
+    global _whisper_model, _whisper_device
+    if _whisper_model is None or _whisper_device != device:
+        import whisperx
+        logger.info(f"Loading Whisper model (device={device})...")
+        _whisper_model = whisperx.load_model(
+            "large-v3-turbo", device,
+            compute_type="float16" if device == "cuda" else "float32",
+        )
+        _whisper_device = device
+        logger.info("Whisper model loaded")
+    return _whisper_model
+
+
+def _get_align_model(lang: str, device: str):
+    key = f"{lang}_{device}"
+    if key not in _align_models:
+        import whisperx
+        logger.info(f"Loading alignment model for {lang}...")
+        _align_models[key] = whisperx.load_align_model(language_code=lang, device=device)
+        logger.info(f"Alignment model for {lang} loaded")
+    return _align_models[key]
+
+
 # ──────────────────────────────────────────────
-# 1. Vocal Separation (Demucs)
+# 1. Vocal Separation (Demucs — Python API)
 # ──────────────────────────────────────────────
 
 def separate_vocals(audio_path: str, output_dir: str) -> tuple[str, str]:
-    """Demucs htdemucs로 보컬/MR 분리. Returns: (vocals_wav_path, mr_wav_path)"""
+    """Demucs htdemucs Python API로 보컬/MR 분리. Returns: (vocals_wav_path, mr_wav_path)"""
+    import torch
+    import torchaudio
+    from demucs.apply import apply_model
+    from demucs.audio import save_audio
+
     logger.info("Demucs: separating vocals...")
     device = detect_device()
+    model = _get_demucs_model(device)
 
-    cmd = [
-        sys.executable, "-m", "demucs",
-        "--two-stems", "vocals",
-        "-n", "htdemucs",
-        "-o", output_dir,
-    ]
-    if device == "cuda":
-        cmd.extend(["-d", "cuda"])
-    cmd.append(audio_path)
+    # Load and preprocess audio
+    wav, sr = torchaudio.load(audio_path)
+    if wav.shape[0] == 1:
+        wav = wav.repeat(2, 1)  # mono → stereo
+    if sr != model.samplerate:
+        wav = torchaudio.functional.resample(wav, sr, model.samplerate)
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        raise RuntimeError(f"Demucs failed: {result.stderr[:500]}")
+    # Normalize
+    ref = wav.mean(0)
+    wav = (wav - ref.mean()) / (ref.std() + 1e-8)
 
-    stem = Path(audio_path).stem
-    demucs_dir = Path(output_dir) / "htdemucs" / stem
-    vocals_path = demucs_dir / "vocals.wav"
-    mr_path = demucs_dir / "no_vocals.wav"
+    # Separate
+    with torch.no_grad():
+        sources = apply_model(model, wav[None], device=device)[0]
+    sources = sources.cpu()
+    sources = sources * ref.std() + ref.mean()
 
-    if not vocals_path.exists():
-        raise RuntimeError(f"Vocals file not found: {vocals_path}")
+    # Extract stems
+    vocals_idx = model.sources.index("vocals")
+    vocals = sources[vocals_idx]
+    mr_indices = [i for i in range(len(model.sources)) if i != vocals_idx]
+    mr = sources[mr_indices].sum(dim=0)
 
-    return str(vocals_path), str(mr_path)
+    vocals_path = str(Path(output_dir) / "vocals.wav")
+    mr_path = str(Path(output_dir) / "no_vocals.wav")
+    save_audio(vocals, vocals_path, model.samplerate)
+    save_audio(mr, mr_path, model.samplerate)
+
+    logger.info("Demucs: separation complete")
+    return vocals_path, mr_path
 
 
 def encode_mp3(wav_path: str, mp3_path: str, bitrate: str = "320k", cover_path: str | None = None):
@@ -213,13 +272,9 @@ def transcribe(audio_path: str) -> list[dict]:
     import whisperx
 
     device = detect_device()
-    compute_device = device
 
-    logger.info(f"WhisperX: transcribing on {compute_device}...")
-    model = whisperx.load_model(
-        "large-v3-turbo", compute_device,
-        compute_type="float16" if device == "cuda" else "float32",
-    )
+    logger.info(f"WhisperX: transcribing on {device}...")
+    model = _get_whisper_model(device)
     result = model.transcribe(audio_path)
     segments = result.get("segments", [])
     logger.info(f"WhisperX: {len(segments)} segments transcribed")
@@ -230,23 +285,22 @@ def transcribe(audio_path: str) -> list[dict]:
 
     # 단일 언어: 전체 한번에 정렬
     if len(langs) <= 1:
-        align_model, metadata = whisperx.load_align_model(language_code=langs[0], device=compute_device)
-        aligned = whisperx.align(segments, align_model, metadata, audio_path, compute_device)
+        align_model, metadata = _get_align_model(langs[0], device)
+        aligned = whisperx.align(segments, align_model, metadata, audio_path, device)
         words = extract_words(aligned["segments"])
         logger.info(f"WhisperX: {len(words)} words aligned (single language)")
         return words
 
-    # 다국어: 모델 로드 + 세그먼트별 재귀 정렬
+    # 다국어: 캐시된 모델 사용 + 세그먼트별 재귀 정렬
     align_models = {}
     for lang in langs:
-        align_models[lang] = whisperx.load_align_model(language_code=lang, device=compute_device)
-        logger.info(f"WhisperX: loaded {lang} alignment model")
+        align_models[lang] = _get_align_model(lang, device)
 
     all_words = []
     for seg in segments:
         if not seg.get("text", "").strip():
             continue
-        seg_words = align_segment_recursive(seg, audio_path, compute_device, align_models)
+        seg_words = align_segment_recursive(seg, audio_path, device, align_models)
         all_words.extend(seg_words)
 
     all_words.sort(key=lambda w: w["start"])
@@ -366,33 +420,40 @@ async def process_job(
 
         await update_job_progress(job_id, 5, "Preparing audio...")
 
-        # Step 1: Vocal separation
+        # Step 1: Vocal separation (Demucs Python API, cached model)
         await update_job_progress(job_id, 10, "Separating vocals and instrumentals...")
-        vocals_path, mr_path = separate_vocals(local_input, work_dir)
+        vocals_path, mr_path = await asyncio.to_thread(
+            separate_vocals, local_input, work_dir
+        )
         await update_job_progress(job_id, 30, "Separation complete")
 
-        # Upload MR if needed
+        # Encode + upload MP3s in parallel
         if job_type in ("mr", "lrc_mr"):
-            mr_mp3_path = str(Path(work_dir) / "mr.mp3")
-            encode_mp3(mr_path, mr_mp3_path, cover_path=local_cover)
-            mr_storage_path = f"results/{user_id}/{job_id}/mr.mp3"
-            await upload_file(mr_mp3_path, mr_storage_path)
-            result["mrStoragePath"] = mr_storage_path
-            await update_job_progress(job_id, 33, "Encoding tracks...")
+            mr_mp3 = str(Path(work_dir) / "mr.mp3")
+            vocals_mp3 = str(Path(work_dir) / "vocals.mp3")
 
-        # Upload vocals (MR 포함 타입만)
-        if job_type in ("mr", "lrc_mr"):
-            vocals_mp3_path = str(Path(work_dir) / "vocals.mp3")
-            encode_mp3(vocals_path, vocals_mp3_path, cover_path=local_cover)
-            vocals_storage_path = f"results/{user_id}/{job_id}/vocals.mp3"
-            await upload_file(vocals_mp3_path, vocals_storage_path)
-            result["vocalsStoragePath"] = vocals_storage_path
+            # Parallel MP3 encoding (two ffmpeg processes)
+            await asyncio.gather(
+                asyncio.to_thread(encode_mp3, mr_path, mr_mp3, "320k", local_cover),
+                asyncio.to_thread(encode_mp3, vocals_path, vocals_mp3, "320k", local_cover),
+            )
+            await update_job_progress(job_id, 33, "Uploading tracks...")
+
+            # Parallel upload
+            mr_storage = f"results/{user_id}/{job_id}/mr.mp3"
+            vocals_storage = f"results/{user_id}/{job_id}/vocals.mp3"
+            await asyncio.gather(
+                upload_file(mr_mp3, mr_storage),
+                upload_file(vocals_mp3, vocals_storage),
+            )
+            result["mrStoragePath"] = mr_storage
+            result["vocalsStoragePath"] = vocals_storage
             await update_job_progress(job_id, 35, "Tracks ready")
 
-        # Step 2: Transcription + alignment
+        # Step 2: Transcription + alignment (cached Whisper model)
         if job_type in ("lrc", "lrc_mr"):
             await update_job_progress(job_id, 40, "Recognizing speech...")
-            words = transcribe(vocals_path)
+            words = await asyncio.to_thread(transcribe, vocals_path)
             await update_job_progress(job_id, 60, "Speech recognized")
 
             # Step 3: Lyrics alignment

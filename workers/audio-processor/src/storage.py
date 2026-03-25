@@ -1,7 +1,9 @@
 """
 Firebase Storage + Firestore operations for the worker.
+All async functions now properly offload blocking I/O via asyncio.to_thread.
 """
 
+import asyncio
 import os
 
 import firebase_admin
@@ -27,7 +29,7 @@ async def download_file(storage_path: str, local_path: str):
     """Download a file from Firebase Storage."""
     bucket = _get_bucket()
     blob = bucket.blob(storage_path)
-    blob.download_to_filename(local_path)
+    await asyncio.to_thread(blob.download_to_filename, local_path)
 
 
 async def upload_file(local_path: str, storage_path: str, content_type: str | None = None):
@@ -44,7 +46,7 @@ async def upload_file(local_path: str, storage_path: str, content_type: str | No
     elif storage_path.endswith(".log"):
         blob.content_type = "text/plain"
 
-    blob.upload_from_filename(local_path)
+    await asyncio.to_thread(blob.upload_from_filename, local_path)
 
 
 async def update_job_status(job_id: str, data: dict):
@@ -60,7 +62,7 @@ async def update_job_status(job_id: str, data: dict):
             update_data[key] = value
 
     update_data["updatedAt"] = firestore.SERVER_TIMESTAMP
-    doc_ref.update(update_data)
+    await asyncio.to_thread(doc_ref.update, update_data)
 
 
 async def update_job_progress(job_id: str, progress: int, step: str):
@@ -73,42 +75,45 @@ async def update_job_progress(job_id: str, progress: int, step: str):
 
 async def refund_job_credits(job_id: str):
     """작업 실패 시 크레딧 환불. job doc에서 userId, creditsCharged를 읽어서 환불."""
-    job_ref = _db.collection("jobs").document(job_id)
-    job_doc = job_ref.get()
-    if not job_doc.exists:
-        return
-
-    job = job_doc.to_dict()
-    user_id = job.get("userId")
-    credits = job.get("creditsCharged", 0)
-    if not user_id or credits <= 0:
-        return
-
-    user_ref = _db.collection("users").document(user_id)
-
-    @firestore.transactional
-    def _refund(tx):
-        user_doc = user_ref.get(transaction=tx)
-        if not user_doc.exists:
+    def _do_refund():
+        job_ref = _db.collection("jobs").document(job_id)
+        job_doc = job_ref.get()
+        if not job_doc.exists:
             return
-        current = user_doc.to_dict().get("credits", 0)
-        new_balance = current + credits
 
-        tx.update(user_ref, {
-            "credits": new_balance,
-            "totalCreditsUsed": firestore.Increment(-credits),
-            "updatedAt": firestore.SERVER_TIMESTAMP,
-        })
-        tx.set(_db.collection("creditTransactions").document(), {
-            "userId": user_id,
-            "type": "job_refund",
-            "amount": credits,
-            "balanceBefore": current,
-            "balanceAfter": new_balance,
-            "jobId": job_id,
-            "description": "Job failed - refund",
-            "createdAt": firestore.SERVER_TIMESTAMP,
-        })
+        job = job_doc.to_dict()
+        user_id = job.get("userId")
+        credits = job.get("creditsCharged", 0)
+        if not user_id or credits <= 0:
+            return
 
-    tx = _db.transaction()
-    _refund(tx)
+        user_ref = _db.collection("users").document(user_id)
+
+        @firestore.transactional
+        def _refund(tx):
+            user_doc = user_ref.get(transaction=tx)
+            if not user_doc.exists:
+                return
+            current = user_doc.to_dict().get("credits", 0)
+            new_balance = current + credits
+
+            tx.update(user_ref, {
+                "credits": new_balance,
+                "totalCreditsUsed": firestore.Increment(-credits),
+                "updatedAt": firestore.SERVER_TIMESTAMP,
+            })
+            tx.set(_db.collection("creditTransactions").document(), {
+                "userId": user_id,
+                "type": "job_refund",
+                "amount": credits,
+                "balanceBefore": current,
+                "balanceAfter": new_balance,
+                "jobId": job_id,
+                "description": "Job failed - refund",
+                "createdAt": firestore.SERVER_TIMESTAMP,
+            })
+
+        tx = _db.transaction()
+        _refund(tx)
+
+    await asyncio.to_thread(_do_refund)
