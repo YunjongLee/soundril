@@ -13,17 +13,38 @@ export async function createProcessingTask(payload: {
   lyrics?: string;
   coverStoragePath?: string | null;
 }) {
+  const processorUrl = process.env.AUDIO_PROCESSOR_URL;
+  const secret = process.env.AUDIO_PROCESSOR_SECRET;
+
+  // Local development: call processor directly (skip Cloud Tasks)
+  if (process.env.NODE_ENV === "development") {
+    const localUrl = processorUrl || "http://localhost:8080";
+    if (!secret) throw new Error("AUDIO_PROCESSOR_SECRET is not set");
+
+    // Fire-and-forget (mimics Cloud Tasks async behavior)
+    fetch(`${localUrl}/process`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${secret}`,
+      },
+      body: JSON.stringify(payload),
+    }).catch((err) =>
+      console.error("Local processor call failed:", err.message)
+    );
+
+    return { name: "local-dev-task" };
+  }
+
+  // Production: Cloud Tasks
   const projectId = process.env.GCP_PROJECT_ID;
   const location = process.env.GCP_LOCATION || "asia-northeast3";
   const queue = process.env.CLOUD_TASKS_QUEUE || "audio-processing";
-  const processorUrl = process.env.AUDIO_PROCESSOR_URL;
-  const secret = process.env.AUDIO_PROCESSOR_SECRET;
 
   if (!projectId || !processorUrl || !secret) {
     throw new Error("Missing Cloud Tasks configuration");
   }
 
-  // Get access token from default credentials or firebase-admin
   const app = getApps()[0];
   const credential = app?.options?.credential || applicationDefault();
   const token = await (credential as { getAccessToken: () => Promise<{ access_token: string }> }).getAccessToken();
