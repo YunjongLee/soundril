@@ -51,8 +51,9 @@ def _get_whisper_model(device: str):
         import whisperx
         logger.info(f"Loading Whisper model (device={device})...")
         _whisper_model = whisperx.load_model(
-            "large-v3-turbo", device,
+            "large-v3", device,
             compute_type="float16" if device == "cuda" else "float32",
+            vad_options={"vad_onset": 0.15, "vad_offset": 0.1},
         )
         _whisper_device = device
         logger.info("Whisper model loaded")
@@ -140,10 +141,10 @@ def encode_mp3(wav_path: str, mp3_path: str, bitrate: str = "320k", cover_path: 
 
 
 # ──────────────────────────────────────────────
-# 2. WhisperX (Whisper + wav2vec2 multilingual alignment)
+# 2. WhisperX (Whisper + wav2vec2 forced alignment)
 # ──────────────────────────────────────────────
 
-def detect_word_language(word: str) -> str:
+def _detect_word_language(word: str) -> str:
     """단어의 언어를 첫 번째 문자로 판단."""
     for c in word:
         if '\uac00' <= c <= '\ud7a3' or '\u3131' <= c <= '\u318e':
@@ -157,7 +158,7 @@ def detect_word_language(word: str) -> str:
     return "ko"
 
 
-def detect_languages(segments: list) -> list[str]:
+def _detect_languages(segments: list) -> list[str]:
     """세그먼트들에서 사용된 언어 목록 반환. 글자 수 많은 순."""
     counts: dict[str, int] = {}
     for seg in segments:
@@ -171,30 +172,15 @@ def detect_languages(segments: list) -> list[str]:
             elif '\u4e00' <= c <= '\u9fff':
                 counts["zh"] = counts.get("zh", 0) + 1
     if not counts:
-        return ["en"]
+        return ["ko"]
     return sorted(counts.keys(), key=lambda k: counts[k], reverse=True)
 
 
-def extract_words(segments: list) -> list[dict]:
-    """세그먼트에서 워드 리스트 추출."""
-    words = []
-    for seg in segments:
-        for w in seg.get("words", []):
-            word = w.get("word", "").strip()
-            if word:
-                words.append({
-                    "word": word,
-                    "start": w.get("start", 0),
-                    "end": w.get("end", 0),
-                })
-    return words
-
-
-def split_language_runs(text: str) -> list[tuple[str, list[str]]]:
+def _split_language_runs(text: str) -> list[tuple[str, list[str]]]:
     """텍스트를 언어별 연속 구간(런)으로 분할."""
     runs: list[tuple[str, list[str]]] = []
     for w in text.split():
-        lang = detect_word_language(w)
+        lang = _detect_word_language(w)
         if runs and runs[-1][0] == lang:
             runs[-1][1].append(w)
         else:
@@ -202,22 +188,29 @@ def split_language_runs(text: str) -> list[tuple[str, list[str]]]:
     return runs
 
 
-def align_segment_recursive(seg: dict, audio_path: str, compute_device: str,
-                            align_models: dict, depth: int = 0) -> list:
-    """세그먼트를 재귀적으로 정렬.
+def _extract_words(segments: list) -> list[dict]:
+    """세그먼트에서 워드 리스트 추출 (0.00s 타임스탬프 제외)."""
+    words = []
+    for seg in segments:
+        for w in seg.get("words", []):
+            word = w.get("word", "").strip()
+            start = w.get("start", 0)
+            end = w.get("end", 0)
+            if word and (start > 0 or end > 0):
+                words.append({"word": word, "start": start, "end": end})
+    return words
 
-    첫 번째 언어 런만 해당 언어 wav2vec2로 정렬하고,
-    나머지는 서브세그먼트로 만들어 재귀 호출.
-    CTC는 세그먼트 시작 부분만 정확하므로, 매 재귀마다
-    시작 런을 벗겨서 모든 런이 정확하게 정렬됨.
-    """
+
+def _align_segment_multilang(seg: dict, audio, device: str,
+                             align_models: dict, depth: int = 0) -> list:
+    """세그먼트를 재귀적으로 다국어 정렬."""
     import whisperx
 
     text = seg.get("text", "").strip()
     if not text:
         return []
 
-    runs = split_language_runs(text)
+    runs = _split_language_runs(text)
 
     # 단일 언어: 바로 정렬
     if len(runs) == 1:
@@ -225,8 +218,8 @@ def align_segment_recursive(seg: dict, audio_path: str, compute_device: str,
         if lang not in align_models:
             return []
         model, meta = align_models[lang]
-        aligned = whisperx.align([seg], model, meta, audio_path, compute_device)
-        return extract_words(aligned["segments"])
+        aligned = whisperx.align([seg], model, meta, audio, device)
+        return _extract_words(aligned["segments"])
 
     # 다국어: 첫 번째 런만 정렬
     first_lang = runs[0][0]
@@ -234,19 +227,18 @@ def align_segment_recursive(seg: dict, audio_path: str, compute_device: str,
         return []
 
     model, meta = align_models[first_lang]
-    aligned = whisperx.align([seg], model, meta, audio_path, compute_device)
-    aligned_words = extract_words(aligned["segments"])
+    aligned = whisperx.align([seg], model, meta, audio, device)
+    aligned_words = _extract_words(aligned["segments"])
 
-    # 첫 런 단어 수집 (타임스탬프 있는 것만)
+    # 첫 런 단어 수집
     first_run_count = len(runs[0][1])
     first_run_words = []
     last_ts_end = seg["start"]
 
     for w in aligned_words[:first_run_count]:
-        if w["start"] > 0 or w["end"] > 0:
-            first_run_words.append(w)
-            if w["end"] > last_ts_end:
-                last_ts_end = w["end"]
+        first_run_words.append(w)
+        if w["end"] > last_ts_end:
+            last_ts_end = w["end"]
 
     # 나머지 텍스트로 서브세그먼트 → 재귀
     remaining_text_parts = []
@@ -259,8 +251,8 @@ def align_segment_recursive(seg: dict, audio_path: str, compute_device: str,
             "end": seg["end"],
             "text": " ".join(remaining_text_parts),
         }
-        remaining_result = align_segment_recursive(
-            sub_seg, audio_path, compute_device, align_models, depth + 1
+        remaining_result = _align_segment_multilang(
+            sub_seg, audio, device, align_models, depth + 1
         )
         return first_run_words + remaining_result
 
@@ -268,30 +260,38 @@ def align_segment_recursive(seg: dict, audio_path: str, compute_device: str,
 
 
 def transcribe(audio_path: str) -> list[dict]:
-    """WhisperX 전사 + 다국어 wav2vec2 정렬."""
+    """WhisperX 전사 + 다국어 wav2vec2 forced alignment."""
     import whisperx
 
     device = detect_device()
 
+    # 오디오를 한 번만 로드해서 transcribe/align 양쪽에 재사용
+    audio = whisperx.load_audio(audio_path)
+
     logger.info(f"WhisperX: transcribing on {device}...")
     model = _get_whisper_model(device)
-    result = model.transcribe(audio_path)
+    result = model.transcribe(audio, batch_size=16)
     segments = result.get("segments", [])
-    logger.info(f"WhisperX: {len(segments)} segments transcribed")
+    detected_lang = result.get("language", "ko")
+    logger.info(f"WhisperX: {len(segments)} segments transcribed (language: {detected_lang})")
+    for i, seg in enumerate(segments):
+        logger.info(f"  seg[{i}] [{seg.get('start',0):.2f}s~{seg.get('end',0):.2f}s] {seg.get('text','')}")
 
     # 언어 감지
-    langs = detect_languages(segments)
+    langs = _detect_languages(segments)
     logger.info(f"WhisperX: detected languages: {', '.join(langs)}")
 
     # 단일 언어: 전체 한번에 정렬
     if len(langs) <= 1:
         align_model, metadata = _get_align_model(langs[0], device)
-        aligned = whisperx.align(segments, align_model, metadata, audio_path, device)
-        words = extract_words(aligned["segments"])
+        aligned = whisperx.align(segments, align_model, metadata, audio, device)
+        words = _extract_words(aligned["segments"])
+        for w in words:
+            logger.info(f"  word [{w['start']:6.2f}s~{w['end']:6.2f}s] {w['word']}")
         logger.info(f"WhisperX: {len(words)} words aligned (single language)")
         return words
 
-    # 다국어: 캐시된 모델 사용 + 세그먼트별 재귀 정렬
+    # 다국어: 언어별 모델 로드 + 세그먼트별 재귀 정렬
     align_models = {}
     for lang in langs:
         align_models[lang] = _get_align_model(lang, device)
@@ -300,11 +300,13 @@ def transcribe(audio_path: str) -> list[dict]:
     for seg in segments:
         if not seg.get("text", "").strip():
             continue
-        seg_words = align_segment_recursive(seg, audio_path, device, align_models)
+        seg_words = _align_segment_multilang(seg, audio, device, align_models)
         all_words.extend(seg_words)
 
     all_words.sort(key=lambda w: w["start"])
-    logger.info(f"WhisperX: {len(all_words)} words aligned (multilingual)")
+    for w in all_words:
+        logger.info(f"  word [{w['start']:6.2f}s~{w['end']:6.2f}s] {w['word']}")
+    logger.info(f"WhisperX: {len(all_words)} words aligned (multilingual: {', '.join(langs)})")
     return all_words
 
 
@@ -318,7 +320,7 @@ def normalize(text: str) -> str:
 
 
 def align_lyrics(whisper_words: list[dict], lyrics_lines: list[str]) -> list[tuple]:
-    """워드 레벨 순차 매칭: 각 라인의 단어를 Whisper 워드에서 찾아 시작 시간 확정."""
+    """워드 레벨 순차 매칭: 라인의 모든 단어를 매칭하여 가장 앞 타임스탬프 사용."""
     w_norms = [normalize(w["word"]) for w in whisper_words]
     results = []
     w_cursor = 0
@@ -331,30 +333,58 @@ def align_lyrics(whisper_words: list[dict], lyrics_lines: list[str]) -> list[tup
 
         remaining_lines = len(lyrics_lines) - line_idx
         remaining_words = len(whisper_words) - w_cursor
-        max_search = min(remaining_words, max(15, remaining_words * 3 // max(remaining_lines, 1)))
+        max_search = min(remaining_words, max(20, remaining_words * 3 // max(remaining_lines, 1)))
+        search_end = min(w_cursor + max_search, len(whisper_words))
 
-        matched_idx = -1
-        for lw in line_words:
+        # 라인 내 모든 단어에 대해 각각 최적 매칭 찾기
+        word_matches = []  # (line_word_idx, whisper_idx, score)
+        significant_count = 0
+        for lw_idx, lw in enumerate(line_words):
             lw_norm = normalize(lw)
             if not lw_norm:
                 continue
+            # 1글자: exact match, 2글자: 0.7, 3글자+: 0.65
+            min_score = 1.0 if len(lw_norm) < 2 else (0.65 if len(lw_norm) >= 3 else 0.7)
+            significant_count += 1
             best_idx, best_score = -1, 0.0
-            for i in range(w_cursor, min(w_cursor + max_search, len(whisper_words))):
+            for i in range(w_cursor, search_end):
                 if not w_norms[i]:
                     continue
                 score = SequenceMatcher(None, lw_norm, w_norms[i], autojunk=False).ratio()
                 if score > best_score:
                     best_score = score
                     best_idx = i
-            if best_score >= 0.5 and best_idx >= 0:
-                matched_idx = best_idx
-                break
+            if best_score >= min_score and best_idx >= 0:
+                word_matches.append((lw_idx, best_idx, best_score))
 
-        if matched_idx >= 0:
-            results.append((whisper_words[matched_idx]["start"], line))
-            w_cursor = matched_idx + 1
+        if word_matches:
+            # whisper index 순서대로 정렬, 단조 증가 + span 제한
+            max_span = significant_count * 2
+            ordered = []
+            last_wi = -1
+            first_wi_candidate = -1
+            for m in sorted(word_matches, key=lambda x: x[0]):
+                if m[1] > last_wi:
+                    if first_wi_candidate < 0:
+                        first_wi_candidate = m[1]
+                    if m[1] - first_wi_candidate <= max_span:
+                        ordered.append(m)
+                        last_wi = m[1]
+
+            if ordered:
+                first_wi = ordered[0][1]
+                last_wi = ordered[-1][1]
+                timestamp = whisper_words[first_wi]["start"]
+                results.append((timestamp, line))
+                logger.info(f"  MATCH [{timestamp:6.2f}s] '{line}' ← first='{whisper_words[first_wi]['word']}' last='{whisper_words[last_wi]['word']}' ({len(ordered)} words, cursor={w_cursor}→{last_wi})")
+                w_cursor = last_wi + 1
+            else:
+                results.append((None, line))
+                logger.info(f"  MISS  [  ?.??s] '{line}' (no ordered matches, cursor={w_cursor})")
         else:
             results.append((None, line))
+            logger.info(f"  MISS  [  ?.??s] '{line}' (no matches >= 0.7, cursor={w_cursor})")
+
 
     # 누락된 타임스탬프 보간
     for i in range(len(results)):
@@ -420,15 +450,15 @@ async def process_job(
 
         await update_job_progress(job_id, 5, "Preparing audio...")
 
-        # Step 1: Vocal separation (Demucs Python API, cached model)
-        await update_job_progress(job_id, 10, "Separating vocals and instrumentals...")
-        vocals_path, mr_path = await asyncio.to_thread(
-            separate_vocals, local_input, work_dir
-        )
-        await update_job_progress(job_id, 30, "Separation complete")
-
-        # Encode + upload MP3s in parallel
+        # Step 1: Vocal separation (only when MR requested or lrc_mr)
+        vocals_path = None
         if job_type in ("mr", "lrc_mr"):
+            await update_job_progress(job_id, 10, "Separating vocals and instrumentals...")
+            vocals_path, mr_path = await asyncio.to_thread(
+                separate_vocals, local_input, work_dir
+            )
+            await update_job_progress(job_id, 30, "Separation complete")
+
             mr_mp3 = str(Path(work_dir) / "mr.mp3")
             vocals_mp3 = str(Path(work_dir) / "vocals.mp3")
 
@@ -450,10 +480,11 @@ async def process_job(
             result["vocalsStoragePath"] = vocals_storage
             await update_job_progress(job_id, 35, "Tracks ready")
 
-        # Step 2: Transcription + alignment (cached Whisper model)
+        # Step 2: Transcription + alignment
         if job_type in ("lrc", "lrc_mr"):
+            audio_for_transcribe = vocals_path or local_input
             await update_job_progress(job_id, 40, "Recognizing speech...")
-            words = await asyncio.to_thread(transcribe, vocals_path)
+            words = await asyncio.to_thread(transcribe, audio_for_transcribe)
             await update_job_progress(job_id, 60, "Speech recognized")
 
             # Step 3: Lyrics alignment

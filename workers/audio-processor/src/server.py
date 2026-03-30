@@ -8,6 +8,9 @@ import signal
 import time
 import traceback
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
 

@@ -23,8 +23,8 @@ FROM deps AS models
 # Demucs htdemucs model
 RUN python -c "from demucs.pretrained import get_model; get_model('htdemucs')"
 
-# Whisper large-v3-turbo (~1.5GB, 3-4x faster than large-v3)
-RUN python -c "import whisperx; whisperx.load_model('large-v3-turbo', 'cpu', compute_type='float32')"
+# Whisper large-v3
+RUN python -c "import whisperx; whisperx.load_model('large-v3', 'cpu', compute_type='float32')"
 
 # wav2vec2 alignment models (주요 언어)
 RUN python -c "import whisperx; whisperx.load_align_model('en', 'cpu')"

@@ -18,6 +18,10 @@ soundril/
 │       ├── app/           # App Router (페이지, API 라우트)
 │       ├── components/    # React 컴포넌트
 │       └── lib/           # Firebase, 유틸리티
+├── tools/
+│   └── lrc-generator/     # 로컬 LRC 생성 도구 (CLI + Gradio Web UI)
+│       ├── generate.py    # CLI: python generate.py song.mp3 lyrics.txt
+│       └── app.py         # Web UI: python app.py (localhost:3100)
 └── workers/
     └── audio-processor/   # Cloud Run GPU 워커 (Python, FastAPI)
 ```

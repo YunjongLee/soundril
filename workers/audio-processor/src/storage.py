@@ -11,14 +11,12 @@ from firebase_admin import credentials, firestore, storage
 
 # Initialize Firebase Admin
 if not firebase_admin._apps:
-    # In Cloud Run, uses default service account
-    firebase_admin.initialize_app()
+    project_id = os.environ.get("FIREBASE_PROJECT_ID")
+    options = {"projectId": project_id} if project_id else {}
+    firebase_admin.initialize_app(options=options)
 
 _db = firestore.client()
-_bucket_name = os.environ.get(
-    "STORAGE_BUCKET",
-    "wedding-invitation-51a73.firebasestorage.app",  # TODO: change to soundril bucket
-)
+_bucket_name = os.environ.get("STORAGE_BUCKET", "soundril.firebasestorage.app")
 
 
 def _get_bucket():

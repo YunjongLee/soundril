@@ -38,6 +38,12 @@ __pycache__/
 venv/
 *.egg-info/
 
+# LRC Generator local files
+tools/lrc-generator/logs/
+tools/lrc-generator/output/
+*.lrc
+*.segments.json
+
 # misc
 *.tsbuildinfo
 next-env.d.ts
