@@ -196,6 +196,10 @@ const es: Translations = {
     jobNotFound: "Tarea no encontrada.",
     backToDashboard: "Volver al panel",
     processedIn: "Procesado en",
+    showLrc: "Ver LRC",
+    hideLrc: "Ocultar LRC",
+    copyLrc: "Copiar LRC",
+    copied: "¡Copiado!",
   },
   history: {
     title: "Historial",

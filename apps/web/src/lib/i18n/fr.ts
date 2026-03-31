@@ -195,6 +195,10 @@ const fr: Translations = {
     jobNotFound: "Tâche introuvable.",
     backToDashboard: "Retour au tableau de bord",
     processedIn: "Traité en",
+    showLrc: "Voir LRC",
+    hideLrc: "Masquer LRC",
+    copyLrc: "Copier LRC",
+    copied: "Copié !",
   },
   history: {
     title: "Historique",

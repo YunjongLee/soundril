@@ -191,6 +191,10 @@ const ja: Translations = {
     jobNotFound: "ジョブが見つかりません。",
     backToDashboard: "ダッシュボードに戻る",
     processedIn: "処理時間",
+    showLrc: "LRCを表示",
+    hideLrc: "LRCを非表示",
+    copyLrc: "LRCをコピー",
+    copied: "コピーしました！",
   },
   history: {
     title: "履歴",

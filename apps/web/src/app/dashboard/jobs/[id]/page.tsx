@@ -24,6 +24,9 @@ import {
   Play,
   Pause,
   Eye,
+  EyeOff,
+  Copy,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -282,19 +285,13 @@ export default function JobDetailPage() {
             )}
             {job.lrcStoragePath && (
               isPaid ? (
-                <button
-                  onClick={() => handleDownload(job.lrcStoragePath!, `${job.inputFileName.replace(/\.[^.]+$/, "")}.lrc`)}
-                  className="w-full flex items-center gap-3 rounded-lg border border-border/60 p-3 hover:bg-muted/50 transition-colors text-left"
-                >
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <FileText className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{t("job.lrcFile")}</p>
-                    <p className="text-xs text-muted-foreground">{t("job.synchronizedLyrics")}</p>
-                  </div>
-                  <Download className="h-4 w-4 text-muted-foreground" />
-                </button>
+                <LrcResult
+                  jobId={jobId}
+                  storagePath={job.lrcStoragePath}
+                  filename={`${job.inputFileName.replace(/\.[^.]+$/, "")}.lrc`}
+                  onDownload={handleDownload}
+                  t={t}
+                />
               ) : (
                 <LrcPreview storagePath={job.lrcStoragePath} t={t} />
               )
@@ -535,6 +532,105 @@ function AudioPreview({
   );
 }
 
+
+// ── LRC 결과: 미리보기 + 복사 + 다운로드 ──
+function LrcResult({
+  jobId,
+  storagePath,
+  filename,
+  onDownload,
+  t,
+}: {
+  jobId: string;
+  storagePath: string;
+  filename: string;
+  onDownload: (path: string, filename: string) => void;
+  t: (key: string, params?: Record<string, string | number>) => string;
+}) {
+  const [content, setContent] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const fetchContent = async () => {
+    if (content) return content;
+    setLoading(true);
+    try {
+      const idToken = await auth.currentUser?.getIdToken();
+      const res = await fetch(
+        `/api/jobs/${jobId}?download=${encodeURIComponent(storagePath)}&preview=true`,
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      );
+      if (!res.ok) throw new Error();
+      const text = await res.text();
+      setContent(text);
+      return text;
+    } catch {
+      toast.error(t("job.failedToLoadPreview"));
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTogglePreview = async () => {
+    if (!showPreview) await fetchContent();
+    setShowPreview((v) => !v);
+  };
+
+  const handleCopy = async () => {
+    const text = await fetchContent();
+    if (!text) return;
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="rounded-lg border border-border/60 p-3">
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <FileText className="h-5 w-5 text-primary" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium">{t("job.lrcFile")}</p>
+          <p className="text-xs text-muted-foreground">{t("job.synchronizedLyrics")}</p>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleTogglePreview}
+            disabled={loading}
+            className="h-8 w-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center shrink-0 disabled:opacity-50"
+            title={showPreview ? t("job.hideLrc") : t("job.showLrc")}
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+          <button
+            onClick={handleCopy}
+            className="h-8 w-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center shrink-0"
+            title={t("job.copyLrc")}
+          >
+            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+          </button>
+          <button
+            onClick={() => onDownload(storagePath, filename)}
+            className="h-8 w-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center shrink-0"
+            title={filename}
+          >
+            <Download className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      {showPreview && content && (
+        <div className="mt-3 rounded-lg bg-muted/50 p-3 max-h-80 overflow-y-auto font-mono text-xs space-y-1">
+          {content.split("\n").filter((l) => l.trim()).map((line, i) => (
+            <p key={i} className="text-muted-foreground">{line}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── LRC 첫 5줄 미리보기 ──
 function LrcPreview({

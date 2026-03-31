@@ -196,6 +196,10 @@ const ru: Translations = {
     jobNotFound: "Задача не найдена.",
     backToDashboard: "Назад к панели управления",
     processedIn: "Обработано за",
+    showLrc: "Показать LRC",
+    hideLrc: "Скрыть LRC",
+    copyLrc: "Копировать LRC",
+    copied: "Скопировано!",
   },
   history: {
     title: "История",

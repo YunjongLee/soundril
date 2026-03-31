@@ -191,6 +191,10 @@ const en = {
     jobNotFound: "Job not found.",
     backToDashboard: "Back to Dashboard",
     processedIn: "Processed in",
+    showLrc: "Show LRC",
+    hideLrc: "Hide LRC",
+    copyLrc: "Copy LRC",
+    copied: "Copied!",
   },
   history: {
     title: "History",

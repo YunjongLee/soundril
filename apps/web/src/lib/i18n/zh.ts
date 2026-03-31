@@ -187,6 +187,10 @@ const zh: Translations = {
     jobNotFound: "未找到该任务。",
     backToDashboard: "返回控制面板",
     processedIn: "处理用时",
+    showLrc: "查看LRC",
+    hideLrc: "隐藏LRC",
+    copyLrc: "复制LRC",
+    copied: "已复制！",
   },
   history: {
     title: "历史记录",

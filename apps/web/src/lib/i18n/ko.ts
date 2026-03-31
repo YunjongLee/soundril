@@ -193,6 +193,10 @@ const ko: Translations = {
     jobNotFound: "작업을 찾을 수 없습니다.",
     backToDashboard: "대시보드로 돌아가기",
     processedIn: "처리 시간",
+    showLrc: "LRC 보기",
+    hideLrc: "LRC 닫기",
+    copyLrc: "LRC 복사",
+    copied: "복사됨!",
   },
   history: {
     title: "작업 내역",
