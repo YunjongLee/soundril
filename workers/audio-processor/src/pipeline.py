@@ -53,7 +53,7 @@ def _get_whisper_model(device: str):
         _whisper_model = whisperx.load_model(
             "large-v3", device,
             compute_type="float16" if device == "cuda" else "float32",
-            vad_options={"vad_onset": 0.15, "vad_offset": 0.1},
+            vad_options={"vad_onset": 0.05, "vad_offset": 0.02},
         )
         _whisper_device = device
         logger.info("Whisper model loaded")
@@ -115,6 +115,16 @@ def separate_vocals(audio_path: str, output_dir: str) -> tuple[str, str]:
 
     logger.info("Demucs: separation complete")
     return vocals_path, mr_path
+
+
+def normalize_audio(input_path: str, output_path: str):
+    """전사 전 loudness normalize. 조용한 보컬 구간의 VAD 감지 개선."""
+    subprocess.run([
+        "ffmpeg", "-y", "-i", input_path,
+        "-af", "loudnorm=I=-16:TP=-1.5:LRA=11",
+        output_path,
+    ], check=True, capture_output=True)
+    logger.info("Audio normalized for transcription")
 
 
 def encode_mp3(wav_path: str, mp3_path: str, bitrate: str = "320k", cover_path: str | None = None):
@@ -336,16 +346,48 @@ def align_lyrics(whisper_words: list[dict], lyrics_lines: list[str]) -> list[tup
         max_search = min(remaining_words, max(20, remaining_words * 3 // max(remaining_lines, 1)))
         search_end = min(w_cursor + max_search, len(whisper_words))
 
-        # 라인 내 모든 단어에 대해 각각 최적 매칭 찾기
+        lw_norms = [normalize(lw) for lw in line_words]
+        significant_count = sum(1 for n in lw_norms if n)
+
+        # Phase 1: 연속 가사 단어를 합쳐서 단일 Whisper 단어에 매칭
+        # (예: 가사 "사랑 합니다" → Whisper "사랑합니다")
+        concat_matches = []  # (start_lw, end_lw, whisper_idx, score)
+        for start_lw in range(len(lw_norms)):
+            if not lw_norms[start_lw]:
+                continue
+            for end_lw in range(start_lw + 1, min(start_lw + 4, len(lw_norms))):
+                concat = ''.join(lw_norms[start_lw:end_lw + 1])
+                if len(concat) < 2:
+                    continue
+                best_wi, best_score = -1, 0.0
+                for i in range(w_cursor, search_end):
+                    if not w_norms[i]:
+                        continue
+                    score = SequenceMatcher(None, concat, w_norms[i], autojunk=False).ratio()
+                    if score > best_score:
+                        best_score = score
+                        best_wi = i
+                if best_score >= 0.8 and best_wi >= 0:
+                    concat_matches.append((start_lw, end_lw, best_wi, best_score))
+
+        # 점수 높은 순으로 정렬, 겹치지 않는 매칭만 선택
+        concat_matches.sort(key=lambda x: -x[3])
+        used_lw = set()
         word_matches = []  # (line_word_idx, whisper_idx, score)
-        significant_count = 0
+        for cm in concat_matches:
+            lw_range = set(range(cm[0], cm[1] + 1))
+            if lw_range & used_lw:
+                continue
+            used_lw |= lw_range
+            word_matches.append((cm[0], cm[2], cm[3]))
+
+        # Phase 2: 개별 단어 매칭 (합쳐서 매칭된 단어는 건너뜀)
         for lw_idx, lw in enumerate(line_words):
-            lw_norm = normalize(lw)
-            if not lw_norm:
+            lw_norm = lw_norms[lw_idx]
+            if not lw_norm or lw_idx in used_lw:
                 continue
             # 1글자: exact match, 2글자: 0.7, 3글자+: 0.65
             min_score = 1.0 if len(lw_norm) < 2 else (0.65 if len(lw_norm) >= 3 else 0.7)
-            significant_count += 1
             best_idx, best_score = -1, 0.0
             for i in range(w_cursor, search_end):
                 if not w_norms[i]:
@@ -374,10 +416,18 @@ def align_lyrics(whisper_words: list[dict], lyrics_lines: list[str]) -> list[tup
             if ordered:
                 first_wi = ordered[0][1]
                 last_wi = ordered[-1][1]
-                timestamp = whisper_words[first_wi]["start"]
-                results.append((timestamp, line))
-                logger.info(f"  MATCH [{timestamp:6.2f}s] '{line}' ← first='{whisper_words[first_wi]['word']}' last='{whisper_words[last_wi]['word']}' ({len(ordered)} words, cursor={w_cursor}→{last_wi})")
-                w_cursor = last_wi + 1
+                cursor_advance = last_wi - w_cursor
+                match_ratio = len(ordered) / significant_count if significant_count > 0 else 1.0
+
+                # 매칭 비율이 낮은데 cursor가 과도하게 전진하면 오매칭으로 판단
+                if match_ratio < 0.5 and cursor_advance > len(ordered) * 2:
+                    results.append((None, line))
+                    logger.info(f"  MISS  [  ?.??s] '{line}' (weak {len(ordered)}/{significant_count} words, advance={cursor_advance}, cursor={w_cursor})")
+                else:
+                    timestamp = whisper_words[first_wi]["start"]
+                    results.append((timestamp, line))
+                    logger.info(f"  MATCH [{timestamp:6.2f}s] '{line}' ← first='{whisper_words[first_wi]['word']}' last='{whisper_words[last_wi]['word']}' ({len(ordered)} words, cursor={w_cursor}→{last_wi})")
+                    w_cursor = last_wi + 1
             else:
                 results.append((None, line))
                 logger.info(f"  MISS  [  ?.??s] '{line}' (no ordered matches, cursor={w_cursor})")
@@ -483,6 +533,12 @@ async def process_job(
         # Step 2: Transcription + alignment
         if job_type in ("lrc", "lrc_mr"):
             audio_for_transcribe = vocals_path or local_input
+
+            # 전사 전 loudness normalize (VAD 감지 개선)
+            normalized_path = str(Path(work_dir) / "vocals_normalized.wav")
+            await asyncio.to_thread(normalize_audio, audio_for_transcribe, normalized_path)
+            audio_for_transcribe = normalized_path
+
             await update_job_progress(job_id, 40, "Recognizing speech...")
             words = await asyncio.to_thread(transcribe, audio_for_transcribe)
             await update_job_progress(job_id, 60, "Speech recognized")
