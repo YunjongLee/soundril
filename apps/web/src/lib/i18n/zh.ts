@@ -132,6 +132,7 @@ const zh: Translations = {
     title: "AR → MR",
     subtitle: "上传音频文件以提取伴奏（MR）。",
     extractMr: "提取MR",
+    keyShift: "调音",
   },
   lrc: {
     title: "AR → LRC",

@@ -136,6 +136,7 @@ const ko: Translations = {
     title: "AR → MR",
     subtitle: "오디오 파일을 업로드하면 반주(MR)를 추출할 수 있습니다.",
     extractMr: "MR 추출",
+    keyShift: "키 조절",
   },
   lrc: {
     title: "AR → LRC",

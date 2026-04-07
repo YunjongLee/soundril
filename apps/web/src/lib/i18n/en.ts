@@ -134,6 +134,7 @@ const en = {
     title: "AR → MR",
     subtitle: "Upload an audio file to extract the instrumental (MR) track.",
     extractMr: "Extract MR",
+    keyShift: "Key Shift",
   },
   lrc: {
     title: "AR → LRC",

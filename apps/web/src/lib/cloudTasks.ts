@@ -12,6 +12,7 @@ export async function createProcessingTask(payload: {
   inputStoragePath: string;
   lyrics?: string;
   coverStoragePath?: string | null;
+  keyShift?: number;
 }) {
   const processorUrl = process.env.AUDIO_PROCESSOR_URL;
   const secret = process.env.AUDIO_PROCESSOR_SECRET;

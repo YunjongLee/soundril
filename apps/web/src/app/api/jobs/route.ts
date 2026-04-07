@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
     const lyrics = (body.lyrics as string) || null;
     const coverStoragePath = (body.coverStoragePath as string) || null;
     const coverUrl = (body.coverUrl as string) || null;
+    const keyShift = Number(body.keyShift) || 0;
 
     if (!type || !durationSeconds || !inputStoragePath || !inputFileName) {
       return NextResponse.json(
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
       coverStoragePath,
       coverUrl,
       lyrics: lyrics || null,
+      keyShift,
       creditsCharged,
       mrStoragePath: null,
       lrcStoragePath: null,
@@ -102,6 +104,7 @@ export async function POST(request: NextRequest) {
       inputStoragePath,
       lyrics: lyrics || undefined,
       coverStoragePath,
+      keyShift: keyShift || undefined,
     });
 
     return NextResponse.json({ jobId });

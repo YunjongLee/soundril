@@ -134,6 +134,7 @@ const ja: Translations = {
     title: "AR → MR",
     subtitle: "オーディオファイルをアップロードしてインストゥルメンタル（MR）を抽出。",
     extractMr: "MRを抽出",
+    keyShift: "キー調整",
   },
   lrc: {
     title: "AR → LRC",

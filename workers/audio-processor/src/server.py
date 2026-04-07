@@ -41,6 +41,7 @@ class ProcessRequest(BaseModel):
     inputStoragePath: str
     lyrics: str | None = None
     coverStoragePath: str | None = None
+    keyShift: int = 0  # semitones (-6 ~ +6)
 
 
 @app.get("/")
@@ -82,6 +83,7 @@ async def process(request: Request):
             input_storage_path=req.inputStoragePath,
             lyrics=req.lyrics,
             cover_storage_path=req.coverStoragePath,
+            key_shift=req.keyShift,
         )
 
         elapsed_ms = int((time.time() - start_time) * 1000)

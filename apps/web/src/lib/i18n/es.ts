@@ -139,6 +139,7 @@ const es: Translations = {
     subtitle:
       "Sube un archivo de audio para extraer la pista instrumental (MR).",
     extractMr: "Extraer MR",
+    keyShift: "Cambio de tono",
   },
   lrc: {
     title: "AR → LRC",

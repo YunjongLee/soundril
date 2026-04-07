@@ -139,6 +139,7 @@ const ru: Translations = {
     subtitle:
       "Загрузите аудиофайл для извлечения инструментального трека (MR).",
     extractMr: "Извлечь MR",
+    keyShift: "Изменение тональности",
   },
   lrc: {
     title: "AR → LRC",

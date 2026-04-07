@@ -139,6 +139,7 @@ const de: Translations = {
     subtitle:
       "Lade eine Audiodatei hoch, um den Instrumentaltrack (MR) zu extrahieren.",
     extractMr: "MR extrahieren",
+    keyShift: "Tonhöhe",
   },
   lrc: {
     title: "AR → LRC",

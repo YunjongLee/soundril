@@ -85,12 +85,16 @@ def separate_vocals(audio_path: str, output_dir: str) -> tuple[str, str]:
     device = detect_device()
     model = _get_demucs_model(device)
 
-    # Load and preprocess audio
-    wav, sr = torchaudio.load(audio_path)
-    if wav.shape[0] == 1:
-        wav = wav.repeat(2, 1)  # mono → stereo
-    if sr != model.samplerate:
-        wav = torchaudio.functional.resample(wav, sr, model.samplerate)
+    # ffmpeg로 WAV 변환 (MP3 등 libsndfile 미지원 포맷 대응)
+    wav_input = str(Path(output_dir) / "input.wav")
+    subprocess.run([
+        "ffmpeg", "-y", "-i", audio_path,
+        "-ar", str(model.samplerate), "-ac", "2",
+        wav_input,
+    ], check=True, capture_output=True)
+
+    # Load preprocessed audio (이미 리샘플링+스테레오 변환 완료)
+    wav, sr = torchaudio.load(wav_input)
 
     # Normalize
     ref = wav.mean(0)
@@ -115,6 +119,33 @@ def separate_vocals(audio_path: str, output_dir: str) -> tuple[str, str]:
 
     logger.info("Demucs: separation complete")
     return vocals_path, mr_path
+
+
+def pitch_shift_audio(input_path: str, output_path: str, semitones: int):
+    """FFmpeg rubberband으로 피치 시프트 (템포 유지). fallback: asetrate+atempo."""
+    pitch_ratio = 2 ** (semitones / 12)
+    logger.info(f"Pitch shifting: {semitones:+d} semitones (ratio={pitch_ratio:.4f})")
+
+    # Primary: rubberband (고품질, 템포 유지)
+    try:
+        subprocess.run([
+            "ffmpeg", "-y", "-i", input_path,
+            "-af", f"rubberband=pitch={pitch_ratio}",
+            output_path,
+        ], check=True, capture_output=True, timeout=120)
+        logger.info("Pitch shift complete (rubberband)")
+        return
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        logger.info("Rubberband unavailable, falling back to asetrate+atempo")
+
+    # Fallback: asetrate + aresample + atempo
+    tempo_ratio = 1 / pitch_ratio
+    subprocess.run([
+        "ffmpeg", "-y", "-i", input_path,
+        "-af", f"asetrate=44100*{pitch_ratio},aresample=44100,atempo={tempo_ratio}",
+        output_path,
+    ], check=True, capture_output=True, timeout=120)
+    logger.info("Pitch shift complete (asetrate+atempo fallback)")
 
 
 def normalize_audio(input_path: str, output_path: str):
@@ -367,7 +398,7 @@ def align_lyrics(whisper_words: list[dict], lyrics_lines: list[str]) -> list[tup
                     if score > best_score:
                         best_score = score
                         best_wi = i
-                if best_score >= 0.8 and best_wi >= 0:
+                if best_score >= 0.9 and best_wi >= 0:
                     concat_matches.append((start_lw, end_lw, best_wi, best_score))
 
         # 점수 높은 순으로 정렬, 겹치지 않는 매칭만 선택
@@ -475,6 +506,7 @@ async def process_job(
     input_storage_path: str,
     lyrics: str | None = None,
     cover_storage_path: str | None = None,
+    key_shift: int = 0,
 ) -> dict:
     """Main processing pipeline. Returns dict with result storage paths."""
     work_dir = tempfile.mkdtemp(prefix=f"soundril_{job_id}_")
@@ -508,6 +540,13 @@ async def process_job(
                 separate_vocals, local_input, work_dir
             )
             await update_job_progress(job_id, 30, "Separation complete")
+
+            # Key shift (MR only)
+            if key_shift != 0:
+                await update_job_progress(job_id, 31, f"Pitch shifting ({key_shift:+d})...")
+                pitched_path = str(Path(work_dir) / "mr_pitched.wav")
+                await asyncio.to_thread(pitch_shift_audio, mr_path, pitched_path, key_shift)
+                mr_path = pitched_path
 
             mr_mp3 = str(Path(work_dir) / "mr.mp3")
             vocals_mp3 = str(Path(work_dir) / "vocals.mp3")

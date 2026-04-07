@@ -34,6 +34,7 @@ export default function MRPage() {
   const [file, setFile] = useState<File | null>(null);
   const [duration, setDuration] = useState<number | null>(null);
   const [albumArt, setAlbumArt] = useState<Blob | null>(null);
+  const [keyShift, setKeyShift] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
@@ -123,6 +124,7 @@ export default function MRPage() {
           inputFileName: file.name,
           coverStoragePath,
           coverUrl,
+          keyShift: keyShift || undefined,
         }),
       });
 
@@ -217,6 +219,34 @@ export default function MRPage() {
           </>
         )}
       </div>
+
+      {/* Key Shift */}
+      {file && duration && (
+        <div className="mt-4 rounded-lg border border-border/60 bg-card p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">{t("mr.keyShift")}</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setKeyShift((v) => Math.max(v - 1, -6))}
+                disabled={keyShift <= -6}
+                className="h-7 w-7 rounded-md border border-border hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-sm font-medium transition-colors"
+              >
+                -
+              </button>
+              <span className="w-12 text-center text-sm font-medium tabular-nums">
+                {keyShift === 0 ? "0" : `${keyShift > 0 ? "+" : ""}${keyShift}`}
+              </span>
+              <button
+                onClick={() => setKeyShift((v) => Math.min(v + 1, 6))}
+                disabled={keyShift >= 6}
+                className="h-7 w-7 rounded-md border border-border hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-sm font-medium transition-colors"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Cost summary */}
       {file && duration && (
