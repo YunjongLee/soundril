@@ -10,6 +10,7 @@ const ru: Translations = {
     dashboard: "Панель управления",
     arToMr: "AR → MR",
     arToLrc: "AR → LRC",
+    keyShift: "Изменение тональности",
     tools: "Инструменты",
     history: "История",
     billing: "Оплата",
@@ -141,6 +142,12 @@ const ru: Translations = {
     extractMr: "Извлечь MR",
     keyShift: "Изменение тональности",
   },
+  key: {
+    title: "Изменение тональности",
+    subtitle: "Измените тональность аудиофайла.",
+    keyShift: "Изменение тональности",
+    shiftKey: "Изменить тональность",
+  },
   lrc: {
     title: "AR → LRC",
     subtitle:
@@ -177,6 +184,7 @@ const ru: Translations = {
     mrTrack: "MR-трек",
     mp3Quality: "MP3 320kbps",
     vocalsOnly: "Только вокал",
+    keyShifted: "Тональность изменена",
     lrcFile: "LRC-файл",
     synchronizedLyrics: "Синхронизированный текст",
     playPreview: "Воспроизвести предпросмотр",

@@ -10,6 +10,7 @@ const pt: Translations = {
     dashboard: "Painel",
     arToMr: "AR → MR",
     arToLrc: "AR → LRC",
+    keyShift: "Mudança de tom",
     tools: "Ferramentas",
     history: "Histórico",
     billing: "Faturamento",
@@ -141,6 +142,12 @@ const pt: Translations = {
     extractMr: "Extrair MR",
     keyShift: "Mudança de tom",
   },
+  key: {
+    title: "Mudança de tom",
+    subtitle: "Ajuste o tom de um arquivo de áudio.",
+    keyShift: "Mudança de tom",
+    shiftKey: "Mudar tom",
+  },
   lrc: {
     title: "AR → LRC",
     subtitle:
@@ -177,6 +184,7 @@ const pt: Translations = {
     mrTrack: "Faixa MR",
     mp3Quality: "MP3 320kbps",
     vocalsOnly: "Apenas vocais",
+    keyShifted: "Tom alterado",
     lrcFile: "Arquivo LRC",
     synchronizedLyrics: "Letras sincronizadas",
     playPreview: "Reproduzir prévia",

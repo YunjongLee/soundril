@@ -4,6 +4,7 @@ Ported from lrc-generator/generate.py.
 """
 
 import asyncio
+import os
 import re
 import subprocess
 import tempfile
@@ -122,29 +123,35 @@ def separate_vocals(audio_path: str, output_dir: str) -> tuple[str, str]:
 
 
 def pitch_shift_audio(input_path: str, output_path: str, semitones: int):
-    """FFmpeg rubberband으로 피치 시프트 (템포 유지). fallback: asetrate+atempo."""
+    """피치 시프트 (템포 유지). rubberband CLI → ffmpeg asetrate fallback."""
     pitch_ratio = 2 ** (semitones / 12)
     logger.info(f"Pitch shifting: {semitones:+d} semitones (ratio={pitch_ratio:.4f})")
 
-    # Primary: rubberband (고품질, 템포 유지)
+    # ffmpeg로 WAV 변환 (rubberband CLI는 WAV만 지원)
+    wav_input = output_path.replace(".wav", "_tmp.wav")
+    subprocess.run([
+        "ffmpeg", "-y", "-i", input_path, "-ar", "44100", "-ac", "2", wav_input,
+    ], check=True, capture_output=True, timeout=120)
+
+    # Primary: rubberband CLI (고품질, 템포 유지)
     try:
         subprocess.run([
-            "ffmpeg", "-y", "-i", input_path,
-            "-af", f"rubberband=pitch={pitch_ratio}",
-            output_path,
+            "rubberband", "-p", str(semitones), wav_input, output_path,
         ], check=True, capture_output=True, timeout=120)
-        logger.info("Pitch shift complete (rubberband)")
+        os.remove(wav_input)
+        logger.info("Pitch shift complete (rubberband CLI)")
         return
     except (subprocess.CalledProcessError, FileNotFoundError):
-        logger.info("Rubberband unavailable, falling back to asetrate+atempo")
+        logger.info("Rubberband CLI unavailable, falling back to asetrate+atempo")
 
-    # Fallback: asetrate + aresample + atempo
+    # Fallback: ffmpeg asetrate + aresample + atempo
     tempo_ratio = 1 / pitch_ratio
     subprocess.run([
-        "ffmpeg", "-y", "-i", input_path,
+        "ffmpeg", "-y", "-i", wav_input,
         "-af", f"asetrate=44100*{pitch_ratio},aresample=44100,atempo={tempo_ratio}",
         output_path,
     ], check=True, capture_output=True, timeout=120)
+    os.remove(wav_input)
     logger.info("Pitch shift complete (asetrate+atempo fallback)")
 
 
@@ -568,6 +575,22 @@ async def process_job(
             result["mrStoragePath"] = mr_storage
             result["vocalsStoragePath"] = vocals_storage
             await update_job_progress(job_id, 35, "Tracks ready")
+
+        # Step 1.5: Key shift only (no separation)
+        if job_type == "key" and key_shift != 0:
+            await update_job_progress(job_id, 10, f"Pitch shifting ({key_shift:+d})...")
+            pitched_path = str(Path(work_dir) / "pitched.wav")
+            await asyncio.to_thread(pitch_shift_audio, local_input, pitched_path, key_shift)
+            await update_job_progress(job_id, 50, "Encoding...")
+
+            output_mp3 = str(Path(work_dir) / "output.mp3")
+            await asyncio.to_thread(encode_mp3, pitched_path, output_mp3, "320k", local_cover)
+            await update_job_progress(job_id, 80, "Uploading...")
+
+            output_storage = f"results/{user_id}/{job_id}/output.mp3"
+            await upload_file(output_mp3, output_storage)
+            result["outputStoragePath"] = output_storage
+            await update_job_progress(job_id, 90, "Done")
 
         # Step 2: Transcription + alignment
         if job_type in ("lrc", "lrc_mr"):

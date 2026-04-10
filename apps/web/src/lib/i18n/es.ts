@@ -10,6 +10,7 @@ const es: Translations = {
     dashboard: "Panel",
     arToMr: "AR → MR",
     arToLrc: "AR → LRC",
+    keyShift: "Cambio de tono",
     tools: "Herramientas",
     history: "Historial",
     billing: "Facturación",
@@ -141,6 +142,12 @@ const es: Translations = {
     extractMr: "Extraer MR",
     keyShift: "Cambio de tono",
   },
+  key: {
+    title: "Cambio de tono",
+    subtitle: "Ajusta el tono de un archivo de audio.",
+    keyShift: "Cambio de tono",
+    shiftKey: "Cambiar tono",
+  },
   lrc: {
     title: "AR → LRC",
     subtitle:
@@ -177,6 +184,7 @@ const es: Translations = {
     mrTrack: "Pista MR",
     mp3Quality: "MP3 320kbps",
     vocalsOnly: "Solo voces",
+    keyShifted: "Tono cambiado",
     lrcFile: "Archivo LRC",
     synchronizedLyrics: "Letras sincronizadas",
     playPreview: "Reproducir vista previa",

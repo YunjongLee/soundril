@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Parse request body
     const body = await request.json();
-    const type = body.type as "mr" | "lrc" | "lrc_mr";
+    const type = body.type as "mr" | "lrc" | "lrc_mr" | "key";
     const durationSeconds = Number(body.durationSeconds);
     const inputStoragePath = body.inputStoragePath as string;
     const inputFileName = body.inputFileName as string;
@@ -39,8 +39,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!["mr", "lrc", "lrc_mr"].includes(type)) {
+    if (!["mr", "lrc", "lrc_mr", "key"].includes(type)) {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
+    }
+
+    if (type === "key" && !keyShift) {
+      return NextResponse.json(
+        { error: "Key shift value required" },
+        { status: 400 }
+      );
     }
 
     if ((type === "lrc" || type === "lrc_mr") && !lyrics?.trim()) {

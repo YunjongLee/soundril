@@ -8,7 +8,7 @@ import { applicationDefault } from "firebase-admin/app";
 export async function createProcessingTask(payload: {
   jobId: string;
   userId: string;
-  type: "mr" | "lrc" | "lrc_mr";
+  type: "mr" | "lrc" | "lrc_mr" | "key";
   inputStoragePath: string;
   lyrics?: string;
   coverStoragePath?: string | null;

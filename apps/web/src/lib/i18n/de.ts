@@ -10,6 +10,7 @@ const de: Translations = {
     dashboard: "Dashboard",
     arToMr: "AR → MR",
     arToLrc: "AR → LRC",
+    keyShift: "Tonhöhe",
     tools: "Werkzeuge",
     history: "Verlauf",
     billing: "Abrechnung",
@@ -141,6 +142,12 @@ const de: Translations = {
     extractMr: "MR extrahieren",
     keyShift: "Tonhöhe",
   },
+  key: {
+    title: "Tonhöhe",
+    subtitle: "Passen Sie die Tonhöhe einer Audiodatei an.",
+    keyShift: "Tonhöhe",
+    shiftKey: "Tonhöhe ändern",
+  },
   lrc: {
     title: "AR → LRC",
     subtitle:
@@ -177,6 +184,7 @@ const de: Translations = {
     mrTrack: "MR-Track",
     mp3Quality: "MP3 320kbps",
     vocalsOnly: "Nur Gesang",
+    keyShifted: "Tonhöhe geändert",
     lrcFile: "LRC-Datei",
     synchronizedLyrics: "Synchronisierter Songtext",
     playPreview: "Vorschau abspielen",

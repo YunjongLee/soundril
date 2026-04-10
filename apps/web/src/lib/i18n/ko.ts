@@ -10,6 +10,7 @@ const ko: Translations = {
     dashboard: "대시보드",
     arToMr: "AR → MR",
     arToLrc: "AR → LRC",
+    keyShift: "키 조절",
     tools: "도구",
     history: "작업 내역",
     billing: "결제",
@@ -138,6 +139,12 @@ const ko: Translations = {
     extractMr: "MR 추출",
     keyShift: "키 조절",
   },
+  key: {
+    title: "키 조절",
+    subtitle: "오디오 파일의 키(음정)를 조절합니다.",
+    keyShift: "키 조절",
+    shiftKey: "키 변환",
+  },
   lrc: {
     title: "AR → LRC",
     subtitle:
@@ -174,6 +181,7 @@ const ko: Translations = {
     mrTrack: "MR 트랙",
     mp3Quality: "MP3 320kbps",
     vocalsOnly: "보컬",
+    keyShifted: "키 조절됨",
     lrcFile: "LRC 파일",
     synchronizedLyrics: "싱크 가사",
     playPreview: "미리 듣기",

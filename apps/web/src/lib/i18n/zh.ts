@@ -10,6 +10,7 @@ const zh: Translations = {
     dashboard: "控制面板",
     arToMr: "AR → MR",
     arToLrc: "AR → LRC",
+    keyShift: "调音",
     tools: "工具",
     history: "历史记录",
     billing: "账单",
@@ -134,6 +135,12 @@ const zh: Translations = {
     extractMr: "提取MR",
     keyShift: "调音",
   },
+  key: {
+    title: "调音",
+    subtitle: "调整音频文件的音调。",
+    keyShift: "调音",
+    shiftKey: "变调",
+  },
   lrc: {
     title: "AR → LRC",
     subtitle: "上传音频并粘贴歌词，生成同步LRC文件。",
@@ -169,6 +176,7 @@ const zh: Translations = {
     mrTrack: "MR伴奏",
     mp3Quality: "MP3 320kbps",
     vocalsOnly: "仅人声",
+    keyShifted: "已变调",
     lrcFile: "LRC文件",
     synchronizedLyrics: "同步歌词",
     playPreview: "播放预览",

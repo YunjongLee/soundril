@@ -15,7 +15,7 @@ export type TransactionType =
  */
 export function calculateCredits(
   durationSeconds: number,
-  type: "mr" | "lrc" | "lrc_mr"
+  type: "mr" | "lrc" | "lrc_mr" | "key"
 ): number {
   const minutes = Math.ceil(durationSeconds / 60);
   if (type === "lrc_mr") return Math.ceil(minutes * 1.5);

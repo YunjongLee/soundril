@@ -10,6 +10,7 @@ const fr: Translations = {
     dashboard: "Tableau de bord",
     arToMr: "AR → MR",
     arToLrc: "AR → LRC",
+    keyShift: "Changement de tonalité",
     tools: "Outils",
     history: "Historique",
     billing: "Facturation",
@@ -140,6 +141,12 @@ const fr: Translations = {
     extractMr: "Extraire le MR",
     keyShift: "Changement de tonalité",
   },
+  key: {
+    title: "Changement de tonalité",
+    subtitle: "Ajustez la tonalité d'un fichier audio.",
+    keyShift: "Changement de tonalité",
+    shiftKey: "Changer la tonalité",
+  },
   lrc: {
     title: "AR → LRC",
     subtitle:
@@ -176,6 +183,7 @@ const fr: Translations = {
     mrTrack: "Piste MR",
     mp3Quality: "MP3 320kbps",
     vocalsOnly: "Voix uniquement",
+    keyShifted: "Tonalité modifiée",
     lrcFile: "Fichier LRC",
     synchronizedLyrics: "Paroles synchronisées",
     playPreview: "Lire l'aperçu",

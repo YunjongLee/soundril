@@ -27,12 +27,13 @@ import {
   EyeOff,
   Copy,
   Check,
+  AudioLines,
 } from "lucide-react";
 import Link from "next/link";
 
 interface Job {
   userId: string;
-  type: "mr" | "lrc" | "lrc_mr";
+  type: "mr" | "lrc" | "lrc_mr" | "key";
   status: "queued" | "processing" | "completed" | "failed" | "canceled";
   progress: number;
   progressStep: string;
@@ -42,6 +43,8 @@ interface Job {
   mrStoragePath?: string;
   vocalsStoragePath?: string;
   lrcStoragePath?: string;
+  outputStoragePath?: string;
+  keyShift?: number;
   errorMessage?: string;
   processingTimeMs?: number;
   createdAt: { seconds: number };
@@ -281,6 +284,25 @@ export default function JobDetailPage() {
                 </button>
               ) : (
                 <AudioPreview trackId="vocals" label={t("job.vocalsOnly")} icon={<Mic className="h-5 w-5 text-primary" />} storagePath={job.vocalsStoragePath} getUrl={getPreviewUrl} t={t} playingTrack={playingTrack} onPlay={setPlayingTrack} />
+              )
+            )}
+            {job.outputStoragePath && (
+              isPaid ? (
+                <button
+                  onClick={() => handleDownload(job.outputStoragePath!, `${job.inputFileName.replace(/\.[^.]+$/, "")}_key${job.keyShift && job.keyShift > 0 ? "+" : ""}${job.keyShift ?? 0}.mp3`)}
+                  className="w-full flex items-center gap-3 rounded-lg border border-border/60 p-3 hover:bg-muted/50 transition-colors text-left"
+                >
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <AudioLines className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{t("key.keyShift")} {job.keyShift && job.keyShift > 0 ? "+" : ""}{job.keyShift ?? 0}</p>
+                    <p className="text-xs text-muted-foreground">{t("job.mp3Quality")}</p>
+                  </div>
+                  <Download className="h-4 w-4 text-muted-foreground" />
+                </button>
+              ) : (
+                <AudioPreview trackId="output" label={`${t("key.keyShift")} ${job.keyShift && job.keyShift > 0 ? "+" : ""}${job.keyShift ?? 0}`} icon={<AudioLines className="h-5 w-5 text-primary" />} storagePath={job.outputStoragePath} getUrl={getPreviewUrl} t={t} playingTrack={playingTrack} onPlay={setPlayingTrack} />
               )
             )}
             {job.lrcStoragePath && (

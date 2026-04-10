@@ -10,6 +10,7 @@ const ja: Translations = {
     dashboard: "ダッシュボード",
     arToMr: "AR → MR",
     arToLrc: "AR → LRC",
+    keyShift: "キー調整",
     tools: "ツール",
     history: "履歴",
     billing: "お支払い",
@@ -136,6 +137,12 @@ const ja: Translations = {
     extractMr: "MRを抽出",
     keyShift: "キー調整",
   },
+  key: {
+    title: "キー調整",
+    subtitle: "オーディオファイルのキー（音程）を調整します。",
+    keyShift: "キー調整",
+    shiftKey: "キー変換",
+  },
   lrc: {
     title: "AR → LRC",
     subtitle:
@@ -172,6 +179,7 @@ const ja: Translations = {
     mrTrack: "MRトラック",
     mp3Quality: "MP3 320kbps",
     vocalsOnly: "ボーカルのみ",
+    keyShifted: "キー調整済み",
     lrcFile: "LRCファイル",
     synchronizedLyrics: "同期歌詞",
     playPreview: "プレビュー再生",

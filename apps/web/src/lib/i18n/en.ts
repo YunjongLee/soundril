@@ -8,6 +8,7 @@ const en = {
     dashboard: "Dashboard",
     arToMr: "AR → MR",
     arToLrc: "AR → LRC",
+    keyShift: "Key Shift",
     tools: "Tools",
     history: "History",
     billing: "Billing",
@@ -136,6 +137,12 @@ const en = {
     extractMr: "Extract MR",
     keyShift: "Key Shift",
   },
+  key: {
+    title: "Key Shift",
+    subtitle: "Adjust the key (pitch) of an audio file.",
+    keyShift: "Key Shift",
+    shiftKey: "Shift Key",
+  },
   lrc: {
     title: "AR → LRC",
     subtitle:
@@ -172,6 +179,7 @@ const en = {
     mrTrack: "MR Track",
     mp3Quality: "MP3 320kbps",
     vocalsOnly: "Vocals Only",
+    keyShifted: "Key Shifted",
     lrcFile: "LRC File",
     synchronizedLyrics: "Synchronized lyrics",
     playPreview: "Play Preview",
