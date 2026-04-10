@@ -35,15 +35,14 @@ const ja: Translations = {
       title: "Powerful Audio Tools",
       subtitle:
         "ボーカル除去から歌詞同期まで、必要なものがすべて揃っています。",
+      keyTitle: "キー調整",
+      keyDesc: "曲のキーを自由に上げ下げ。無料でご利用いただけます。",
       mrTitle: "AR → MR",
       mrDesc:
         "AIによるソース分離技術で、あらゆる楽曲からボーカルを除去。スタジオ品質のインストゥルメンタルトラックを即座に取得。",
       lrcTitle: "AR → LRC",
       lrcDesc:
         "ワードレベルの同期歌詞ファイルを生成。カラオケ、字幕、音楽アプリに最適。",
-      fastTitle: "高速＆高精度",
-      fastDesc:
-        "最先端AIによる商用グレードの精度。どんな楽曲も数分で処理完了。",
     },
     howItWorks: {
       title: "How It Works",
@@ -142,6 +141,7 @@ const ja: Translations = {
     subtitle: "オーディオファイルのキー（音程）を調整します。",
     keyShift: "キー調整",
     shiftKey: "キー変換",
+    free: "無料",
   },
   lrc: {
     title: "AR → LRC",
@@ -210,6 +210,7 @@ const ja: Translations = {
     subtitle: "最近の処理ジョブ。",
     noJobsYet: "ジョブはまだありません。",
     startFirstJob: "最初のジョブを開始",
+    key: "キー調整",
     mr: "MR",
     lrc: "LRC",
     lrcPlusMr: "LRC + MR",

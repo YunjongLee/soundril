@@ -36,15 +36,14 @@ const pt: Translations = {
       title: "Powerful Audio Tools",
       subtitle:
         "Da remoção de vocais à sincronização de letras, tudo o que você precisa em um só lugar.",
+      keyTitle: "Mudança de tom",
+      keyDesc: "Ajuste livremente o tom de qualquer música. Disponível gratuitamente.",
       mrTitle: "AR → MR",
       mrDesc:
         "Remova vocais de qualquer música com separação de fontes por IA. Obtenha faixas instrumentais com qualidade de estúdio instantaneamente.",
       lrcTitle: "AR → LRC",
       lrcDesc:
         "Gere arquivos de letras sincronizadas palavra por palavra. Perfeito para karaokê, legendas e apps de música.",
-      fastTitle: "Rápido e preciso",
-      fastDesc:
-        "Precisão de nível profissional com IA de ponta. Processe qualquer música em minutos.",
     },
     howItWorks: {
       title: "How It Works",
@@ -147,6 +146,7 @@ const pt: Translations = {
     subtitle: "Ajuste o tom de um arquivo de áudio.",
     keyShift: "Mudança de tom",
     shiftKey: "Mudar tom",
+    free: "Gratuito",
   },
   lrc: {
     title: "AR → LRC",
@@ -215,6 +215,7 @@ const pt: Translations = {
     subtitle: "Suas tarefas de processamento recentes.",
     noJobsYet: "Nenhuma tarefa ainda.",
     startFirstJob: "Comece sua primeira tarefa",
+    key: "Mudança de tom",
     mr: "MR",
     lrc: "LRC",
     lrcPlusMr: "LRC + MR",

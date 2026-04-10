@@ -23,7 +23,7 @@ soundril/
 │       ├── generate.py    # CLI: python generate.py song.mp3 lyrics.txt
 │       └── app.py         # Web UI: python app.py (localhost:3100)
 └── workers/
-    └── audio-processor/   # Cloud Run GPU 워커 (Python, FastAPI)
+    └── audio-processor/   # Cloud Run 워커 (Python, FastAPI)
 ```
 
 ## 기술 스택
@@ -31,12 +31,13 @@ soundril/
 - **인증**: Firebase Auth (Google 로그인) + 세션 쿠키
 - **DB**: Firestore (users, jobs, creditTransactions)
 - **스토리지**: Firebase Storage
-- **워커**: Cloud Run GPU (NVIDIA L4), Python, FastAPI, Demucs, WhisperX
+- **워커**: Cloud Run (CPU 8코어, 32GB), Python, FastAPI, Demucs, WhisperX
 - **태스크 큐**: Cloud Tasks
 - **패키지 매니저**: pnpm
 
 ## 크레딧 시스템
 - 1크레딧 = 1분 오디오
+- 키 조절: 무료
 - MR 추출: ceil(분) 크레딧
 - LRC 생성: ceil(분) 크레딧
 - LRC+MR: ceil(분) × 2 크레딧
@@ -52,5 +53,5 @@ logs/{uid}/{jobId}/process.log       # 처리 로그
 
 ## 배포
 - **웹**: Vercel (soundril.com)
-- **워커**: Cloud Run GPU (asia-northeast3)
+- **워커**: Cloud Run (us-central1)
 - **Firebase**: soundril GCP 프로젝트

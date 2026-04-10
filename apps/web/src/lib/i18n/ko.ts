@@ -35,15 +35,15 @@ const ko: Translations = {
       title: "Powerful Audio Tools",
       subtitle:
         "보컬 제거부터 가사 싱크까지, 필요한 모든 것을 한 곳에서.",
+      keyTitle: "키 조절",
+      keyDesc:
+        "노래의 키를 자유롭게 올리고 내려보세요. 무료로 바로 사용할 수 있습니다.",
       mrTitle: "AR → MR",
       mrDesc:
         "AI로 보컬을 깔끔하게 분리하세요. 어떤 곡이든 스튜디오급 MR을 바로 만들 수 있습니다.",
       lrcTitle: "AR → LRC",
       lrcDesc:
         "단어 단위로 타이밍이 맞는 가사 파일을 만들어 보세요. 노래방, 자막, 음악 앱에 딱 맞습니다.",
-      fastTitle: "빠른 속도, 높은 정확도",
-      fastDesc:
-        "프로급 정확도의 AI 처리. 어떤 곡이든 몇 분이면 완료됩니다.",
     },
     howItWorks: {
       title: "How It Works",
@@ -144,6 +144,7 @@ const ko: Translations = {
     subtitle: "오디오 파일의 키(음정)를 조절합니다.",
     keyShift: "키 조절",
     shiftKey: "키 변환",
+    free: "무료",
   },
   lrc: {
     title: "AR → LRC",
@@ -212,6 +213,7 @@ const ko: Translations = {
     subtitle: "최근 작업 목록입니다.",
     noJobsYet: "아직 작업이 없습니다.",
     startFirstJob: "첫 작업 시작하기",
+    key: "키 조절",
     mr: "MR",
     lrc: "LRC",
     lrcPlusMr: "LRC + MR",

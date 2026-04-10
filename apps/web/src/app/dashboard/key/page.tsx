@@ -9,9 +9,8 @@ import { auth, storage } from "@/lib/firebase/client";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { extractAlbumArt } from "@/lib/albumArt";
 import { Waveform } from "@/components/waveform";
-import { Upload, AudioLines, X, AlertCircle, Coins } from "lucide-react";
+import { Upload, AudioLines, X } from "lucide-react";
 import { toast } from "sonner";
-import Link from "next/link";
 
 const ACCEPTED_TYPES = [
   "audio/mpeg",
@@ -36,9 +35,6 @@ export default function KeyShiftPage() {
   const [submitting, setSubmitting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
-  const credits = duration ? Math.ceil(duration / 60) : 0;
-  const userCredits = profile?.credits ?? 0;
-  const insufficientCredits = credits > 0 && userCredits < credits;
 
   const handleFile = (f: File) => {
     if (!ACCEPTED_TYPES.includes(f.type) && !f.name.match(/\.(mp3|wav|flac|ogg|m4a)$/i)) {
@@ -81,10 +77,6 @@ export default function KeyShiftPage() {
 
   const handleSubmit = async () => {
     if (!file || !user || !duration || keyShift === 0) return;
-    if (insufficientCredits) {
-      toast.error(t("common.notEnoughMinutes"));
-      return;
-    }
     setSubmitting(true);
 
     try {
@@ -246,46 +238,20 @@ export default function KeyShiftPage() {
         </div>
       )}
 
-      {/* Cost summary */}
+      {/* Free badge */}
       {file && duration && (
-        <div className={`mt-4 rounded-lg border p-4 ${
-          insufficientCredits
-            ? "border-red-500/30 bg-red-500/5"
-            : "border-border/60 bg-card"
-        }`}>
+        <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{t("common.minutesRequired")}</span>
-            <span className="font-medium">
-              {credits} {t("common.min")}
-            </span>
+            <span className="font-medium text-primary">{t("key.free")}</span>
           </div>
-          <div className="flex items-center justify-between text-sm mt-1.5">
-            <span className="text-muted-foreground">{t("common.yourBalance")}</span>
-            <span className={`font-medium flex items-center gap-1 ${
-              insufficientCredits ? "text-red-400" : "text-primary"
-            }`}>
-              <Coins className="h-3.5 w-3.5" />
-              {userCredits} {t("common.min")}
-            </span>
-          </div>
-          {insufficientCredits && (
-            <div className="mt-3 flex items-start gap-2 text-sm text-red-400">
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-              <div>
-                {t("common.notEnoughMinutes")}{" "}
-                <Link href="/dashboard/pricing" className="underline hover:text-red-300">
-                  {t("common.upgradeYourPlan")}
-                </Link>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
       {/* Submit */}
       <button
         onClick={handleSubmit}
-        disabled={!file || !duration || keyShift === 0 || submitting || insufficientCredits}
+        disabled={!file || !duration || keyShift === 0 || submitting}
         className="mt-6 w-full inline-flex items-center justify-center rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed h-11 transition-colors"
       >
         {submitting ? (

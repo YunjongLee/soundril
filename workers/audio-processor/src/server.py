@@ -1,6 +1,6 @@
 """
 Soundril Audio Processor - FastAPI Server
-Cloud Run GPU worker for audio processing tasks.
+Cloud Run worker for audio processing tasks.
 """
 
 import os

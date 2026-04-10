@@ -17,6 +17,7 @@ import Link from "next/link";
 import {
   Music,
   FileText,
+  AudioLines,
   CheckCircle2,
   XCircle,
   Clock,
@@ -26,7 +27,7 @@ import {
 
 interface JobItem {
   id: string;
-  type: "mr" | "lrc" | "lrc_mr";
+  type: "mr" | "lrc" | "lrc_mr" | "key";
   status: "queued" | "processing" | "completed" | "failed" | "canceled";
   inputFileName: string;
   creditsCharged: number;
@@ -86,11 +87,13 @@ export default function HistoryPage() {
   }
 
   const typeLabel = (type: string) =>
-    type === "mr"
-      ? t("history.mr")
-      : type === "lrc"
-        ? t("history.lrc")
-        : t("history.lrcPlusMr");
+    type === "key"
+      ? t("history.key")
+      : type === "mr"
+        ? t("history.mr")
+        : type === "lrc"
+          ? t("history.lrc")
+          : t("history.lrcPlusMr");
 
   return (
     <div className="max-w-3xl">
@@ -132,6 +135,8 @@ export default function HistoryPage() {
                 <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
                   {job.coverUrl ? (
                     <img src={job.coverUrl} alt="" className="h-full w-full object-cover" />
+                  ) : job.type === "key" ? (
+                    <AudioLines className="h-5 w-5 text-primary" />
                   ) : job.type === "mr" ? (
                     <Music className="h-5 w-5 text-primary" />
                   ) : (
@@ -141,8 +146,8 @@ export default function HistoryPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{job.inputFileName}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {typeLabel(job.type)}{" "}
-                    · {job.creditsCharged} {t("common.min")}
+                    {typeLabel(job.type)}
+                    {job.creditsCharged > 0 ? ` · ${job.creditsCharged} ${t("common.min")}` : ""}
                     {job.createdAt &&
                       ` · ${new Date(job.createdAt.seconds * 1000).toLocaleDateString()}`}
                   </p>

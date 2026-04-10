@@ -36,15 +36,14 @@ const es: Translations = {
       title: "Powerful Audio Tools",
       subtitle:
         "Desde la eliminación de voces hasta la sincronización de letras, todo lo que necesitas en un solo lugar.",
+      keyTitle: "Cambio de tono",
+      keyDesc: "Ajusta libremente el tono de cualquier canción. Disponible gratis.",
       mrTitle: "AR → MR",
       mrDesc:
         "Elimina las voces de cualquier canción con separación de fuentes impulsada por IA. Obtén pistas instrumentales de calidad de estudio al instante.",
       lrcTitle: "AR → LRC",
       lrcDesc:
         "Genera archivos de letras sincronizadas palabra por palabra. Perfecto para karaoke, subtítulos y apps de música.",
-      fastTitle: "Rápido y preciso",
-      fastDesc:
-        "Precisión de nivel profesional con IA de vanguardia. Procesa cualquier canción en minutos.",
     },
     howItWorks: {
       title: "How It Works",
@@ -147,6 +146,7 @@ const es: Translations = {
     subtitle: "Ajusta el tono de un archivo de audio.",
     keyShift: "Cambio de tono",
     shiftKey: "Cambiar tono",
+    free: "Gratis",
   },
   lrc: {
     title: "AR → LRC",
@@ -215,6 +215,7 @@ const es: Translations = {
     subtitle: "Tus tareas de procesamiento recientes.",
     noJobsYet: "Aún no hay tareas.",
     startFirstJob: "Empieza tu primera tarea",
+    key: "Cambio de tono",
     mr: "MR",
     lrc: "LRC",
     lrcPlusMr: "LRC + MR",

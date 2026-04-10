@@ -8,7 +8,7 @@ import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
 import { getPlanName } from "@/lib/plan";
 import { Waveform } from "@/components/waveform";
-import { Music, FileText, Zap, Check } from "lucide-react";
+import { Music, FileText, AudioLines, Check } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -27,6 +27,12 @@ export default function LandingPage() {
 
   const features = [
     {
+      id: "key",
+      icon: AudioLines,
+      title: t("landing.features.keyTitle"),
+      description: t("landing.features.keyDesc"),
+    },
+    {
       id: "mr",
       icon: Music,
       title: t("landing.features.mrTitle"),
@@ -37,12 +43,6 @@ export default function LandingPage() {
       icon: FileText,
       title: t("landing.features.lrcTitle"),
       description: t("landing.features.lrcDesc"),
-    },
-    {
-      id: "fast",
-      icon: Zap,
-      title: t("landing.features.fastTitle"),
-      description: t("landing.features.fastDesc"),
     },
   ];
 

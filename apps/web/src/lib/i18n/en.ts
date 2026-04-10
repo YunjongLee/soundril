@@ -33,15 +33,14 @@ const en = {
       title: "Powerful Audio Tools",
       subtitle:
         "From vocal removal to lyrics synchronization, everything you need in one place.",
+      keyTitle: "Key Shift",
+      keyDesc: "Freely adjust the key of any song. Available for free.",
       mrTitle: "AR → MR",
       mrDesc:
         "Remove vocals from any song using AI-powered source separation. Get studio-quality instrumental tracks instantly.",
       lrcTitle: "AR → LRC",
       lrcDesc:
         "Generate word-level synchronized lyrics files. Perfect for karaoke, subtitles, and music apps.",
-      fastTitle: "Fast & Accurate",
-      fastDesc:
-        "Commercial-grade accuracy powered by state-of-the-art AI. Process any song in minutes.",
     },
     howItWorks: {
       title: "How It Works",
@@ -142,6 +141,7 @@ const en = {
     subtitle: "Adjust the key (pitch) of an audio file.",
     keyShift: "Key Shift",
     shiftKey: "Shift Key",
+    free: "Free",
   },
   lrc: {
     title: "AR → LRC",
@@ -210,6 +210,7 @@ const en = {
     subtitle: "Your recent processing jobs.",
     noJobsYet: "No jobs yet.",
     startFirstJob: "Start your first job",
+    key: "Key Shift",
     mr: "MR",
     lrc: "LRC",
     lrcPlusMr: "LRC + MR",

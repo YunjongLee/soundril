@@ -34,15 +34,14 @@ const zh: Translations = {
     features: {
       title: "Powerful Audio Tools",
       subtitle: "从人声消除到歌词同步，一站式满足您的所有需求。",
+      keyTitle: "调音",
+      keyDesc: "自由调整歌曲的音调。免费使用。",
       mrTitle: "AR → MR",
       mrDesc:
         "使用AI驱动的音源分离技术去除任何歌曲中的人声，即时获得录音棚品质的伴奏。",
       lrcTitle: "AR → LRC",
       lrcDesc:
         "生成逐词同步的歌词文件，适用于卡拉OK、字幕和音乐应用。",
-      fastTitle: "快速精准",
-      fastDesc:
-        "由最先进的AI驱动的商业级精度处理，几分钟内处理任何歌曲。",
     },
     howItWorks: {
       title: "How It Works",
@@ -140,6 +139,7 @@ const zh: Translations = {
     subtitle: "调整音频文件的音调。",
     keyShift: "调音",
     shiftKey: "变调",
+    free: "免费",
   },
   lrc: {
     title: "AR → LRC",
@@ -206,6 +206,7 @@ const zh: Translations = {
     subtitle: "您最近的处理任务。",
     noJobsYet: "暂无任务。",
     startFirstJob: "开始您的第一个任务",
+    key: "调音",
     mr: "MR",
     lrc: "LRC",
     lrcPlusMr: "LRC + MR",

@@ -36,15 +36,14 @@ const de: Translations = {
       title: "Powerful Audio Tools",
       subtitle:
         "Von der Gesangsentfernung bis zur Textsynchronisierung — alles an einem Ort.",
+      keyTitle: "Tonhöhe",
+      keyDesc: "Passen Sie die Tonhöhe jedes Songs frei an. Kostenlos verfügbar.",
       mrTitle: "AR → MR",
       mrDesc:
         "Entferne den Gesang aus jedem Song mit KI-gestützter Quellentrennung. Erhalte sofort Instrumentaltracks in Studioqualität.",
       lrcTitle: "AR → LRC",
       lrcDesc:
         "Generiere wortgenau synchronisierte Textdateien. Perfekt für Karaoke, Untertitel und Musik-Apps.",
-      fastTitle: "Schnell und präzise",
-      fastDesc:
-        "Professionelle Genauigkeit mit modernster KI. Verarbeite jeden Song in wenigen Minuten.",
     },
     howItWorks: {
       title: "How It Works",
@@ -147,6 +146,7 @@ const de: Translations = {
     subtitle: "Passen Sie die Tonhöhe einer Audiodatei an.",
     keyShift: "Tonhöhe",
     shiftKey: "Tonhöhe ändern",
+    free: "Kostenlos",
   },
   lrc: {
     title: "AR → LRC",
@@ -215,6 +215,7 @@ const de: Translations = {
     subtitle: "Deine letzten Verarbeitungsaufgaben.",
     noJobsYet: "Noch keine Aufgaben.",
     startFirstJob: "Starte deine erste Aufgabe",
+    key: "Tonhöhe",
     mr: "MR",
     lrc: "LRC",
     lrcPlusMr: "LRC + MR",

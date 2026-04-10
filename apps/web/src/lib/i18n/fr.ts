@@ -35,15 +35,14 @@ const fr: Translations = {
       title: "Powerful Audio Tools",
       subtitle:
         "De la suppression des voix à la synchronisation des paroles, tout ce dont vous avez besoin en un seul endroit.",
+      keyTitle: "Changement de tonalité",
+      keyDesc: "Ajustez librement la tonalité de n'importe quelle chanson. Disponible gratuitement.",
       mrTitle: "AR → MR",
       mrDesc:
         "Supprimez les voix de n'importe quelle chanson grâce à la séparation de sources par IA. Obtenez des pistes instrumentales de qualité studio instantanément.",
       lrcTitle: "AR → LRC",
       lrcDesc:
         "Générez des fichiers de paroles synchronisées mot par mot. Idéal pour le karaoké, les sous-titres et les applications musicales.",
-      fastTitle: "Rapide et précis",
-      fastDesc:
-        "Précision de niveau professionnel propulsée par une IA de pointe. Traitez n'importe quelle chanson en quelques minutes.",
     },
     howItWorks: {
       title: "How It Works",
@@ -146,6 +145,7 @@ const fr: Translations = {
     subtitle: "Ajustez la tonalité d'un fichier audio.",
     keyShift: "Changement de tonalité",
     shiftKey: "Changer la tonalité",
+    free: "Gratuit",
   },
   lrc: {
     title: "AR → LRC",
@@ -214,6 +214,7 @@ const fr: Translations = {
     subtitle: "Vos tâches de traitement récentes.",
     noJobsYet: "Aucune tâche pour le moment.",
     startFirstJob: "Lancez votre première tâche",
+    key: "Changement de tonalité",
     mr: "MR",
     lrc: "LRC",
     lrcPlusMr: "LRC + MR",

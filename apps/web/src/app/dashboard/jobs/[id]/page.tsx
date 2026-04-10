@@ -151,11 +151,13 @@ export default function JobDetailPage() {
   const isActive = job.status === "queued" || job.status === "processing";
 
   const typeLabel =
-    job.type === "mr"
-      ? t("job.mrExtraction")
-      : job.type === "lrc"
-        ? t("job.lrcGeneration")
-        : t("job.lrcPlusMr");
+    job.type === "key"
+      ? t("key.title")
+      : job.type === "mr"
+        ? t("job.mrExtraction")
+        : job.type === "lrc"
+          ? t("job.lrcGeneration")
+          : t("job.lrcPlusMr");
 
   const handleDownload = async (path: string, filename: string) => {
     const idToken = await user?.getIdToken();
@@ -186,7 +188,7 @@ export default function JobDetailPage() {
         <div>
           <h1 className="text-2xl font-bold">{job.inputFileName}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {typeLabel} · {job.creditsCharged} {t("common.min")}
+            {typeLabel}{job.creditsCharged > 0 ? ` · ${job.creditsCharged} ${t("common.min")}` : ""}
           </p>
         </div>
         <div

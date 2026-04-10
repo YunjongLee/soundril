@@ -17,6 +17,7 @@ export function calculateCredits(
   durationSeconds: number,
   type: "mr" | "lrc" | "lrc_mr" | "key"
 ): number {
+  if (type === "key") return 0;
   const minutes = Math.ceil(durationSeconds / 60);
   if (type === "lrc_mr") return Math.ceil(minutes * 1.5);
   return minutes;
