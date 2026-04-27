@@ -50,20 +50,6 @@ export async function GET(
         });
       }
 
-      const customName = request.nextUrl.searchParams.get("filename");
-      if (customName) {
-        // 다운로드: 파일 내용을 직접 스트리밍 (Chrome의 cross-origin download 제약 회피)
-        const [content] = await file.download();
-        const [metadata] = await file.getMetadata();
-        return new NextResponse(new Uint8Array(content), {
-          headers: {
-            "Content-Type": metadata.contentType || "application/octet-stream",
-            "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(customName)}`,
-            "Content-Length": String(content.length),
-          },
-        });
-      }
-
       // 오디오 플레이어용 signed URL
       const [url] = await file.getSignedUrl({
         action: "read",

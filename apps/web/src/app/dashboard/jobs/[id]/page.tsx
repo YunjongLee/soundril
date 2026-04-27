@@ -87,7 +87,7 @@ const statusConfig = {
 export default function JobDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user, productId } = useAuth();
+  const { productId } = useAuth();
   const { t, lang } = useT();
   const isPaid = isPaidPlan(productId);
   const [job, setJob] = useState<Job | null>(null);
@@ -159,23 +159,8 @@ export default function JobDetailPage() {
           ? t("job.lrcGeneration")
           : t("job.lrcPlusMr");
 
-  const handleDownload = async (path: string, filename: string) => {
-    const idToken = await user?.getIdToken();
-    const res = await fetch(
-      `/api/jobs/${jobId}?download=${encodeURIComponent(path)}&filename=${encodeURIComponent(filename)}`,
-      { headers: { Authorization: `Bearer ${idToken}` } }
-    );
-    if (!res.ok) return;
-    const blob = await res.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-  };
+  const getDownloadHref = (path: string, filename: string) =>
+    `/api/jobs/${jobId}/download?path=${encodeURIComponent(path)}&filename=${encodeURIComponent(filename)}`;
 
   return (
     <div className="max-w-2xl">
@@ -256,8 +241,9 @@ export default function JobDetailPage() {
           <div className="space-y-3">
             {job.mrStoragePath && (
               isPaid ? (
-                <button
-                  onClick={() => handleDownload(job.mrStoragePath!, `${job.inputFileName.replace(/\.[^.]+$/, "")}_mr.mp3`)}
+                <a
+                  href={getDownloadHref(job.mrStoragePath, `${job.inputFileName.replace(/\.[^.]+$/, "")}_mr.mp3`)}
+                  download
                   className="w-full flex items-center gap-3 rounded-lg border border-border/60 p-3 hover:bg-muted/50 transition-colors text-left"
                 >
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -268,15 +254,16 @@ export default function JobDetailPage() {
                     <p className="text-xs text-muted-foreground">{t("job.mp3Quality")}</p>
                   </div>
                   <Download className="h-4 w-4 text-muted-foreground" />
-                </button>
+                </a>
               ) : (
                 <AudioPreview trackId="mr" label={t("job.mrTrack")} icon={<Music className="h-5 w-5 text-primary" />} storagePath={job.mrStoragePath} getUrl={getPreviewUrl} t={t} playingTrack={playingTrack} onPlay={setPlayingTrack} />
               )
             )}
             {job.vocalsStoragePath && (
               isPaid ? (
-                <button
-                  onClick={() => handleDownload(job.vocalsStoragePath!, `${job.inputFileName.replace(/\.[^.]+$/, "")}_vocals.mp3`)}
+                <a
+                  href={getDownloadHref(job.vocalsStoragePath, `${job.inputFileName.replace(/\.[^.]+$/, "")}_vocals.mp3`)}
+                  download
                   className="w-full flex items-center gap-3 rounded-lg border border-border/60 p-3 hover:bg-muted/50 transition-colors text-left"
                 >
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -287,15 +274,16 @@ export default function JobDetailPage() {
                     <p className="text-xs text-muted-foreground">{t("job.mp3Quality")}</p>
                   </div>
                   <Download className="h-4 w-4 text-muted-foreground" />
-                </button>
+                </a>
               ) : (
                 <AudioPreview trackId="vocals" label={t("job.vocalsOnly")} icon={<Mic className="h-5 w-5 text-primary" />} storagePath={job.vocalsStoragePath} getUrl={getPreviewUrl} t={t} playingTrack={playingTrack} onPlay={setPlayingTrack} />
               )
             )}
             {job.outputStoragePath && (
               isPaid ? (
-                <button
-                  onClick={() => handleDownload(job.outputStoragePath!, `${job.inputFileName.replace(/\.[^.]+$/, "")}_key${job.keyShift && job.keyShift > 0 ? "+" : ""}${job.keyShift ?? 0}.mp3`)}
+                <a
+                  href={getDownloadHref(job.outputStoragePath, `${job.inputFileName.replace(/\.[^.]+$/, "")}_key${job.keyShift && job.keyShift > 0 ? "+" : ""}${job.keyShift ?? 0}.mp3`)}
+                  download
                   className="w-full flex items-center gap-3 rounded-lg border border-border/60 p-3 hover:bg-muted/50 transition-colors text-left"
                 >
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -306,7 +294,7 @@ export default function JobDetailPage() {
                     <p className="text-xs text-muted-foreground">{t("job.mp3Quality")}</p>
                   </div>
                   <Download className="h-4 w-4 text-muted-foreground" />
-                </button>
+                </a>
               ) : (
                 <AudioPreview trackId="output" label={`${t("key.keyShift")} ${job.keyShift && job.keyShift > 0 ? "+" : ""}${job.keyShift ?? 0}`} icon={<AudioLines className="h-5 w-5 text-primary" />} storagePath={job.outputStoragePath} getUrl={getPreviewUrl} t={t} playingTrack={playingTrack} onPlay={setPlayingTrack} />
               )
@@ -317,7 +305,7 @@ export default function JobDetailPage() {
                   jobId={jobId}
                   storagePath={job.lrcStoragePath}
                   filename={`${job.inputFileName.replace(/\.[^.]+$/, "")}.lrc`}
-                  onDownload={handleDownload}
+                  downloadHref={getDownloadHref(job.lrcStoragePath, `${job.inputFileName.replace(/\.[^.]+$/, "")}.lrc`)}
                   t={t}
                 />
               ) : (
@@ -566,13 +554,13 @@ function LrcResult({
   jobId,
   storagePath,
   filename,
-  onDownload,
+  downloadHref,
   t,
 }: {
   jobId: string;
   storagePath: string;
   filename: string;
-  onDownload: (path: string, filename: string) => void;
+  downloadHref: string;
   t: (key: string, params?: Record<string, string | number>) => string;
 }) {
   const [content, setContent] = useState<string | null>(null);
@@ -640,13 +628,14 @@ function LrcResult({
           >
             {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
           </button>
-          <button
-            onClick={() => onDownload(storagePath, filename)}
+          <a
+            href={downloadHref}
+            download
             className="h-8 w-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors flex items-center justify-center shrink-0"
             title={filename}
           >
             <Download className="h-4 w-4" />
-          </button>
+          </a>
         </div>
       </div>
       {showPreview && content && (
