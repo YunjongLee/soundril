@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     rubberband-cli \
     git \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Stage 2: Install dependencies ──
@@ -21,8 +22,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # ── Stage 3: Download models ──
 FROM deps AS models
 
-# Demucs htdemucs model
-RUN python -c "from demucs.pretrained import get_model; get_model('htdemucs')"
+# BS-Roformer 1296 (vocals/instrumental separation, SDR 12.1/16.3)
+RUN mkdir -p /app/models && \
+    python -c "from audio_separator.separator import Separator; s = Separator(model_file_dir='/app/models'); s.load_model(model_filename='model_bs_roformer_ep_368_sdr_12.9628.ckpt')"
 
 # Whisper large-v3
 RUN python -c "import whisperx; whisperx.load_model('large-v3', 'cpu', compute_type='float32')"
@@ -39,6 +41,7 @@ FROM models AS production
 WORKDIR /app
 COPY src/ ./src/
 
+ENV AUDIO_SEPARATOR_MODEL_DIR=/app/models
 ENV PORT=8080
 EXPOSE 8080
 

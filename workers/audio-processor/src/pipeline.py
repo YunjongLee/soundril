@@ -19,11 +19,16 @@ logger = get_logger("pipeline")
 
 # ── Model caches (persist across requests on same Cloud Run instance) ──
 
-_demucs_model = None
-_demucs_device = None
+_separator = None
 _whisper_model = None
 _whisper_device = None
 _align_models: dict = {}
+
+BS_ROFORMER_MODEL = "model_bs_roformer_ep_368_sdr_12.9628.ckpt"
+MODEL_DIR = os.environ.get(
+    "AUDIO_SEPARATOR_MODEL_DIR",
+    str(Path.home() / ".cache" / "audio-separator"),
+)
 
 
 def detect_device() -> str:
@@ -33,17 +38,19 @@ def detect_device() -> str:
     return "cpu"
 
 
-def _get_demucs_model(device: str):
-    global _demucs_model, _demucs_device
-    if _demucs_model is None or _demucs_device != device:
-        from demucs.pretrained import get_model
-        logger.info(f"Loading Demucs model (device={device})...")
-        _demucs_model = get_model("htdemucs")
-        _demucs_model.eval()
-        _demucs_model.to(device)
-        _demucs_device = device
-        logger.info("Demucs model loaded")
-    return _demucs_model
+def _get_separator():
+    global _separator
+    if _separator is None:
+        from audio_separator.separator import Separator
+        logger.info(f"Loading BS-Roformer model from {MODEL_DIR}...")
+        _separator = Separator(
+            log_level=30,
+            model_file_dir=MODEL_DIR,
+            output_format="WAV",
+        )
+        _separator.load_model(model_filename=BS_ROFORMER_MODEL)
+        logger.info("BS-Roformer model loaded")
+    return _separator
 
 
 def _get_whisper_model(device: str):
@@ -72,53 +79,28 @@ def _get_align_model(lang: str, device: str):
 
 
 # ──────────────────────────────────────────────
-# 1. Vocal Separation (Demucs — Python API)
+# 1. Vocal Separation (BS-Roformer via audio-separator)
 # ──────────────────────────────────────────────
 
 def separate_vocals(audio_path: str, output_dir: str) -> tuple[str, str]:
-    """Demucs htdemucs Python API로 보컬/MR 분리. Returns: (vocals_wav_path, mr_wav_path)"""
-    import torch
-    import torchaudio
-    from demucs.apply import apply_model
-    from demucs.audio import save_audio
+    """BS-Roformer로 보컬/MR 분리. Returns: (vocals_wav_path, mr_wav_path)"""
+    logger.info("BS-Roformer: separating vocals...")
 
-    logger.info("Demucs: separating vocals...")
-    device = detect_device()
-    model = _get_demucs_model(device)
+    separator = _get_separator()
+    # audio-separator가 load_model 시점의 output_dir을 내부 model_instance에 스냅샷함.
+    # 리퀘스트마다 다른 work_dir로 내보내려면 양쪽 다 갱신해야 함.
+    separator.output_dir = output_dir
+    if getattr(separator, "model_instance", None) is not None:
+        separator.model_instance.output_dir = output_dir
 
-    # ffmpeg로 WAV 변환 (MP3 등 libsndfile 미지원 포맷 대응)
-    wav_input = str(Path(output_dir) / "input.wav")
-    subprocess.run([
-        "ffmpeg", "-y", "-i", audio_path,
-        "-ar", str(model.samplerate), "-ac", "2",
-        wav_input,
-    ], check=True, capture_output=True)
+    output_filenames = separator.separate(audio_path)
+    mr_fn = next(fn for fn in output_filenames if "(Instrumental)" in fn)
+    vocals_fn = next(fn for fn in output_filenames if "(Vocals)" in fn)
 
-    # Load preprocessed audio (이미 리샘플링+스테레오 변환 완료)
-    wav, sr = torchaudio.load(wav_input)
+    vocals_path = str(Path(output_dir) / vocals_fn)
+    mr_path = str(Path(output_dir) / mr_fn)
 
-    # Normalize
-    ref = wav.mean(0)
-    wav = (wav - ref.mean()) / (ref.std() + 1e-8)
-
-    # Separate
-    with torch.no_grad():
-        sources = apply_model(model, wav[None], device=device)[0]
-    sources = sources.cpu()
-    sources = sources * ref.std() + ref.mean()
-
-    # Extract stems
-    vocals_idx = model.sources.index("vocals")
-    vocals = sources[vocals_idx]
-    mr_indices = [i for i in range(len(model.sources)) if i != vocals_idx]
-    mr = sources[mr_indices].sum(dim=0)
-
-    vocals_path = str(Path(output_dir) / "vocals.wav")
-    mr_path = str(Path(output_dir) / "no_vocals.wav")
-    save_audio(vocals, vocals_path, model.samplerate)
-    save_audio(mr, mr_path, model.samplerate)
-
-    logger.info("Demucs: separation complete")
+    logger.info("BS-Roformer: separation complete")
     return vocals_path, mr_path
 
 
@@ -133,13 +115,13 @@ def pitch_shift_audio(input_path: str, output_path: str, semitones: int):
         "ffmpeg", "-y", "-i", input_path, "-ar", "44100", "-ac", "2", wav_input,
     ], check=True, capture_output=True, timeout=120)
 
-    # Primary: rubberband CLI (고품질, 템포 유지)
+    # Primary: rubberband CLI R3 (Finer engine, 트랜지언트/하모닉 보존 우수)
     try:
         subprocess.run([
-            "rubberband", "-p", str(semitones), wav_input, output_path,
-        ], check=True, capture_output=True, timeout=120)
+            "rubberband", "-3", "-p", str(semitones), wav_input, output_path,
+        ], check=True, capture_output=True, timeout=180)
         os.remove(wav_input)
-        logger.info("Pitch shift complete (rubberband CLI)")
+        logger.info("Pitch shift complete (rubberband R3)")
         return
     except (subprocess.CalledProcessError, FileNotFoundError):
         logger.info("Rubberband CLI unavailable, falling back to asetrate+atempo")
@@ -222,6 +204,23 @@ def _detect_languages(segments: list) -> list[str]:
     if not counts:
         return ["ko"]
     return sorted(counts.keys(), key=lambda k: counts[k], reverse=True)
+
+
+def _detect_primary_language(text: str) -> str | None:
+    """텍스트에서 주 언어 하나 반환. 판단 불가능하면 None."""
+    counts: dict[str, int] = {}
+    for c in text:
+        if '\uac00' <= c <= '\ud7a3':
+            counts["ko"] = counts.get("ko", 0) + 1
+        elif c.isascii() and c.isalpha():
+            counts["en"] = counts.get("en", 0) + 1
+        elif '\u3040' <= c <= '\u309f' or '\u30a0' <= c <= '\u30ff':
+            counts["ja"] = counts.get("ja", 0) + 1
+        elif '\u4e00' <= c <= '\u9fff':
+            counts["zh"] = counts.get("zh", 0) + 1
+    if not counts:
+        return None
+    return max(counts, key=counts.get)
 
 
 def _split_language_runs(text: str) -> list[tuple[str, list[str]]]:
@@ -307,8 +306,12 @@ def _align_segment_multilang(seg: dict, audio, device: str,
     return first_run_words
 
 
-def transcribe(audio_path: str) -> list[dict]:
-    """WhisperX 전사 + 다국어 wav2vec2 forced alignment."""
+def transcribe(audio_path: str, language_hint: str | None = None) -> list[dict]:
+    """WhisperX 전사 + 다국어 wav2vec2 forced alignment.
+
+    language_hint가 주어지면 Whisper 자동 감지를 건너뛰고 해당 언어로 전사.
+    (intro가 긴 곡에서 첫 30초 자동 감지 오판을 방지)
+    """
     import whisperx
 
     device = detect_device()
@@ -316,9 +319,12 @@ def transcribe(audio_path: str) -> list[dict]:
     # 오디오를 한 번만 로드해서 transcribe/align 양쪽에 재사용
     audio = whisperx.load_audio(audio_path)
 
-    logger.info(f"WhisperX: transcribing on {device}...")
+    logger.info(f"WhisperX: transcribing on {device} (language_hint={language_hint})...")
     model = _get_whisper_model(device)
-    result = model.transcribe(audio, batch_size=16)
+    transcribe_kwargs = {"batch_size": 16}
+    if language_hint:
+        transcribe_kwargs["language"] = language_hint
+    result = model.transcribe(audio, **transcribe_kwargs)
     segments = result.get("segments", [])
     detected_lang = result.get("language", "ko")
     logger.info(f"WhisperX: {len(segments)} segments transcribed (language: {detected_lang})")
@@ -601,8 +607,13 @@ async def process_job(
             await asyncio.to_thread(normalize_audio, audio_for_transcribe, normalized_path)
             audio_for_transcribe = normalized_path
 
+            # Reference 가사에서 주 언어 추정 → Whisper 자동 감지 오판 방지
+            language_hint = _detect_primary_language(lyrics) if lyrics else None
+            if language_hint:
+                logger.info(f"Language hint from reference lyrics: {language_hint}")
+
             await update_job_progress(job_id, 40, "Recognizing speech...")
-            words = await asyncio.to_thread(transcribe, audio_for_transcribe)
+            words = await asyncio.to_thread(transcribe, audio_for_transcribe, language_hint)
             await update_job_progress(job_id, 60, "Speech recognized")
 
             # Step 3: Lyrics alignment
