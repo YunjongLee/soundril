@@ -416,7 +416,7 @@ export default function LandingPage() {
                 </Link>
               </div>
               <Link href="/help" className="hover:text-foreground transition-colors">
-                help@soundril.com
+                help@vividvows.co.kr
               </Link>
             </div>
           </div>

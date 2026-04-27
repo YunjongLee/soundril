@@ -2,7 +2,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM = "Soundril <no-reply@soundril.com>";
+const FROM = "Soundril <no-reply@vividvows.co.kr>";
 
 /**
  * 고객 문의 메일 (Help 페이지)
@@ -20,7 +20,7 @@ export async function sendContactEmail({
 }) {
   return resend.emails.send({
     from: FROM,
-    to: "help@soundril.com",
+    to: "help@vividvows.co.kr",
     replyTo: userEmail,
     subject: `[Contact] ${subject}`,
     html: `
@@ -64,7 +64,7 @@ export async function sendWelcomeEmail({
         </a>
       </p>
       <p style="color:#888;font-size:12px;margin-top:24px;">
-        If you have any questions, reply to this email or contact us at help@soundril.com
+        If you have any questions, reply to this email or contact us at help@vividvows.co.kr
       </p>
     `,
   });
@@ -104,7 +104,7 @@ export async function sendSubscriptionEmail({
         <a href="https://soundril.com/dashboard/subscription">subscription settings</a>.
       </p>
       <p style="color:#888;font-size:12px;margin-top:24px;">
-        If you have any questions, contact us at help@soundril.com
+        If you have any questions, contact us at help@vividvows.co.kr
       </p>
     `,
   });
@@ -134,7 +134,7 @@ export async function sendPaymentFailedEmail({
         </a>
       </p>
       <p style="color:#888;font-size:12px;margin-top:24px;">
-        If you have any questions, contact us at help@soundril.com
+        If you have any questions, contact us at help@vividvows.co.kr
       </p>
     `,
   });
@@ -166,7 +166,7 @@ export async function sendCancellationEmail({
         <a href="https://soundril.com/dashboard/subscription">Reactivate your subscription</a>
       </p>
       <p style="color:#888;font-size:12px;margin-top:24px;">
-        If you have any questions, contact us at help@soundril.com
+        If you have any questions, contact us at help@vividvows.co.kr
       </p>
     `,
   });

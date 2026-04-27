@@ -92,8 +92,8 @@ export default function PrivacyPage() {
             <p>
               You may request access to, correction of, or deletion of your personal data at any
               time by contacting us at{" "}
-              <a href="mailto:help@soundril.com" className="text-primary hover:underline">
-                help@soundril.com
+              <a href="mailto:help@vividvows.co.kr" className="text-primary hover:underline">
+                help@vividvows.co.kr
               </a>.
             </p>
           </section>
@@ -110,8 +110,8 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-semibold text-foreground">10. Contact</h2>
             <p>
               If you have any questions about this Privacy Policy, please contact us at{" "}
-              <a href="mailto:help@soundril.com" className="text-primary hover:underline">
-                help@soundril.com
+              <a href="mailto:help@vividvows.co.kr" className="text-primary hover:underline">
+                help@vividvows.co.kr
               </a>.
             </p>
           </section>

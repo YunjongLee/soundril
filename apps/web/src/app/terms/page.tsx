@@ -85,8 +85,8 @@ export default function TermsPage() {
             </ul>
             <p className="mt-3">
               If you are having an issue, please contact our support team at{" "}
-              <a href="mailto:help@soundril.com" className="text-primary hover:underline">
-                help@soundril.com
+              <a href="mailto:help@vividvows.co.kr" className="text-primary hover:underline">
+                help@vividvows.co.kr
               </a>{" "}
               before requesting a refund. We respond within 24 to 48 hours.
             </p>
@@ -126,8 +126,8 @@ export default function TermsPage() {
             <h2 className="text-lg font-semibold text-foreground">10. Contact</h2>
             <p>
               For questions about these Terms, contact us at{" "}
-              <a href="mailto:help@soundril.com" className="text-primary hover:underline">
-                help@soundril.com
+              <a href="mailto:help@vividvows.co.kr" className="text-primary hover:underline">
+                help@vividvows.co.kr
               </a>.
             </p>
           </section>
