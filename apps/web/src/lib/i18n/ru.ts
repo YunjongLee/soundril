@@ -147,6 +147,7 @@ const ru: Translations = {
     keyShift: "Изменение тональности",
     shiftKey: "Изменить тональность",
     free: "Бесплатно",
+    instRecommended: "Для лучшего качества рекомендуем использовать файлы INST (без вокала).",
   },
   lrc: {
     title: "AR → LRC",

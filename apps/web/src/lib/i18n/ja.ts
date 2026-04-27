@@ -142,6 +142,7 @@ const ja: Translations = {
     keyShift: "キー調整",
     shiftKey: "キー変換",
     free: "無料",
+    instRecommended: "より良い音質のため、INST（伴奏）ファイルのご使用を推奨します。",
   },
   lrc: {
     title: "AR → LRC",

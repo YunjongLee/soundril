@@ -9,7 +9,7 @@ import { auth, storage } from "@/lib/firebase/client";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { extractAlbumArt } from "@/lib/albumArt";
 import { Waveform } from "@/components/waveform";
-import { Upload, AudioLines, X } from "lucide-react";
+import { Upload, AudioLines, X, Info } from "lucide-react";
 import { toast } from "sonner";
 
 const ACCEPTED_TYPES = [
@@ -208,6 +208,11 @@ export default function KeyShiftPage() {
             </p>
           </>
         )}
+      </div>
+
+      <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+        <Info className="h-3.5 w-3.5 shrink-0" />
+        <span>{t("key.instRecommended")}</span>
       </div>
 
       {/* Key Shift */}

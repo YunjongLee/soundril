@@ -142,6 +142,7 @@ const en = {
     keyShift: "Key Shift",
     shiftKey: "Shift Key",
     free: "Free",
+    instRecommended: "For better quality, we recommend using INST (instrumental) files.",
   },
   lrc: {
     title: "AR → LRC",

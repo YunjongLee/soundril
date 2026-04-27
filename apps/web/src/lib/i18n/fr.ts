@@ -146,6 +146,7 @@ const fr: Translations = {
     keyShift: "Changement de tonalité",
     shiftKey: "Changer la tonalité",
     free: "Gratuit",
+    instRecommended: "Pour une meilleure qualité, nous recommandons d'utiliser des fichiers INST (instrumental).",
   },
   lrc: {
     title: "AR → LRC",

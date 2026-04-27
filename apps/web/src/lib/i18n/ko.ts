@@ -145,6 +145,7 @@ const ko: Translations = {
     keyShift: "키 조절",
     shiftKey: "키 변환",
     free: "무료",
+    instRecommended: "더 나은 음질을 위해 INST(반주) 파일 사용을 권장합니다.",
   },
   lrc: {
     title: "AR → LRC",

@@ -140,6 +140,7 @@ const zh: Translations = {
     keyShift: "调音",
     shiftKey: "变调",
     free: "免费",
+    instRecommended: "为获得更好的音质，建议使用 INST（伴奏）文件。",
   },
   lrc: {
     title: "AR → LRC",
