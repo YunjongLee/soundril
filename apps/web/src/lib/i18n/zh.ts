@@ -61,6 +61,7 @@ const zh: Translations = {
       copyright: "Soundril. All rights reserved.",
       privacyPolicy: "隐私政策",
       termsOfUse: "使用条款",
+      contact: "联系我们",
     },
   },
   pricing: {

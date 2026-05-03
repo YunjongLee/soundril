@@ -1,4 +1,5 @@
 import { Nav } from "@/components/nav";
+import Link from "next/link";
 
 export default function TermsPage() {
   return (
@@ -84,10 +85,10 @@ export default function TermsPage() {
               <li>Processing a file in full means agreeing with the quality provided by the preview.</li>
             </ul>
             <p className="mt-3">
-              If you are having an issue, please contact our support team at{" "}
-              <a href="mailto:help@vividvows.co.kr" className="text-primary hover:underline">
-                help@vividvows.co.kr
-              </a>{" "}
+              If you are having an issue, please contact our support team through our{" "}
+              <Link href="/help" className="text-primary hover:underline">
+                Contact page
+              </Link>{" "}
               before requesting a refund. We respond within 24 to 48 hours.
             </p>
             <p>
@@ -125,10 +126,10 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-semibold text-foreground">10. Contact</h2>
             <p>
-              For questions about these Terms, contact us at{" "}
-              <a href="mailto:help@vividvows.co.kr" className="text-primary hover:underline">
-                help@vividvows.co.kr
-              </a>.
+              For questions about these Terms, reach out through our{" "}
+              <Link href="/help" className="text-primary hover:underline">
+                Contact page
+              </Link>.
             </p>
           </section>
         </div>

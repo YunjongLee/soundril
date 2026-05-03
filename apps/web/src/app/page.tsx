@@ -416,7 +416,7 @@ export default function LandingPage() {
                 </Link>
               </div>
               <Link href="/help" className="hover:text-foreground transition-colors">
-                help@vividvows.co.kr
+                {t("landing.footer.contact")}
               </Link>
             </div>
           </div>

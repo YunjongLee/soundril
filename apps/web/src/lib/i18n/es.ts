@@ -64,6 +64,7 @@ const es: Translations = {
       copyright: "Soundril. All rights reserved.",
       privacyPolicy: "Política de privacidad",
       termsOfUse: "Términos de uso",
+      contact: "Contacto",
     },
   },
   pricing: {

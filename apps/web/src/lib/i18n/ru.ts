@@ -64,6 +64,7 @@ const ru: Translations = {
       copyright: "Soundril. All rights reserved.",
       privacyPolicy: "Политика конфиденциальности",
       termsOfUse: "Условия использования",
+      contact: "Связаться с нами",
     },
   },
   pricing: {

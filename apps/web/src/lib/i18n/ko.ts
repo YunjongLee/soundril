@@ -63,6 +63,7 @@ const ko: Translations = {
       copyright: "Soundril. All rights reserved.",
       privacyPolicy: "개인정보처리방침",
       termsOfUse: "이용약관",
+      contact: "문의하기",
     },
   },
   pricing: {

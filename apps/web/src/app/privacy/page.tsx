@@ -91,10 +91,10 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-semibold text-foreground">8. Your Rights</h2>
             <p>
               You may request access to, correction of, or deletion of your personal data at any
-              time by contacting us at{" "}
-              <a href="mailto:help@vividvows.co.kr" className="text-primary hover:underline">
-                help@vividvows.co.kr
-              </a>.
+              time through our{" "}
+              <Link href="/help" className="text-primary hover:underline">
+                Contact page
+              </Link>.
             </p>
           </section>
 
@@ -109,10 +109,10 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-lg font-semibold text-foreground">10. Contact</h2>
             <p>
-              If you have any questions about this Privacy Policy, please contact us at{" "}
-              <a href="mailto:help@vividvows.co.kr" className="text-primary hover:underline">
-                help@vividvows.co.kr
-              </a>.
+              If you have any questions about this Privacy Policy, please reach out through our{" "}
+              <Link href="/help" className="text-primary hover:underline">
+                Contact page
+              </Link>.
             </p>
           </section>
         </div>

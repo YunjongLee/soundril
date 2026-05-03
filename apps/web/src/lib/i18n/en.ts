@@ -60,6 +60,7 @@ const en = {
       copyright: "Soundril. All rights reserved.",
       privacyPolicy: "Privacy Policy",
       termsOfUse: "Terms of Use",
+      contact: "Contact",
     },
   },
   pricing: {
