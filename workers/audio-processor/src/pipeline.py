@@ -11,7 +11,6 @@ import tempfile
 from difflib import SequenceMatcher
 from pathlib import Path
 
-from .storage import download_file, upload_file, update_job_progress
 from .logger import get_logger
 
 logger = get_logger("pipeline")
@@ -306,11 +305,13 @@ def _align_segment_multilang(seg: dict, audio, device: str,
     return first_run_words
 
 
-def transcribe(audio_path: str, language_hint: str | None = None) -> list[dict]:
+def transcribe(audio_path: str, language_hint: str | None = None) -> tuple[list[dict], list[dict]]:
     """WhisperX 전사 + 다국어 wav2vec2 forced alignment.
 
     language_hint가 주어지면 Whisper 자동 감지를 건너뛰고 해당 언어로 전사.
     (intro가 긴 곡에서 첫 30초 자동 감지 오판을 방지)
+
+    Returns: (words, segments) — segments는 [{"start", "end", "text"}, ...]
     """
     import whisperx
 
@@ -325,25 +326,29 @@ def transcribe(audio_path: str, language_hint: str | None = None) -> list[dict]:
     if language_hint:
         transcribe_kwargs["language"] = language_hint
     result = model.transcribe(audio, **transcribe_kwargs)
-    segments = result.get("segments", [])
+    raw_segments = result.get("segments", [])
     detected_lang = result.get("language", "ko")
-    logger.info(f"WhisperX: {len(segments)} segments transcribed (language: {detected_lang})")
-    for i, seg in enumerate(segments):
-        logger.info(f"  seg[{i}] [{seg.get('start',0):.2f}s~{seg.get('end',0):.2f}s] {seg.get('text','')}")
+    logger.info(f"WhisperX: {len(raw_segments)} segments transcribed (language: {detected_lang})")
+    segment_meta = [
+        {"start": seg.get("start", 0.0), "end": seg.get("end", 0.0), "text": seg.get("text", "")}
+        for seg in raw_segments
+    ]
+    for i, seg in enumerate(segment_meta):
+        logger.info(f"  seg[{i}] [{seg['start']:.2f}s~{seg['end']:.2f}s] {seg['text']}")
 
     # 언어 감지
-    langs = _detect_languages(segments)
+    langs = _detect_languages(raw_segments)
     logger.info(f"WhisperX: detected languages: {', '.join(langs)}")
 
     # 단일 언어: 전체 한번에 정렬
     if len(langs) <= 1:
         align_model, metadata = _get_align_model(langs[0], device)
-        aligned = whisperx.align(segments, align_model, metadata, audio, device)
+        aligned = whisperx.align(raw_segments, align_model, metadata, audio, device)
         words = _extract_words(aligned["segments"])
         for w in words:
             logger.info(f"  word [{w['start']:6.2f}s~{w['end']:6.2f}s] {w['word']}")
         logger.info(f"WhisperX: {len(words)} words aligned (single language)")
-        return words
+        return words, segment_meta
 
     # 다국어: 언어별 모델 로드 + 세그먼트별 재귀 정렬
     align_models = {}
@@ -351,7 +356,7 @@ def transcribe(audio_path: str, language_hint: str | None = None) -> list[dict]:
         align_models[lang] = _get_align_model(lang, device)
 
     all_words = []
-    for seg in segments:
+    for seg in raw_segments:
         if not seg.get("text", "").strip():
             continue
         seg_words = _align_segment_multilang(seg, audio, device, align_models)
@@ -361,7 +366,7 @@ def transcribe(audio_path: str, language_hint: str | None = None) -> list[dict]:
     for w in all_words:
         logger.info(f"  word [{w['start']:6.2f}s~{w['end']:6.2f}s] {w['word']}")
     logger.info(f"WhisperX: {len(all_words)} words aligned (multilingual: {', '.join(langs)})")
-    return all_words
+    return all_words, segment_meta
 
 
 # ──────────────────────────────────────────────
@@ -373,14 +378,89 @@ def normalize(text: str) -> str:
     return re.sub(r'[^\w]', '', text.lower())
 
 
-def align_lyrics(whisper_words: list[dict], lyrics_lines: list[str]) -> list[tuple]:
-    """워드 레벨 순차 매칭: 라인의 모든 단어를 매칭하여 가장 앞 타임스탬프 사용."""
+def _split_line_for_matching(line: str) -> list[str]:
+    """라인을 매칭용 토큰으로 분해.
+
+    ja/zh는 wav2vec2가 char 단위로 정렬하므로 글자 단위 분해.
+    ko/en 등은 공백 분리 어절.
+    """
+    lang = _detect_primary_language(line)
+    if lang in ("ja", "zh"):
+        return [c for c in line if not c.isspace()]
+    return line.split()
+
+
+def _filter_hallucinated_words(
+    whisper_words: list[dict],
+    segments: list[dict],
+    lyrics_text: str,
+    n: int = 3,
+    threshold: float = 0.3,
+) -> list[dict]:
+    """가사와 관련 없는 Whisper 세그먼트(hallucination)를 제거.
+
+    Whisper는 무음/간주 구간에서 학습 데이터 상용구를 만들어내는 경향이 있음
+    (일본어: "ご視聴ありがとうございました", 영어: "Thank you for watching" 등).
+    각 segment의 normalized n-gram이 가사 전체에 포함되는 비율이 threshold 미만이면
+    hallucination으로 간주하고, 해당 segment 시간 범위의 word들을 제거.
+    """
+    lyrics_norm = normalize(lyrics_text)
+    if not lyrics_norm or not segments:
+        return whisper_words
+
+    bad_ranges: list[tuple[float, float]] = []
+    for seg in segments:
+        seg_norm = normalize(seg.get("text", ""))
+        if len(seg_norm) < n:
+            continue
+        n_grams = [seg_norm[i:i + n] for i in range(len(seg_norm) - n + 1)]
+        matched = sum(1 for g in n_grams if g in lyrics_norm)
+        ratio = matched / len(n_grams)
+        if ratio < threshold:
+            bad_ranges.append((seg["start"], seg["end"]))
+            logger.info(
+                f"  Hallucination filtered [{seg['start']:.2f}s~{seg['end']:.2f}s] "
+                f"'{seg.get('text','')}' (n-gram match {matched}/{len(n_grams)}={ratio:.2f})"
+            )
+
+    if not bad_ranges:
+        return whisper_words
+
+    def in_bad_range(w: dict) -> bool:
+        for s, e in bad_ranges:
+            if s <= w["start"] < e:
+                return True
+        return False
+
+    cleaned = [w for w in whisper_words if not in_bad_range(w)]
+    logger.info(f"  Filtered {len(whisper_words) - len(cleaned)} words from hallucinated segments")
+    return cleaned
+
+
+def align_lyrics(
+    whisper_words: list[dict],
+    lyrics_lines: list[str],
+    segments: list[dict] | None = None,
+) -> list[tuple]:
+    """워드 레벨 순차 매칭: 라인의 모든 단어를 매칭하여 가장 앞 타임스탬프 사용.
+
+    segments가 주어지면 가사와 무관한 hallucination 세그먼트를 먼저 제거.
+    """
+    if segments:
+        whisper_words = _filter_hallucinated_words(
+            whisper_words, segments, "\n".join(lyrics_lines)
+        )
+
     w_norms = [normalize(w["word"]) for w in whisper_words]
     results = []
     w_cursor = 0
 
+    # 후렴 반복 곡에서 같은 단어가 멀리 있는 다음 반복으로 점프하지 않도록 cursor 가까운 매칭을 우선.
+    # 0.03이면 13워드 떨어진 1.0 점수가 거리 0의 0.667 점수를 못 이긴다.
+    distance_penalty = 0.03
+
     for line_idx, line in enumerate(lyrics_lines):
-        line_words = line.split()
+        line_words = _split_line_for_matching(line)
         if not line_words:
             results.append((None, line))
             continue
@@ -393,6 +473,10 @@ def align_lyrics(whisper_words: list[dict], lyrics_lines: list[str]) -> list[tup
         lw_norms = [normalize(lw) for lw in line_words]
         significant_count = sum(1 for n in lw_norms if n)
 
+        # ja/zh는 char-level 매칭이라 1글자 token이 많아 거리 페널티가 부작용을 낳음.
+        is_char_level = _detect_primary_language(line) in ("ja", "zh")
+        line_penalty = 0.0 if is_char_level else distance_penalty
+
         # Phase 1: 연속 가사 단어를 합쳐서 단일 Whisper 단어에 매칭
         # (예: 가사 "사랑 합니다" → Whisper "사랑합니다")
         concat_matches = []  # (start_lw, end_lw, whisper_idx, score)
@@ -403,12 +487,14 @@ def align_lyrics(whisper_words: list[dict], lyrics_lines: list[str]) -> list[tup
                 concat = ''.join(lw_norms[start_lw:end_lw + 1])
                 if len(concat) < 2:
                     continue
-                best_wi, best_score = -1, 0.0
+                best_wi, best_score, best_eff = -1, 0.0, float('-inf')
                 for i in range(w_cursor, search_end):
                     if not w_norms[i]:
                         continue
                     score = SequenceMatcher(None, concat, w_norms[i], autojunk=False).ratio()
-                    if score > best_score:
+                    eff = score - (i - w_cursor) * line_penalty
+                    if eff > best_eff:
+                        best_eff = eff
                         best_score = score
                         best_wi = i
                 if best_score >= 0.9 and best_wi >= 0:
@@ -432,12 +518,14 @@ def align_lyrics(whisper_words: list[dict], lyrics_lines: list[str]) -> list[tup
                 continue
             # 1글자: exact match, 2글자: 0.7, 3글자+: 0.65
             min_score = 1.0 if len(lw_norm) < 2 else (0.65 if len(lw_norm) >= 3 else 0.7)
-            best_idx, best_score = -1, 0.0
+            best_idx, best_score, best_eff = -1, 0.0, float('-inf')
             for i in range(w_cursor, search_end):
                 if not w_norms[i]:
                     continue
                 score = SequenceMatcher(None, lw_norm, w_norms[i], autojunk=False).ratio()
-                if score > best_score:
+                eff = score - (i - w_cursor) * distance_penalty
+                if eff > best_eff:
+                    best_eff = eff
                     best_score = score
                     best_idx = i
             if best_score >= min_score and best_idx >= 0:
@@ -464,9 +552,24 @@ def align_lyrics(whisper_words: list[dict], lyrics_lines: list[str]) -> list[tup
                 match_ratio = len(ordered) / significant_count if significant_count > 0 else 1.0
 
                 # 매칭 비율이 낮은데 cursor가 과도하게 전진하면 오매칭으로 판단
-                if match_ratio < 0.5 and cursor_advance > len(ordered) * 2:
+                # ja/zh는 char-level이라 매칭 가능한 비율이 본질적으로 낮음 → 임계값 완화
+                # ko/en은 경계 포함(`<=`)으로 약간 더 엄격: 2단어 라인 중 1개만 매칭된 케이스(=0.5)도 잡힘
+                miss_threshold = 0.2 if is_char_level else 0.5
+                ratio_below = match_ratio < miss_threshold if is_char_level else match_ratio <= miss_threshold
+                weak = ratio_below and cursor_advance > len(ordered) * 2
+
+                # 첫 토큰 anchor: char-level인데 라인의 첫 char(또는 첫 2개)가 ordered에 없고
+                # 매칭 비율도 낮으면 라인 시작점을 신뢰할 수 없음 → MISS
+                first_token_idx = next((i for i, n in enumerate(lw_norms) if n), None)
+                second_token_idx = next((i for i, n in enumerate(lw_norms) if n and i > (first_token_idx or -1)), None)
+                anchor_indices = {idx for idx in (first_token_idx, second_token_idx) if idx is not None}
+                first_anchor_matched = any(m[0] in anchor_indices for m in ordered)
+                no_anchor = is_char_level and not first_anchor_matched and match_ratio < 0.5
+
+                if weak or no_anchor:
                     results.append((None, line))
-                    logger.info(f"  MISS  [  ?.??s] '{line}' (weak {len(ordered)}/{significant_count} words, advance={cursor_advance}, cursor={w_cursor})")
+                    reason = "weak" if weak else "no first-char anchor"
+                    logger.info(f"  MISS  [  ?.??s] '{line}' ({reason} {len(ordered)}/{significant_count} words, advance={cursor_advance}, cursor={w_cursor})")
                 else:
                     timestamp = whisper_words[first_wi]["start"]
                     results.append((timestamp, line))
@@ -479,6 +582,13 @@ def align_lyrics(whisper_words: list[dict], lyrics_lines: list[str]) -> list[tup
             results.append((None, line))
             logger.info(f"  MISS  [  ?.??s] '{line}' (no matches >= 0.7, cursor={w_cursor})")
 
+
+    # 첫 라인 anchor: 첫 매칭 이전에 MISS 라인이 있으면, 라인 0의 시간을 Whisper 첫 word 시간으로
+    # 고정 (그 사이 라인들은 일반 보간 로직이 채움). 첫 매칭 라인까지 균등 분할 안 해도 됨.
+    first_match_idx = next((i for i, (t, _) in enumerate(results) if t is not None), None)
+    if first_match_idx is not None and first_match_idx > 0 and whisper_words and results[0][0] is None:
+        results[0] = (whisper_words[0]["start"], results[0][1])
+        logger.info(f"  ANCHOR [{whisper_words[0]['start']:6.2f}s] line[0] '{results[0][1]}' (Whisper first word)")
 
     # 누락된 타임스탬프 보간
     for i in range(len(results)):
@@ -522,6 +632,7 @@ async def process_job(
     key_shift: int = 0,
 ) -> dict:
     """Main processing pipeline. Returns dict with result storage paths."""
+    from .storage import download_file, upload_file, update_job_progress
     work_dir = tempfile.mkdtemp(prefix=f"soundril_{job_id}_")
     result = {}
 
@@ -613,14 +724,14 @@ async def process_job(
                 logger.info(f"Language hint from reference lyrics: {language_hint}")
 
             await update_job_progress(job_id, 40, "Recognizing speech...")
-            words = await asyncio.to_thread(transcribe, audio_for_transcribe, language_hint)
+            words, segments = await asyncio.to_thread(transcribe, audio_for_transcribe, language_hint)
             await update_job_progress(job_id, 60, "Speech recognized")
 
             # Step 3: Lyrics alignment
             if lyrics:
                 lyrics_lines = [l.strip() for l in lyrics.strip().splitlines() if l.strip()]
                 await update_job_progress(job_id, 65, "Syncing lyrics to audio...")
-                aligned = align_lyrics(words, lyrics_lines)
+                aligned = align_lyrics(words, lyrics_lines, segments=segments)
                 await update_job_progress(job_id, 80, "Lyrics synced")
 
                 # Generate and upload LRC
