@@ -2,7 +2,7 @@
 Evaluate align_lyrics() against manually transcribed ground truth.
 
 Usage:
-    python -m eval.evaluate [--song niji]
+    python -m eval.evaluate [--song geudae]
 
 Loads cached whisper words + ground truth, calls align_lyrics, prints
 per-line diff table + summary stats.
@@ -29,7 +29,7 @@ def load_song(name: str) -> tuple[dict, dict]:
     return fixture, gt
 
 
-def evaluate(song: str = "niji") -> None:
+def evaluate(song: str = "geudae") -> None:
     fixture, gt = load_song(song)
     words = fixture["words"]
     segments = fixture.get("segments")
@@ -68,6 +68,6 @@ def evaluate(song: str = "niji") -> None:
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--song", default="niji")
+    p.add_argument("--song", default="geudae")
     args = p.parse_args()
     evaluate(args.song)
