@@ -509,7 +509,10 @@ def align_lyrics(
             if lw_range & used_lw:
                 continue
             used_lw |= lw_range
-            word_matches.append((cm[0], cm[2], cm[3]))
+            # concat 매칭은 lw range 전체를 cover → ratio 계산을 위해 각 lw마다 entry 추가
+            for lw_idx in range(cm[0], cm[1] + 1):
+                if lw_norms[lw_idx]:
+                    word_matches.append((lw_idx, cm[2], cm[3]))
 
         # Phase 2: 개별 단어 매칭 (합쳐서 매칭된 단어는 건너뜀)
         for lw_idx, lw in enumerate(line_words):
@@ -532,18 +535,22 @@ def align_lyrics(
                 word_matches.append((lw_idx, best_idx, best_score))
 
         if word_matches:
-            # whisper index 순서대로 정렬, 단조 증가 + span 제한
+            # 모든 시작점에서 가장 긴 (lw 순) wi 비감소 subset 탐색 (LIS-like).
+            # 멀리 있는 단일 매칭이 가까운 다수 매칭을 단조증가 필터로 막지 않도록.
+            # 같은 wi에 여러 lw 매칭(concat) 허용을 위해 `>=` 사용.
             max_span = significant_count * 2
+            matches_sorted = sorted(word_matches, key=lambda x: x[0])
             ordered = []
-            last_wi = -1
-            first_wi_candidate = -1
-            for m in sorted(word_matches, key=lambda x: x[0]):
-                if m[1] > last_wi:
-                    if first_wi_candidate < 0:
-                        first_wi_candidate = m[1]
-                    if m[1] - first_wi_candidate <= max_span:
-                        ordered.append(m)
-                        last_wi = m[1]
+            for start in range(len(matches_sorted)):
+                cur = [matches_sorted[start]]
+                first_wi = cur[0][1]
+                last_wi_iter = first_wi
+                for m in matches_sorted[start + 1:]:
+                    if m[1] >= last_wi_iter and m[1] - first_wi <= max_span:
+                        cur.append(m)
+                        last_wi_iter = m[1]
+                if len(cur) > len(ordered):
+                    ordered = cur
 
             if ordered:
                 first_wi = ordered[0][1]
