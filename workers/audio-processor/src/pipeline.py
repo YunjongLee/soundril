@@ -208,26 +208,29 @@ def _detect_languages(segments: list) -> list[str]:
 def _detect_primary_language(text: str) -> str | None:
     """텍스트에서 주 언어 하나 반환. 판단 불가능하면 None.
 
-    영어는 최후순위. ko/ja/zh가 1자라도 있으면 그 중 dominant 반환.
-    영어 후렴 반복으로 한국어 verse char 수가 압도당해 ko가 en으로 잡히는 케이스 방지.
+    1단계 — ko/ja/zh가 1자라도 있으면 그 중 dominant 반환 (영어 후렴 반복이
+    한국어 verse char 수를 압도해 잘못된 hint가 되는 케이스 방지).
+    2단계 — 라틴 기반(en/es/fr/de/vi/pt/it 등)은 langdetect로 결정적 분류.
     WhisperX는 hint를 강제가 아닌 우선순위로 사용하므로 ko hint에서도 영어는 정상 인식됨.
     """
     counts: dict[str, int] = {}
     for c in text:
         if '\uac00' <= c <= '\ud7a3':
             counts["ko"] = counts.get("ko", 0) + 1
-        elif c.isascii() and c.isalpha():
-            counts["en"] = counts.get("en", 0) + 1
         elif '\u3040' <= c <= '\u309f' or '\u30a0' <= c <= '\u30ff':
             counts["ja"] = counts.get("ja", 0) + 1
         elif '\u4e00' <= c <= '\u9fff':
             counts["zh"] = counts.get("zh", 0) + 1
-    if not counts:
-        return None
-    non_en = {k: v for k, v in counts.items() if k != "en"}
-    if non_en:
-        return max(non_en, key=non_en.get)
-    return "en"
+    if counts:
+        return max(counts, key=counts.get)
+
+    # 라틴 기반 — langdetect (결정적 모드)
+    try:
+        from langdetect import detect, DetectorFactory
+        DetectorFactory.seed = 0
+        return detect(text)
+    except Exception:
+        return "en" if any(c.isascii() and c.isalpha() for c in text) else None
 
 
 def _split_language_runs(text: str) -> list[tuple[str, list[str]]]:
