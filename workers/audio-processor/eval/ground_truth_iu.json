@@ -1,0 +1,291 @@
+{
+  "song": "마음을 드려요 - 아이유",
+  "bpm": 84,
+  "beat_offset_sec": 0,
+  "_note": "expected_sec = beat * 60 / bpm. Beat values from iGiveMyHeartRendering.",
+  "lyrics": "당신에게 드릴 게 없어서\n나의 마음을 드려요\n그대에게 받은 게 많아서\n표현을 다 할 수가 없어요\n나지막한 인사에\n수많은 내 마음 고이 담아\n그대에게로 건네면\n내 마음 조금 알까요\n어떤 이유로 만나\n나와 사랑을 하고\n어떤 이유로 내게 와\n함께 있어준 당신\n부디 행복한 날도\n살다 지치는 날도\n모두 그대의 곁에 내가\n있어줄 수 있길\n어떤 소식 보다 더\n애타게 기다려지는 그대\n엇갈리지 않게 여기\n기다릴게요\n눌러 적은 편지에\n수많은 그리움 고이 담아\n그대 내게로 올 때면\n그 손에 쥐어줄게요\n어떤 이유로 만나\n나와 사랑을 하고\n어떤 이유로 내게 와\n함께 있어준 당신\n부디 행복한 날도\n살다 지치는 날도\n모두 그대의 곁에 내가\n있어줄 수 있길\n네 번의 모든 계절들과\n열두 달의 시간을 너와\n숨이 차게 매일\n사랑하며 함께 할게\n어떤 이유로 만나\n우리 사랑을 했던\n지금 이 순간처럼\n매일 바라보며\n애써주기를\n부디 행복한 날도\n살다 지치는 날도\n모두 그대의 곁에 내가\n있어줄 수 있길\n부디\n추억만 남지 않길 너완",
+  "lines": [
+    {
+      "idx": 1,
+      "beat": 24.4,
+      "expected_sec": 17.429,
+      "text": "당신에게 드릴 게 없어서"
+    },
+    {
+      "idx": 2,
+      "beat": 36.4,
+      "expected_sec": 26.0,
+      "text": "나의 마음을 드려요"
+    },
+    {
+      "idx": 3,
+      "beat": 48.4,
+      "expected_sec": 34.571,
+      "text": "그대에게 받은 게 많아서"
+    },
+    {
+      "idx": 4,
+      "beat": 59.8,
+      "expected_sec": 42.714,
+      "text": "표현을 다 할 수가 없어요"
+    },
+    {
+      "idx": 5,
+      "beat": 71.8,
+      "expected_sec": 51.286,
+      "text": "나지막한 인사에"
+    },
+    {
+      "idx": 6,
+      "beat": 77.8,
+      "expected_sec": 55.571,
+      "text": "수많은 내 마음 고이 담아"
+    },
+    {
+      "idx": 7,
+      "beat": 84.4,
+      "expected_sec": 60.286,
+      "text": "그대에게로 건네면"
+    },
+    {
+      "idx": 8,
+      "beat": 90.4,
+      "expected_sec": 64.571,
+      "text": "내 마음 조금 알까요"
+    },
+    {
+      "idx": 9,
+      "beat": 96.4,
+      "expected_sec": 68.857,
+      "text": "어떤 이유로 만나"
+    },
+    {
+      "idx": 10,
+      "beat": 102.4,
+      "expected_sec": 73.143,
+      "text": "나와 사랑을 하고"
+    },
+    {
+      "idx": 11,
+      "beat": 108.4,
+      "expected_sec": 77.429,
+      "text": "어떤 이유로 내게 와"
+    },
+    {
+      "idx": 12,
+      "beat": 114.8,
+      "expected_sec": 82.0,
+      "text": "함께 있어준 당신"
+    },
+    {
+      "idx": 13,
+      "beat": 120.4,
+      "expected_sec": 86.0,
+      "text": "부디 행복한 날도"
+    },
+    {
+      "idx": 14,
+      "beat": 126.4,
+      "expected_sec": 90.286,
+      "text": "살다 지치는 날도"
+    },
+    {
+      "idx": 15,
+      "beat": 131.8,
+      "expected_sec": 94.143,
+      "text": "모두 그대의 곁에 내가"
+    },
+    {
+      "idx": 16,
+      "beat": 140.8,
+      "expected_sec": 100.571,
+      "text": "있어줄 수 있길"
+    },
+    {
+      "idx": 17,
+      "beat": 168,
+      "expected_sec": 120.0,
+      "text": "어떤 소식 보다 더"
+    },
+    {
+      "idx": 18,
+      "beat": 174,
+      "expected_sec": 124.286,
+      "text": "애타게 기다려지는 그대"
+    },
+    {
+      "idx": 19,
+      "beat": 180.5,
+      "expected_sec": 128.929,
+      "text": "엇갈리지 않게 여기"
+    },
+    {
+      "idx": 20,
+      "beat": 186,
+      "expected_sec": 132.857,
+      "text": "기다릴게요"
+    },
+    {
+      "idx": 21,
+      "beat": 192.1,
+      "expected_sec": 137.214,
+      "text": "눌러 적은 편지에"
+    },
+    {
+      "idx": 22,
+      "beat": 198.1,
+      "expected_sec": 141.5,
+      "text": "수많은 그리움 고이 담아"
+    },
+    {
+      "idx": 23,
+      "beat": 204.7,
+      "expected_sec": 146.214,
+      "text": "그대 내게로 올 때면"
+    },
+    {
+      "idx": 24,
+      "beat": 210.5,
+      "expected_sec": 150.357,
+      "text": "그 손에 쥐어줄게요"
+    },
+    {
+      "idx": 25,
+      "beat": 216.6,
+      "expected_sec": 154.714,
+      "text": "어떤 이유로 만나"
+    },
+    {
+      "idx": 26,
+      "beat": 222.6,
+      "expected_sec": 159.0,
+      "text": "나와 사랑을 하고"
+    },
+    {
+      "idx": 27,
+      "beat": 228.6,
+      "expected_sec": 163.286,
+      "text": "어떤 이유로 내게 와"
+    },
+    {
+      "idx": 28,
+      "beat": 235.1,
+      "expected_sec": 167.929,
+      "text": "함께 있어준 당신"
+    },
+    {
+      "idx": 29,
+      "beat": 240.6,
+      "expected_sec": 171.857,
+      "text": "부디 행복한 날도"
+    },
+    {
+      "idx": 30,
+      "beat": 246.6,
+      "expected_sec": 176.143,
+      "text": "살다 지치는 날도"
+    },
+    {
+      "idx": 31,
+      "beat": 252.2,
+      "expected_sec": 180.143,
+      "text": "모두 그대의 곁에 내가"
+    },
+    {
+      "idx": 32,
+      "beat": 261,
+      "expected_sec": 186.429,
+      "text": "있어줄 수 있길"
+    },
+    {
+      "idx": 33,
+      "beat": 267.1,
+      "expected_sec": 190.786,
+      "text": "네 번의 모든 계절들과"
+    },
+    {
+      "idx": 34,
+      "beat": 273.1,
+      "expected_sec": 195.071,
+      "text": "열두 달의 시간을 너와"
+    },
+    {
+      "idx": 35,
+      "beat": 279.1,
+      "expected_sec": 199.357,
+      "text": "숨이 차게 매일"
+    },
+    {
+      "idx": 36,
+      "beat": 285.7,
+      "expected_sec": 204.071,
+      "text": "사랑하며 함께 할게"
+    },
+    {
+      "idx": 37,
+      "beat": 296.7,
+      "expected_sec": 211.929,
+      "text": "어떤 이유로 만나"
+    },
+    {
+      "idx": 38,
+      "beat": 302.5,
+      "expected_sec": 216.071,
+      "text": "우리 사랑을 했던"
+    },
+    {
+      "idx": 39,
+      "beat": 308.6,
+      "expected_sec": 220.429,
+      "text": "지금 이 순간처럼"
+    },
+    {
+      "idx": 40,
+      "beat": 314,
+      "expected_sec": 224.286,
+      "text": "매일 바라보며"
+    },
+    {
+      "idx": 41,
+      "beat": 319,
+      "expected_sec": 227.857,
+      "text": "애써주기를"
+    },
+    {
+      "idx": 42,
+      "beat": 323.1,
+      "expected_sec": 230.786,
+      "text": "부디 행복한 날도"
+    },
+    {
+      "idx": 43,
+      "beat": 326.6,
+      "expected_sec": 233.286,
+      "text": "살다 지치는 날도"
+    },
+    {
+      "idx": 44,
+      "beat": 332.1,
+      "expected_sec": 237.214,
+      "text": "모두 그대의 곁에 내가"
+    },
+    {
+      "idx": 45,
+      "beat": 341.1,
+      "expected_sec": 243.643,
+      "text": "있어줄 수 있길"
+    },
+    {
+      "idx": 46,
+      "beat": 350.1,
+      "expected_sec": 250.071,
+      "text": "부디"
+    },
+    {
+      "idx": 47,
+      "beat": 357.1,
+      "expected_sec": 255.071,
+      "text": "추억만 남지 않길 너완"
+    }
+  ]
+}

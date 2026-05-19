@@ -525,6 +525,49 @@ def align_lyrics(
                 if lw_norms[lw_idx]:
                     word_matches.append((lw_idx, cm[2], cm[3]))
 
+        # Phase 1.5: 연속 Whisper 단어를 합쳐서 단일 가사 단어에 매칭
+        # (예: Whisper "마지막" + "한" → 가사 "나지막한")
+        # Single word 매칭이 이미 충분히 좋으면(≥0.9) concat 시도 안 함 — false positive 방지.
+        for lw_idx in range(len(lw_norms)):
+            if not lw_norms[lw_idx] or lw_idx in used_lw:
+                continue
+            lw = lw_norms[lw_idx]
+            if len(lw) < 2:
+                continue
+            best_single = 0.0
+            for i in range(w_cursor, search_end):
+                if not w_norms[i]:
+                    continue
+                s = SequenceMatcher(None, lw, w_norms[i], autojunk=False).ratio()
+                if s > best_single:
+                    best_single = s
+            if best_single >= 0.9:
+                continue
+            best_start_wi, best_end_wi, best_score = -1, -1, 0.0
+            best_eff = float('-inf')
+            for start_wi in range(w_cursor, search_end):
+                if not w_norms[start_wi]:
+                    continue
+                for end_wi in range(start_wi + 1, min(start_wi + 3, search_end)):
+                    if not w_norms[end_wi]:
+                        continue
+                    w_concat = ''.join(w_norms[start_wi:end_wi + 1])
+                    if len(w_concat) < 2:
+                        continue
+                    score = SequenceMatcher(None, lw, w_concat, autojunk=False).ratio()
+                    eff = score - (start_wi - w_cursor) * line_penalty
+                    if eff > best_eff:
+                        best_eff = eff
+                        best_score = score
+                        best_start_wi = start_wi
+                        best_end_wi = end_wi
+            # Whisper concat은 형태 차이가 잦아 가사 concat(0.9)보다 약간 완화
+            if best_score >= 0.75 and best_start_wi >= 0:
+                used_lw.add(lw_idx)
+                # range 전체 wi expand: LIS에서 cursor가 end_wi까지 advance하도록
+                for wi in range(best_start_wi, best_end_wi + 1):
+                    word_matches.append((lw_idx, wi, best_score))
+
         # Phase 2: 개별 단어 매칭 (합쳐서 매칭된 단어는 건너뜀)
         for lw_idx, lw in enumerate(line_words):
             lw_norm = lw_norms[lw_idx]
