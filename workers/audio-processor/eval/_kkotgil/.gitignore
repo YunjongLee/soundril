@@ -1,0 +1,4 @@
+# 반복 테스트 캐시 (분리 WAV·전사 fixture·LRC) — 가사 원본만 추적
+*
+!.gitignore
+!lyrics.txt
