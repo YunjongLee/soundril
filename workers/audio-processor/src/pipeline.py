@@ -333,7 +333,9 @@ def transcribe(audio_path: str, language_hint: str | None = None) -> tuple[list[
 
     logger.info(f"WhisperX: transcribing on {device} (language_hint={language_hint})...")
     model = _get_whisper_model(device)
-    transcribe_kwargs = {"batch_size": 16}
+    # chunk_size: VAD 청크 길이 상한(기본 30s). 빽빽한 후렴/챈트 구간을 한 번의
+    # 배치 디코딩으로 처리하다 붕괴(under-transcription)하므로 15s로 축소.
+    transcribe_kwargs = {"batch_size": 16, "chunk_size": 15}
     if language_hint:
         transcribe_kwargs["language"] = language_hint
     result = model.transcribe(audio, **transcribe_kwargs)
