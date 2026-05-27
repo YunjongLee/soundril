@@ -34,7 +34,7 @@ const en = {
       subtitle:
         "From vocal removal to lyrics synchronization, everything you need in one place.",
       keyTitle: "Key Shift",
-      keyDesc: "Freely adjust the key of any song.",
+      keyDesc: "Easily transpose any song to your preferred key.",
       mrTitle: "AR → MR",
       mrDesc:
         "Remove vocals from any song using AI-powered source separation. Get studio-quality instrumental tracks instantly.",

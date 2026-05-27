@@ -36,7 +36,7 @@ const fr: Translations = {
       subtitle:
         "De la suppression des voix à la synchronisation des paroles, tout ce dont vous avez besoin en un seul endroit.",
       keyTitle: "Changement de tonalité",
-      keyDesc: "Ajustez librement la tonalité de n'importe quelle chanson.",
+      keyDesc: "Transposez facilement n'importe quelle chanson dans votre tonalité préférée.",
       mrTitle: "AR → MR",
       mrDesc:
         "Supprimez les voix de n'importe quelle chanson grâce à la séparation de sources par IA. Obtenez des pistes instrumentales de qualité studio instantanément.",

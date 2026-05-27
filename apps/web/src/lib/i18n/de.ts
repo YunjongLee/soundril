@@ -37,7 +37,7 @@ const de: Translations = {
       subtitle:
         "Von der Gesangsentfernung bis zur Textsynchronisierung — alles an einem Ort.",
       keyTitle: "Tonhöhe",
-      keyDesc: "Passen Sie die Tonhöhe jedes Songs frei an.",
+      keyDesc: "Transponieren Sie jeden Song mühelos in Ihre gewünschte Tonart.",
       mrTitle: "AR → MR",
       mrDesc:
         "Entferne den Gesang aus jedem Song mit KI-gestützter Quellentrennung. Erhalte sofort Instrumentaltracks in Studioqualität.",

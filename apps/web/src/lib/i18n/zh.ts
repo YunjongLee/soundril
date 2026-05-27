@@ -35,7 +35,7 @@ const zh: Translations = {
       title: "Powerful Audio Tools",
       subtitle: "从人声消除到歌词同步，一站式满足您的所有需求。",
       keyTitle: "调音",
-      keyDesc: "自由调整歌曲的音调。",
+      keyDesc: "轻松将歌曲调到你想要的音调。",
       mrTitle: "AR → MR",
       mrDesc:
         "使用AI驱动的音源分离技术去除任何歌曲中的人声，即时获得录音棚品质的伴奏。",

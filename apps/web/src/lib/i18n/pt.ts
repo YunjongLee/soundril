@@ -37,7 +37,7 @@ const pt: Translations = {
       subtitle:
         "Da remoção de vocais à sincronização de letras, tudo o que você precisa em um só lugar.",
       keyTitle: "Mudança de tom",
-      keyDesc: "Ajuste livremente o tom de qualquer música.",
+      keyDesc: "Transponha qualquer música para o tom desejado com facilidade.",
       mrTitle: "AR → MR",
       mrDesc:
         "Remova vocais de qualquer música com separação de fontes por IA. Obtenha faixas instrumentais com qualidade de estúdio instantaneamente.",
