@@ -37,7 +37,7 @@ const ko: Translations = {
         "보컬 제거부터 가사 싱크까지, 필요한 모든 것을 한 곳에서.",
       keyTitle: "키 조절",
       keyDesc:
-        "노래의 키를 자유롭게 올리고 내려보세요. 무료로 바로 사용할 수 있습니다.",
+        "노래의 키를 자유롭게 올리고 내려보세요.",
       mrTitle: "AR → MR",
       mrDesc:
         "AI로 보컬을 깔끔하게 분리하세요. 어떤 곡이든 스튜디오급 MR을 바로 만들 수 있습니다.",
@@ -145,7 +145,6 @@ const ko: Translations = {
     subtitle: "오디오 파일의 키(음정)를 조절합니다.",
     keyShift: "키 조절",
     shiftKey: "키 변환",
-    free: "무료",
     instRecommended: "더 나은 음질을 위해 INST(반주) 파일 사용을 권장합니다.",
   },
   lrc: {

@@ -37,7 +37,7 @@ const es: Translations = {
       subtitle:
         "Desde la eliminación de voces hasta la sincronización de letras, todo lo que necesitas en un solo lugar.",
       keyTitle: "Cambio de tono",
-      keyDesc: "Ajusta libremente el tono de cualquier canción. Disponible gratis.",
+      keyDesc: "Ajusta libremente el tono de cualquier canción.",
       mrTitle: "AR → MR",
       mrDesc:
         "Elimina las voces de cualquier canción con separación de fuentes impulsada por IA. Obtén pistas instrumentales de calidad de estudio al instante.",
@@ -147,7 +147,6 @@ const es: Translations = {
     subtitle: "Ajusta el tono de un archivo de audio.",
     keyShift: "Cambio de tono",
     shiftKey: "Cambiar tono",
-    free: "Gratis",
     instRecommended: "Para mejor calidad, recomendamos usar archivos INST (instrumental).",
   },
   lrc: {

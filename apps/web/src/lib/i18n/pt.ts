@@ -37,7 +37,7 @@ const pt: Translations = {
       subtitle:
         "Da remoção de vocais à sincronização de letras, tudo o que você precisa em um só lugar.",
       keyTitle: "Mudança de tom",
-      keyDesc: "Ajuste livremente o tom de qualquer música. Disponível gratuitamente.",
+      keyDesc: "Ajuste livremente o tom de qualquer música.",
       mrTitle: "AR → MR",
       mrDesc:
         "Remova vocais de qualquer música com separação de fontes por IA. Obtenha faixas instrumentais com qualidade de estúdio instantaneamente.",
@@ -147,7 +147,6 @@ const pt: Translations = {
     subtitle: "Ajuste o tom de um arquivo de áudio.",
     keyShift: "Mudança de tom",
     shiftKey: "Mudar tom",
-    free: "Gratuito",
     instRecommended: "Para melhor qualidade, recomendamos usar arquivos INST (instrumental).",
   },
   lrc: {

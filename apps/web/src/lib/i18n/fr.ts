@@ -36,7 +36,7 @@ const fr: Translations = {
       subtitle:
         "De la suppression des voix à la synchronisation des paroles, tout ce dont vous avez besoin en un seul endroit.",
       keyTitle: "Changement de tonalité",
-      keyDesc: "Ajustez librement la tonalité de n'importe quelle chanson. Disponible gratuitement.",
+      keyDesc: "Ajustez librement la tonalité de n'importe quelle chanson.",
       mrTitle: "AR → MR",
       mrDesc:
         "Supprimez les voix de n'importe quelle chanson grâce à la séparation de sources par IA. Obtenez des pistes instrumentales de qualité studio instantanément.",
@@ -146,7 +146,6 @@ const fr: Translations = {
     subtitle: "Ajustez la tonalité d'un fichier audio.",
     keyShift: "Changement de tonalité",
     shiftKey: "Changer la tonalité",
-    free: "Gratuit",
     instRecommended: "Pour une meilleure qualité, nous recommandons d'utiliser des fichiers INST (instrumental).",
   },
   lrc: {

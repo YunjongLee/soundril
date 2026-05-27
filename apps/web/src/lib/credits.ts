@@ -1,6 +1,9 @@
 import { adminDb } from "./firebase/server";
 import { FieldValue } from "firebase-admin/firestore";
 
+// 클라이언트와 공유하는 순수 계산 함수 (firebase-admin 비의존)
+export { calculateCredits } from "./credits-calc";
+
 export type TransactionType =
   | "signup_bonus"
   | "subscription_grant"
@@ -8,20 +11,6 @@ export type TransactionType =
   | "job_refund"
   | "admin_grant"
   | "admin_deduction";
-
-/**
- * 분 필요량 계산.
- * MR: 1분/분, LRC(보컬추출 없음): 1분/분, LRC+보컬추출: 1.5분/분
- */
-export function calculateCredits(
-  durationSeconds: number,
-  type: "mr" | "lrc" | "lrc_mr" | "key"
-): number {
-  if (type === "key") return 0;
-  const minutes = Math.ceil(durationSeconds / 60);
-  if (type === "lrc_mr") return Math.ceil(minutes * 1.5);
-  return minutes;
-}
 
 /**
  * 크레딧 차감 (Firestore 트랜잭션).

@@ -35,7 +35,7 @@ const zh: Translations = {
       title: "Powerful Audio Tools",
       subtitle: "从人声消除到歌词同步，一站式满足您的所有需求。",
       keyTitle: "调音",
-      keyDesc: "自由调整歌曲的音调。免费使用。",
+      keyDesc: "自由调整歌曲的音调。",
       mrTitle: "AR → MR",
       mrDesc:
         "使用AI驱动的音源分离技术去除任何歌曲中的人声，即时获得录音棚品质的伴奏。",
@@ -140,7 +140,6 @@ const zh: Translations = {
     subtitle: "调整音频文件的音调。",
     keyShift: "调音",
     shiftKey: "变调",
-    free: "免费",
     instRecommended: "为获得更好的音质，建议使用 INST（伴奏）文件。",
   },
   lrc: {

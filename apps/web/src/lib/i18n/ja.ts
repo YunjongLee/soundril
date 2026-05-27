@@ -36,7 +36,7 @@ const ja: Translations = {
       subtitle:
         "ボーカル除去から歌詞同期まで、必要なものがすべて揃っています。",
       keyTitle: "キー調整",
-      keyDesc: "曲のキーを自由に上げ下げ。無料でご利用いただけます。",
+      keyDesc: "曲のキーを自由に上げ下げできます。",
       mrTitle: "AR → MR",
       mrDesc:
         "AIによるソース分離技術で、あらゆる楽曲からボーカルを除去。スタジオ品質のインストゥルメンタルトラックを即座に取得。",
@@ -142,7 +142,6 @@ const ja: Translations = {
     subtitle: "オーディオファイルのキー（音程）を調整します。",
     keyShift: "キー調整",
     shiftKey: "キー変換",
-    free: "無料",
     instRecommended: "より良い音質のため、INST（伴奏）ファイルのご使用を推奨します。",
   },
   lrc: {

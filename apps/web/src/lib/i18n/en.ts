@@ -34,7 +34,7 @@ const en = {
       subtitle:
         "From vocal removal to lyrics synchronization, everything you need in one place.",
       keyTitle: "Key Shift",
-      keyDesc: "Freely adjust the key of any song. Available for free.",
+      keyDesc: "Freely adjust the key of any song.",
       mrTitle: "AR → MR",
       mrDesc:
         "Remove vocals from any song using AI-powered source separation. Get studio-quality instrumental tracks instantly.",
@@ -142,7 +142,6 @@ const en = {
     subtitle: "Adjust the key (pitch) of an audio file.",
     keyShift: "Key Shift",
     shiftKey: "Shift Key",
-    free: "Free",
     instRecommended: "For better quality, we recommend using INST (instrumental) files.",
   },
   lrc: {

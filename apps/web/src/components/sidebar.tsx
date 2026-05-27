@@ -35,7 +35,7 @@ const navGroups = [
   {
     titleKey: "sidebar.tools",
     items: [
-      { href: "/dashboard/key", labelKey: "sidebar.keyShift", icon: AudioLines, badge: "Free" },
+      { href: "/dashboard/key", labelKey: "sidebar.keyShift", icon: AudioLines },
       { href: "/dashboard/mr", labelKey: "sidebar.arToMr", icon: Music },
       { href: "/dashboard/lrc", labelKey: "sidebar.arToLrc", icon: FileText },
       { href: "/dashboard/history", labelKey: "sidebar.history", icon: History },
@@ -107,11 +107,6 @@ function SidebarContent({
                 >
                   <item.icon className="h-4 w-4" />
                   {t(item.labelKey)}
-                  {"badge" in item && item.badge && (
-                    <span className="ml-auto text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded">
-                      {item.badge}
-                    </span>
-                  )}
                 </Link>
               );
             })}

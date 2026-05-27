@@ -37,7 +37,7 @@ const de: Translations = {
       subtitle:
         "Von der Gesangsentfernung bis zur Textsynchronisierung — alles an einem Ort.",
       keyTitle: "Tonhöhe",
-      keyDesc: "Passen Sie die Tonhöhe jedes Songs frei an. Kostenlos verfügbar.",
+      keyDesc: "Passen Sie die Tonhöhe jedes Songs frei an.",
       mrTitle: "AR → MR",
       mrDesc:
         "Entferne den Gesang aus jedem Song mit KI-gestützter Quellentrennung. Erhalte sofort Instrumentaltracks in Studioqualität.",
@@ -147,7 +147,6 @@ const de: Translations = {
     subtitle: "Passen Sie die Tonhöhe einer Audiodatei an.",
     keyShift: "Tonhöhe",
     shiftKey: "Tonhöhe ändern",
-    free: "Kostenlos",
     instRecommended: "Für bessere Qualität empfehlen wir die Verwendung von INST-Dateien (instrumental).",
   },
   lrc: {
