@@ -21,10 +21,10 @@ const es: Translations = {
   },
   landing: {
     hero: {
-      badge: "AI-Powered Audio Tools",
-      title1: "Transform Audio",
-      title2: "with ",
-      titleHighlight: "AI Precision",
+      badge: "Herramientas de audio con IA",
+      title1: "Transforma el audio",
+      title2: "con la ",
+      titleHighlight: "precisión de la IA",
       subtitle:
         "Extrae instrumentales, genera letras sincronizadas. Procesamiento de audio profesional impulsado por modelos de IA de vanguardia.",
       getStarted: "Empieza gratis",
@@ -33,7 +33,7 @@ const es: Translations = {
         "10 créditos gratis al registrarte. No se requiere tarjeta.",
     },
     features: {
-      title: "Powerful Audio Tools",
+      title: "Potentes herramientas de audio",
       subtitle:
         "Desde la eliminación de voces hasta la sincronización de letras, todo lo que necesitas en un solo lugar.",
       keyTitle: "Cambio de tono",
@@ -46,18 +46,18 @@ const es: Translations = {
         "Genera archivos de letras sincronizadas palabra por palabra. Perfecto para karaoke, subtítulos y apps de música.",
     },
     howItWorks: {
-      title: "How It Works",
+      title: "Cómo funciona",
       subtitle: "Tres simples pasos para transformar tu audio.",
-      uploadTitle: "Upload",
+      uploadTitle: "Subir",
       uploadDesc: "Sube tu archivo de audio",
-      processTitle: "Process",
+      processTitle: "Procesar",
       processDesc: "La IA separa las voces y genera marcas de tiempo",
-      downloadTitle: "Download",
+      downloadTitle: "Descargar",
       downloadDesc:
         "Descarga tu pista MR o archivo LRC al instante",
     },
     cta: {
-      title: "Ready to Transform Your Audio?",
+      title: "¿Listo para transformar tu audio?",
       subtitle: "Empieza gratis. No se requiere tarjeta.",
     },
     footer: {

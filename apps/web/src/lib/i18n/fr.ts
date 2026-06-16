@@ -21,10 +21,10 @@ const fr: Translations = {
   },
   landing: {
     hero: {
-      badge: "AI-Powered Audio Tools",
-      title1: "Transform Audio",
-      title2: "with ",
-      titleHighlight: "AI Precision",
+      badge: "Outils audio propulsés par l'IA",
+      title1: "Transformez l'audio",
+      title2: "avec la ",
+      titleHighlight: "précision de l'IA",
       subtitle:
         "Extraction d'instrumentaux, génération de paroles synchronisées. Traitement audio professionnel propulsé par des modèles d'IA de pointe.",
       getStarted: "Commencer gratuitement",
@@ -32,7 +32,7 @@ const fr: Translations = {
       freeMinutes: "10 crédits offerts à l'inscription. Aucune carte requise.",
     },
     features: {
-      title: "Powerful Audio Tools",
+      title: "Des outils audio puissants",
       subtitle:
         "De la suppression des voix à la synchronisation des paroles, tout ce dont vous avez besoin en un seul endroit.",
       keyTitle: "Changement de tonalité",
@@ -45,18 +45,18 @@ const fr: Translations = {
         "Générez des fichiers de paroles synchronisées mot par mot. Idéal pour le karaoké, les sous-titres et les applications musicales.",
     },
     howItWorks: {
-      title: "How It Works",
+      title: "Comment ça marche",
       subtitle: "Trois étapes simples pour transformer votre audio.",
-      uploadTitle: "Upload",
+      uploadTitle: "Importer",
       uploadDesc: "Importez votre fichier audio",
-      processTitle: "Process",
+      processTitle: "Traiter",
       processDesc: "L'IA sépare les voix et génère les horodatages",
-      downloadTitle: "Download",
+      downloadTitle: "Télécharger",
       downloadDesc:
         "Récupérez votre piste MR ou fichier LRC instantanément",
     },
     cta: {
-      title: "Ready to Transform Your Audio?",
+      title: "Prêt à transformer votre audio ?",
       subtitle: "Commencez gratuitement. Aucune carte requise.",
     },
     footer: {

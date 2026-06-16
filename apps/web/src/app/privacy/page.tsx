@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { Nav } from "@/components/nav";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "How Soundril collects, uses, and protects your data.",
+  alternates: { canonical: "/privacy" },
+};
 
 export default function PrivacyPage() {
   return (

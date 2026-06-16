@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { Nav } from "@/components/nav";
 import { useAuth } from "@/components/auth-provider";
 import { useT } from "@/lib/i18n";
+import { localizedHref } from "@/lib/i18n/config";
 import { getPlanName } from "@/lib/plan";
 import { Waveform } from "@/components/waveform";
 import { Music, FileText, AudioLines, Check } from "lucide-react";
@@ -19,9 +20,9 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.1 } },
 };
 
-export default function LandingPage() {
+export default function LandingContent() {
   const { user, productId: currentProductId } = useAuth();
-  const { t } = useT();
+  const { t, lang } = useT();
   const userPlan = getPlanName(currentProductId);
   const [yearly, setYearly] = useState(false);
 
@@ -415,7 +416,7 @@ export default function LandingPage() {
                   {t("landing.footer.termsOfUse")}
                 </Link>
               </div>
-              <Link href="/help" className="hover:text-foreground transition-colors">
+              <Link href={localizedHref(lang, "/help")} className="hover:text-foreground transition-colors">
                 {t("landing.footer.contact")}
               </Link>
             </div>

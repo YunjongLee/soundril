@@ -21,10 +21,10 @@ const ko: Translations = {
   },
   landing: {
     hero: {
-      badge: "AI-Powered Audio Tools",
-      title1: "Transform Audio",
-      title2: "with ",
-      titleHighlight: "AI Precision",
+      badge: "AI 기반 오디오 도구",
+      title1: "AI 정밀도로",
+      title2: "",
+      titleHighlight: "오디오 변환",
       subtitle:
         "AI로 반주를 추출하고 싱크 가사를 만들어 보세요. 전문가급 오디오 처리를 경험할 수 있습니다.",
       getStarted: "무료로 시작하기",
@@ -32,7 +32,7 @@ const ko: Translations = {
       freeMinutes: "가입하면 10크레딧 무료, 결제 없이 바로 시작.",
     },
     features: {
-      title: "Powerful Audio Tools",
+      title: "강력한 오디오 도구",
       subtitle:
         "보컬 제거부터 가사 싱크까지, 필요한 모든 것을 한 곳에서.",
       keyTitle: "키 조절",
@@ -46,17 +46,17 @@ const ko: Translations = {
         "단어 단위로 타이밍이 맞는 가사 파일을 만들어 보세요. 노래방, 자막, 음악 앱에 딱 맞습니다.",
     },
     howItWorks: {
-      title: "How It Works",
+      title: "이용 방법",
       subtitle: "단 3단계로 오디오를 변환할 수 있습니다.",
-      uploadTitle: "Upload",
+      uploadTitle: "업로드",
       uploadDesc: "오디오 파일을 업로드하세요",
-      processTitle: "Process",
+      processTitle: "처리",
       processDesc: "AI가 보컬을 분리하고 타임스탬프를 생성합니다",
-      downloadTitle: "Download",
+      downloadTitle: "다운로드",
       downloadDesc: "MR 트랙이나 LRC 파일을 바로 받으세요",
     },
     cta: {
-      title: "Ready to Transform Your Audio?",
+      title: "오디오를 변환할 준비가 되셨나요?",
       subtitle: "무료로 시작하세요. 결제 없이 바로.",
     },
     footer: {

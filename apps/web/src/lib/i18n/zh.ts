@@ -21,10 +21,10 @@ const zh: Translations = {
   },
   landing: {
     hero: {
-      badge: "AI-Powered Audio Tools",
-      title1: "Transform Audio",
-      title2: "with ",
-      titleHighlight: "AI Precision",
+      badge: "AI 驱动的音频工具",
+      title1: "用 AI 精度",
+      title2: "",
+      titleHighlight: "转换音频",
       subtitle:
         "提取伴奏、生成同步歌词。由最先进的AI模型驱动的专业音频处理工具。",
       getStarted: "免费开始",
@@ -32,7 +32,7 @@ const zh: Translations = {
       freeMinutes: "注册即送10额度，无需绑定银行卡。",
     },
     features: {
-      title: "Powerful Audio Tools",
+      title: "强大的音频工具",
       subtitle: "从人声消除到歌词同步，一站式满足您的所有需求。",
       keyTitle: "调音",
       keyDesc: "轻松将歌曲调到你想要的音调。",
@@ -44,17 +44,17 @@ const zh: Translations = {
         "生成逐词同步的歌词文件，适用于卡拉OK、字幕和音乐应用。",
     },
     howItWorks: {
-      title: "How It Works",
+      title: "使用方法",
       subtitle: "三个简单步骤，轻松转换您的音频。",
-      uploadTitle: "Upload",
+      uploadTitle: "上传",
       uploadDesc: "上传您的音频文件",
-      processTitle: "Process",
+      processTitle: "处理",
       processDesc: "AI分离人声并生成时间戳",
-      downloadTitle: "Download",
+      downloadTitle: "下载",
       downloadDesc: "即时获取MR伴奏或LRC文件",
     },
     cta: {
-      title: "Ready to Transform Your Audio?",
+      title: "准备好转换您的音频了吗？",
       subtitle: "免费开始，无需绑定银行卡。",
     },
     footer: {

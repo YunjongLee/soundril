@@ -21,10 +21,10 @@ const ru: Translations = {
   },
   landing: {
     hero: {
-      badge: "AI-Powered Audio Tools",
-      title1: "Transform Audio",
-      title2: "with ",
-      titleHighlight: "AI Precision",
+      badge: "Аудиоинструменты на базе ИИ",
+      title1: "Преобразуйте аудио",
+      title2: "с ",
+      titleHighlight: "точностью ИИ",
       subtitle:
         "Извлечение инструменталов, генерация синхронизированных текстов. Профессиональная обработка аудио на базе передовых моделей ИИ.",
       getStarted: "Начать бесплатно",
@@ -33,7 +33,7 @@ const ru: Translations = {
         "10 бесплатных кредитов при регистрации. Карта не требуется.",
     },
     features: {
-      title: "Powerful Audio Tools",
+      title: "Мощные аудиоинструменты",
       subtitle:
         "От удаления вокала до синхронизации текстов — всё, что нужно, в одном месте.",
       keyTitle: "Изменение тональности",
@@ -46,18 +46,18 @@ const ru: Translations = {
         "Генерируйте файлы с пословной синхронизацией текста. Идеально для караоке, субтитров и музыкальных приложений.",
     },
     howItWorks: {
-      title: "How It Works",
+      title: "Как это работает",
       subtitle: "Три простых шага для преобразования вашего аудио.",
-      uploadTitle: "Upload",
+      uploadTitle: "Загрузка",
       uploadDesc: "Загрузите ваш аудиофайл",
-      processTitle: "Process",
+      processTitle: "Обработка",
       processDesc: "ИИ отделяет вокал и создаёт временные метки",
-      downloadTitle: "Download",
+      downloadTitle: "Скачивание",
       downloadDesc:
         "Скачайте ваш MR-трек или LRC-файл мгновенно",
     },
     cta: {
-      title: "Ready to Transform Your Audio?",
+      title: "Готовы преобразовать ваше аудио?",
       subtitle: "Начните бесплатно. Карта не требуется.",
     },
     footer: {

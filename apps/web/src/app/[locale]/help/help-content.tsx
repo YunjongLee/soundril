@@ -7,7 +7,7 @@ import { useT } from "@/lib/i18n";
 import { Send, Paperclip, X } from "lucide-react";
 import { toast } from "sonner";
 
-export default function HelpPage() {
+export default function HelpContent() {
   const { user } = useAuth();
   const { t } = useT();
   const [subject, setSubject] = useState("");

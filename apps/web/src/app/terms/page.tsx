@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { Nav } from "@/components/nav";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Terms of Use",
+  description: "Soundril terms of use and service agreement.",
+  alternates: { canonical: "/terms" },
+};
 
 export default function TermsPage() {
   return (

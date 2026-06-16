@@ -1,18 +1,32 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "./auth-provider";
 import { useT, languages, type Lang } from "@/lib/i18n";
+import { localizedHref, stripLocale, isLocalizedPath } from "@/lib/i18n/config";
 import { AudioLines, Globe } from "lucide-react";
 
 export function Nav() {
   const { user, loading } = useAuth();
   const { t, lang, setLang } = useT();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // On localized pages, switching language navigates to that locale's URL;
+  // elsewhere (legal pages) it just updates the stored preference.
+  const handleLocaleChange = (newLocale: Lang) => {
+    setLang(newLocale);
+    const { basePath } = stripLocale(pathname);
+    if (isLocalizedPath(basePath)) {
+      router.push(localizedHref(newLocale, basePath));
+    }
+  };
 
   return (
     <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm fixed top-0 w-full z-50">
       <div className="container flex h-14 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
+        <Link href={localizedHref(lang, "/")} className="flex items-center gap-2 font-bold text-lg">
           <AudioLines className="h-5 w-5 text-primary" />
           Soundril
         </Link>
@@ -22,7 +36,7 @@ export function Nav() {
             <Globe className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <select
               value={lang}
-              onChange={(e) => setLang(e.target.value as Lang)}
+              onChange={(e) => handleLocaleChange(e.target.value as Lang)}
               className="appearance-none bg-transparent text-sm text-muted-foreground hover:text-foreground h-9 pl-7 pr-2 md:pr-2 rounded-md cursor-pointer transition-colors focus:outline-none w-9 md:w-auto overflow-hidden"
             >
               {Object.entries(languages).map(([code, name]) => (

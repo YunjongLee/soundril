@@ -21,10 +21,10 @@ const ja: Translations = {
   },
   landing: {
     hero: {
-      badge: "AI-Powered Audio Tools",
-      title1: "Transform Audio",
-      title2: "with ",
-      titleHighlight: "AI Precision",
+      badge: "AI搭載オーディオツール",
+      title1: "AIの精度で",
+      title2: "",
+      titleHighlight: "オーディオを変換",
       subtitle:
         "インストゥルメンタルの抽出、同期歌詞の生成。最先端のAIモデルによるプロフェッショナルなオーディオ処理。",
       getStarted: "無料で始める",
@@ -32,7 +32,7 @@ const ja: Translations = {
       freeMinutes: "登録で10クレジット無料。カード登録不要。",
     },
     features: {
-      title: "Powerful Audio Tools",
+      title: "パワフルなオーディオツール",
       subtitle:
         "ボーカル除去から歌詞同期まで、必要なものがすべて揃っています。",
       keyTitle: "キー調整",
@@ -45,17 +45,17 @@ const ja: Translations = {
         "ワードレベルの同期歌詞ファイルを生成。カラオケ、字幕、音楽アプリに最適。",
     },
     howItWorks: {
-      title: "How It Works",
+      title: "使い方",
       subtitle: "3つのシンプルなステップでオーディオを変換。",
-      uploadTitle: "Upload",
+      uploadTitle: "アップロード",
       uploadDesc: "オーディオファイルをアップロード",
-      processTitle: "Process",
+      processTitle: "処理",
       processDesc: "AIがボーカルを分離し、タイムスタンプを生成",
-      downloadTitle: "Download",
+      downloadTitle: "ダウンロード",
       downloadDesc: "MRトラックまたはLRCファイルを即座にダウンロード",
     },
     cta: {
-      title: "Ready to Transform Your Audio?",
+      title: "オーディオを変換する準備はできましたか？",
       subtitle: "無料で始められます。カード登録不要。",
     },
     footer: {

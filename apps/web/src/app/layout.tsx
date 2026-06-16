@@ -6,14 +6,19 @@ import { LanguageProvider } from "@/lib/i18n";
 import { Analytics } from "@vercel/analytics/next";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { CookieConsent } from "@/components/cookie-consent";
+import { SiteJsonLd } from "@/components/seo/json-ld";
+import { SITE_URL } from "@/lib/i18n/config";
 import { Toaster } from "sonner";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://soundril.com"),
-  title: "Soundril - AI Audio Tools",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Soundril - AI Audio Tools",
+    template: "%s | Soundril",
+  },
   description:
     "Extract vocals, generate synchronized lyrics with AI-powered audio tools.",
   keywords: [
@@ -49,6 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <SiteJsonLd />
         <GoogleAnalytics />
         <ThemeProvider
           attribute="class"

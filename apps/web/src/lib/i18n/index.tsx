@@ -17,8 +17,10 @@ import es from "./es";
 import pt from "./pt";
 import de from "./de";
 import ru from "./ru";
+import { usePathname } from "next/navigation";
+import { LOCALES, DEFAULT_LOCALE, routeLocale, type Lang } from "./config";
 
-export type Lang = "en" | "zh" | "ja" | "fr" | "es" | "ko" | "pt" | "de" | "ru";
+export type { Lang };
 
 export const languages: Record<Lang, string> = {
   en: "English",
@@ -34,7 +36,7 @@ export const languages: Record<Lang, string> = {
 
 const dictionaries: Record<Lang, typeof en> = { en, ko, zh, ja, fr, es, pt, de, ru };
 
-const supportedLangs = Object.keys(languages) as Lang[];
+const supportedLangs = LOCALES;
 
 interface I18nContext {
   lang: Lang;
@@ -66,11 +68,16 @@ function detectLanguage(): Lang {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
+  const pathname = usePathname();
+  const urlLocale = routeLocale(pathname);
+  const [lang, setLangState] = useState<Lang>(urlLocale ?? DEFAULT_LOCALE);
 
+  // Localized public routes (/, /help, /ko, ...) derive their language from the
+  // URL — keep state in sync across navigations and skip browser detection.
+  // Other routes (dashboard, legal pages) fall back to stored/browser preference.
   useEffect(() => {
-    setLangState(detectLanguage());
-  }, []);
+    setLangState(urlLocale ?? detectLanguage());
+  }, [urlLocale]);
 
   useEffect(() => {
     document.documentElement.lang = lang;

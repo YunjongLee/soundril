@@ -21,10 +21,10 @@ const de: Translations = {
   },
   landing: {
     hero: {
-      badge: "AI-Powered Audio Tools",
-      title1: "Transform Audio",
-      title2: "with ",
-      titleHighlight: "AI Precision",
+      badge: "KI-gestützte Audio-Tools",
+      title1: "Audio transformieren",
+      title2: "mit ",
+      titleHighlight: "KI-Präzision",
       subtitle:
         "Instrumentals extrahieren, synchronisierte Songtexte generieren. Professionelle Audiobearbeitung mit modernsten KI-Modellen.",
       getStarted: "Kostenlos starten",
@@ -33,7 +33,7 @@ const de: Translations = {
         "10 Gratis-Guthaben bei der Anmeldung. Keine Kreditkarte nötig.",
     },
     features: {
-      title: "Powerful Audio Tools",
+      title: "Leistungsstarke Audio-Tools",
       subtitle:
         "Von der Gesangsentfernung bis zur Textsynchronisierung — alles an einem Ort.",
       keyTitle: "Tonhöhe",
@@ -46,18 +46,18 @@ const de: Translations = {
         "Generiere wortgenau synchronisierte Textdateien. Perfekt für Karaoke, Untertitel und Musik-Apps.",
     },
     howItWorks: {
-      title: "How It Works",
+      title: "So funktioniert's",
       subtitle: "Drei einfache Schritte, um dein Audio zu transformieren.",
-      uploadTitle: "Upload",
+      uploadTitle: "Hochladen",
       uploadDesc: "Lade deine Audiodatei hoch",
-      processTitle: "Process",
+      processTitle: "Verarbeiten",
       processDesc: "KI trennt den Gesang und erstellt Zeitstempel",
-      downloadTitle: "Download",
+      downloadTitle: "Herunterladen",
       downloadDesc:
         "Lade deinen MR-Track oder deine LRC-Datei sofort herunter",
     },
     cta: {
-      title: "Ready to Transform Your Audio?",
+      title: "Bereit, dein Audio zu transformieren?",
       subtitle: "Starte kostenlos. Keine Kreditkarte nötig.",
     },
     footer: {
