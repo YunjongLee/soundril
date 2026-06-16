@@ -33,7 +33,7 @@ export default function LRCPage() {
   const [duration, setDuration] = useState<number | null>(null);
   const [albumArt, setAlbumArt] = useState<Blob | null>(null);
   const [lyrics, setLyrics] = useState("");
-  const [includeMR, setIncludeMR] = useState(false);
+  const [includeMR, setIncludeMR] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
