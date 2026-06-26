@@ -355,12 +355,26 @@ def transcribe(audio_path: str, language_hint: str | None = None) -> tuple[list[
 
     # 단일 언어: 전체 한번에 정렬
     if len(langs) <= 1:
-        align_model, metadata = _get_align_model(langs[0], device)
+        # _detect_languages는 모든 라틴 문자를 "en"으로 압축한다. 실제 곡이
+        # it/es/fr/de/pt 등 비영어 라틴어면 전용 wav2vec2 모델로 정렬해야
+        # 음소가 맞아 타임스탬프(특히 악센트 문자)가 정확해진다.
+        align_lang = langs[0]
+        if align_lang == "en":
+            real_lang = language_hint or detected_lang
+            if real_lang and real_lang != "en":
+                align_lang = real_lang
+        try:
+            align_model, metadata = _get_align_model(align_lang, device)
+        except Exception as e:
+            # WhisperX가 해당 언어 정렬 모델을 지원하지 않으면 영어로 폴백
+            logger.warning(f"No align model for '{align_lang}' ({e}); falling back to en")
+            align_lang = "en"
+            align_model, metadata = _get_align_model("en", device)
         aligned = whisperx.align(raw_segments, align_model, metadata, audio, device)
         words = _extract_words(aligned["segments"])
         for w in words:
             logger.info(f"  word [{w['start']:6.2f}s~{w['end']:6.2f}s] {w['word']}")
-        logger.info(f"WhisperX: {len(words)} words aligned (single language)")
+        logger.info(f"WhisperX: {len(words)} words aligned (single language: {align_lang})")
         return words, segment_meta
 
     # 다국어: 언어별 모델 로드 + 세그먼트별 재귀 정렬
