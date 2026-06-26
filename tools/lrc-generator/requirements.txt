@@ -4,4 +4,3 @@ openai-whisper
 stable-ts
 demucs
 whisperx
-gradio
